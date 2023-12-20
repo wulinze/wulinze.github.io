@@ -75,6 +75,189 @@
       <div class="outer">
         <section id="main">
   
+    <article id="post-456.132模式" class="h-entry article article-type-post" itemprop="blogPost" itemscope itemtype="https://schema.org/BlogPosting">
+  <div class="article-meta">
+    <a href="/2023/12/20/456.132%E6%A8%A1%E5%BC%8F/" class="article-date">
+  <time class="dt-published" datetime="2023-12-20T02:19:02.546Z" itemprop="datePublished">2023-12-20</time>
+</a>
+    
+  <div class="article-category">
+    <a class="article-category-link" href="/categories/leetcode/">leetcode</a>
+  </div>
+
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="p-name article-title" href="/2023/12/20/456.132%E6%A8%A1%E5%BC%8F/">132模式</a>
+    </h1>
+  
+
+      </header>
+    
+    <div class="e-content article-entry" itemprop="articleBody">
+      
+        <h3 id="题目描述"><a href="#题目描述" class="headerlink" title="题目描述"></a>题目描述</h3><p>给你一个整数数组 nums ，数组中共有 n 个整数。132 模式的子序列 由三个整数 nums[i]、nums[j] 和 nums[k] 组成，并同时满足：i &lt; j &lt; k 和 nums[i] &lt; nums[k] &lt; nums[j] 。</p>
+<p>如果 nums 中存在 132 模式的子序列 ，返回 true ；否则，返回 false 。</p>
+<p><strong>进阶：</strong>很容易想到时间复杂度为 <code>O(n^2)</code> 的解决方案，你可以设计一个时间复杂度为 <code>O(n logn)</code> 或 <code>O(n)</code> 的解决方案吗？</p>
+<p><strong>示例1：</strong></p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">输入：nums = [1,2,3,4]</span><br><span class="line">输出：false</span><br><span class="line">解释：序列中不存在 132 模式的子序列。</span><br></pre></td></tr></table></figure>
+
+<p><strong>示例2：</strong></p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">输入：nums = [3,1,4,2]</span><br><span class="line">输出：true</span><br><span class="line">解释：序列中有 1 个 132 模式的子序列： [1, 4, 2] 。</span><br></pre></td></tr></table></figure>
+
+<p><strong>示例3：</strong></p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">输入：nums = [-1,3,2,0]</span><br><span class="line">输出：true</span><br><span class="line">解释：序列中有 3 个 132 模式的的子序列：[-1, 3, 2]、[-1, 3, 0] 和 [-1, 2, 0] 。</span><br></pre></td></tr></table></figure>
+
+<h3 id="题目分析"><a href="#题目分析" class="headerlink" title="题目分析"></a>题目分析</h3><p>直接暴力枚举三个元素时间复杂度为$O(n^3)$，结果会超时，那么考虑对其进行优化，可以知道前面的元素是最小的，所以直接对其选择最小值即可。考虑使用优先队列对于1的元素进行维护选择最小值，对于3的位置进行枚举，那么2则是对于3位置之后的数据进行枚举，选择一个介于1和3的数。</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">class</span> <span class="title class_">Solution</span> &#123;</span><br><span class="line"><span class="keyword">public</span>:</span><br><span class="line">    <span class="function"><span class="type">bool</span> <span class="title">find132pattern</span><span class="params">(vector&lt;<span class="type">int</span>&gt;&amp; nums)</span> </span>&#123;</span><br><span class="line">        <span class="type">int</span> n = nums.<span class="built_in">size</span>();</span><br><span class="line">        <span class="keyword">if</span>(n &lt; <span class="number">3</span>)<span class="keyword">return</span> <span class="literal">false</span>;</span><br><span class="line">        priority_queue&lt;<span class="type">int</span>, vector&lt;<span class="type">int</span>&gt;, greater&lt;<span class="type">int</span>&gt;&gt; q;</span><br><span class="line">        multiset&lt;<span class="type">int</span>&gt; s;</span><br><span class="line"></span><br><span class="line">        <span class="keyword">for</span>(<span class="type">int</span> k=<span class="number">1</span>; k&lt;n; k++)&#123;</span><br><span class="line">            s.<span class="built_in">emplace</span>(nums[k]);</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        <span class="keyword">for</span>(<span class="type">int</span> m=<span class="number">1</span>; m&lt;n<span class="number">-1</span>; m++)&#123;</span><br><span class="line">            q.<span class="built_in">emplace</span>(nums[m<span class="number">-1</span>]);</span><br><span class="line">            s.<span class="built_in">erase</span>(s.<span class="built_in">find</span>(nums[m]));</span><br><span class="line">            <span class="keyword">if</span>(nums[m] &lt; q.<span class="built_in">top</span>())<span class="keyword">continue</span>;</span><br><span class="line">            <span class="keyword">else</span> &#123;</span><br><span class="line">                <span class="keyword">auto</span> iter = s.<span class="built_in">upper_bound</span>(q.<span class="built_in">top</span>());</span><br><span class="line">                <span class="keyword">if</span>(iter != s.<span class="built_in">end</span>() &amp;&amp; *iter &lt; nums[m])&#123;</span><br><span class="line">                    <span class="keyword">return</span> <span class="literal">true</span>;</span><br><span class="line">                &#125;</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">       <span class="keyword">return</span> <span class="literal">false</span>; </span><br><span class="line">    &#125;</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+
+<p>因为使用了优先队列时间复杂度为$O(nlogn)$</p>
+<p>易知对于数字2和3而言只需要2&lt;3且pos2&gt;pos3即可，而且2和3越接近那么1越好找，考虑倒叙遍历使用单调栈对于3进行记录。对于比栈顶元素小的数字直接压入单调栈因为3在2的前面而且3&gt;2，在找不到1的情况下，压出的数字最大值保存在2中，因为压出的元素必定比3小，所以必定满足3&lt;2而且pos2&gt;pos3，那么只需要找到一个1&lt;2即可，那么使用max_k记录2的值并且寻找到一个1&lt;max_k即可。当出栈的时候那么必定是因为栈顶元素小于当前元素才会出栈，那么此时更新这个max_k选择其中最大的出栈元素，那么必定有一个栈内元素是大于max_k的而且位置在max_k位置之前那么，只需要满足1在max_k之前且1&lt;max_k即可</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">class</span> <span class="title class_">Solution</span> &#123;</span><br><span class="line"><span class="keyword">public</span>:</span><br><span class="line">    <span class="function"><span class="type">bool</span> <span class="title">find132pattern</span><span class="params">(vector&lt;<span class="type">int</span>&gt;&amp; nums)</span> </span>&#123;</span><br><span class="line">        <span class="type">int</span> n = nums.<span class="built_in">size</span>();</span><br><span class="line">        <span class="keyword">if</span>(n &lt; <span class="number">3</span>)<span class="keyword">return</span> <span class="literal">false</span>;</span><br><span class="line">        stack&lt;<span class="type">int</span>&gt; s;</span><br><span class="line">        <span class="type">int</span> max_k=INT_MIN;</span><br><span class="line"></span><br><span class="line">        <span class="keyword">for</span>(<span class="type">int</span> i=n<span class="number">-1</span>; i&gt;=<span class="number">0</span>; i--)&#123;</span><br><span class="line">            <span class="keyword">if</span>(s.<span class="built_in">empty</span>() || s.<span class="built_in">top</span>() &gt; nums[i])s.<span class="built_in">emplace</span>(nums[i]);</span><br><span class="line">            <span class="keyword">else</span> &#123;</span><br><span class="line">                <span class="keyword">while</span>(!s.<span class="built_in">empty</span>() &amp;&amp; s.<span class="built_in">top</span>() &lt; nums[i])&#123;</span><br><span class="line">                    max_k = <span class="built_in">max</span>(max_k,s.<span class="built_in">top</span>());</span><br><span class="line">                    s.<span class="built_in">pop</span>();</span><br><span class="line">                &#125;</span><br><span class="line">                s.<span class="built_in">push</span>(nums[i]);</span><br><span class="line">            &#125;</span><br><span class="line">            <span class="keyword">if</span>(nums[i] &lt; max_k)<span class="keyword">return</span> <span class="literal">true</span>;</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">       <span class="keyword">return</span> <span class="literal">false</span>;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+
+<p>时间复杂度为$O(n)$</p>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://example.com/2023/12/20/456.132%E6%A8%A1%E5%BC%8F/" data-id="clqd5b139000ukmn6fs6t3n6g" data-title="132模式" class="article-share-link"><span class="fa fa-share">Share</span></a>
+      
+      
+      
+  <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/c/" rel="tag">c++</a></li></ul>
+
+    </footer>
+  </div>
+  
+</article>
+
+
+
+  
+    <article id="post-467.环绕字符串中的唯一子字符串" class="h-entry article article-type-post" itemprop="blogPost" itemscope itemtype="https://schema.org/BlogPosting">
+  <div class="article-meta">
+    <a href="/2023/12/20/467.%E7%8E%AF%E7%BB%95%E5%AD%97%E7%AC%A6%E4%B8%B2%E4%B8%AD%E7%9A%84%E5%94%AF%E4%B8%80%E5%AD%90%E5%AD%97%E7%AC%A6%E4%B8%B2/" class="article-date">
+  <time class="dt-published" datetime="2023-12-20T02:19:02.546Z" itemprop="datePublished">2023-12-20</time>
+</a>
+    
+  <div class="article-category">
+    <a class="article-category-link" href="/categories/leetcode/">leetcode</a>
+  </div>
+
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="p-name article-title" href="/2023/12/20/467.%E7%8E%AF%E7%BB%95%E5%AD%97%E7%AC%A6%E4%B8%B2%E4%B8%AD%E7%9A%84%E5%94%AF%E4%B8%80%E5%AD%90%E5%AD%97%E7%AC%A6%E4%B8%B2/">环绕字符串中的唯一子字符串</a>
+    </h1>
+  
+
+      </header>
+    
+    <div class="e-content article-entry" itemprop="articleBody">
+      
+        <h4 id="题目描述"><a href="#题目描述" class="headerlink" title="题目描述"></a>题目描述</h4><p>把字符串 s 看作是 “abcdefghijklmnopqrstuvwxyz” 的无限环绕字符串，所以 s 看起来是这样的：</p>
+<ul>
+<li>“…zabcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzabcd….” .</li>
+</ul>
+<p>现在给定另一个字符串 p 。返回 s 中 唯一 的 p 的 非空子串 的数量 。 </p>
+<p><strong>示例 1:</strong></p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">输入: p = &quot;a&quot;</span><br><span class="line">输出: 1</span><br><span class="line">解释: 字符串 s 中只有一个&quot;a&quot;子字符。</span><br></pre></td></tr></table></figure>
+
+<p><strong>示例 2:</strong></p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">输入: p = &quot;cac&quot;</span><br><span class="line">输出: 2</span><br><span class="line">解释: 字符串 s 中的字符串“cac”只有两个子串“a”、“c”。.</span><br></pre></td></tr></table></figure>
+
+<p><strong>示例 3:</strong></p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">输入: p = &quot;zab&quot;</span><br><span class="line">输出: 6</span><br><span class="line">解释: 在字符串 s 中有六个子串“z”、“a”、“b”、“za”、“ab”、“zab”。</span><br></pre></td></tr></table></figure>
+
+<p><strong>提示:</strong></p>
+<p>1 &lt;&#x3D; p.length &lt;&#x3D; 105<br>p 由小写英文字母构成</p>
+<h4 id="题目分析"><a href="#题目分析" class="headerlink" title="题目分析"></a>题目分析</h4><p>因为要找到所有子串的数量，刚开始考虑直接记录连续的字符串长度和数量进行计算，但是发现可能会重复计算，例如zabab其中连续子串有zab和ab两个其中有很多的重复子串，因此为了避免重复，可以<strong>根据开头或者结尾的字符进行判定</strong>是否出现过，例如如果以b结尾的最长字符长度为4,那么以b结尾的连续子串自然就有4个。因此在遍历字符串时记录连续的子串长度，之后更新以单个字符结尾的最大长度，之后在26个字符结果相加即可。</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">class</span> <span class="title class_">Solution</span> &#123;</span><br><span class="line"><span class="keyword">public</span>:</span><br><span class="line">    <span class="function"><span class="type">int</span> <span class="title">findSubstringInWraproundString</span><span class="params">(string p)</span> </span>&#123;</span><br><span class="line">        <span class="type">int</span> n = p.<span class="built_in">length</span>();</span><br><span class="line">        <span class="type">int</span> ans = <span class="number">0</span>;</span><br><span class="line">        <span class="type">int</span> left = <span class="number">0</span>;</span><br><span class="line">        <span class="function">vector&lt;<span class="type">int</span>&gt; <span class="title">seq</span><span class="params">(<span class="number">26</span>, <span class="number">0</span>)</span></span>;</span><br><span class="line">        <span class="type">int</span> l = <span class="number">0</span>;</span><br><span class="line"></span><br><span class="line">        <span class="keyword">for</span>(<span class="type">int</span> i=<span class="number">0</span>; i&lt;n; i++)&#123;</span><br><span class="line">            <span class="keyword">if</span>(i &amp;&amp; p[i] == (p[i<span class="number">-1</span>]-<span class="string">&#x27;a&#x27;</span>+<span class="number">1</span>)%<span class="number">26</span>+<span class="string">&#x27;a&#x27;</span>)&#123;</span><br><span class="line">                l++;</span><br><span class="line">            &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">                l=<span class="number">1</span>;</span><br><span class="line">            &#125;</span><br><span class="line">            seq[p[i]-<span class="string">&#x27;a&#x27;</span>] = <span class="built_in">max</span>(seq[p[i]-<span class="string">&#x27;a&#x27;</span>], l);</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        <span class="keyword">for</span>(<span class="keyword">auto</span>&amp;&amp; num : seq)&#123;</span><br><span class="line">            ans += num;</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        <span class="keyword">return</span> ans;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://example.com/2023/12/20/467.%E7%8E%AF%E7%BB%95%E5%AD%97%E7%AC%A6%E4%B8%B2%E4%B8%AD%E7%9A%84%E5%94%AF%E4%B8%80%E5%AD%90%E5%AD%97%E7%AC%A6%E4%B8%B2/" data-id="clqd5b13a000vkmn6co4xbb4x" data-title="环绕字符串中的唯一子字符串" class="article-share-link"><span class="fa fa-share">Share</span></a>
+      
+      
+      
+  <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/c/" rel="tag">c++</a></li></ul>
+
+    </footer>
+  </div>
+  
+</article>
+
+
+
+  
+    <article id="post-474.一和零" class="h-entry article article-type-post" itemprop="blogPost" itemscope itemtype="https://schema.org/BlogPosting">
+  <div class="article-meta">
+    <a href="/2023/12/20/474.%E4%B8%80%E5%92%8C%E9%9B%B6/" class="article-date">
+  <time class="dt-published" datetime="2023-12-20T02:19:02.546Z" itemprop="datePublished">2023-12-20</time>
+</a>
+    
+  <div class="article-category">
+    <a class="article-category-link" href="/categories/leetcode/">leetcode</a>
+  </div>
+
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="p-name article-title" href="/2023/12/20/474.%E4%B8%80%E5%92%8C%E9%9B%B6/">一和零</a>
+    </h1>
+  
+
+      </header>
+    
+    <div class="e-content article-entry" itemprop="articleBody">
+      
+        <h3 id="题目描述"><a href="#题目描述" class="headerlink" title="题目描述"></a>题目描述</h3><p>给你一个二进制字符串数组 strs 和两个整数 m 和 n 。</p>
+<p>请你找出并返回 strs 的最大子集的大小，该子集中 最多 有 m 个 0 和 n 个 1 。</p>
+<p>如果 x 的所有元素也是 y 的元素，集合 x 是集合 y 的 子集 。</p>
+<p><strong>示例1：</strong></p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">输入：strs = [&quot;10&quot;, &quot;0001&quot;, &quot;111001&quot;, &quot;1&quot;, &quot;0&quot;], m = 5, n = 3</span><br><span class="line">输出：4</span><br><span class="line">解释：最多有 5 个 0 和 3 个 1 的最大子集是 &#123;&quot;10&quot;,&quot;0001&quot;,&quot;1&quot;,&quot;0&quot;&#125; ，因此答案是 4 。</span><br><span class="line">其他满足题意但较小的子集包括 &#123;&quot;0001&quot;,&quot;1&quot;&#125; 和 &#123;&quot;10&quot;,&quot;1&quot;,&quot;0&quot;&#125; 。&#123;&quot;111001&quot;&#125; 不满足题意，因为它含 4 个 1 ，大于 n 的值 3 。</span><br></pre></td></tr></table></figure>
+
+<p><strong>示例2：</strong></p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">输入：strs = [&quot;10&quot;, &quot;0&quot;, &quot;1&quot;], m = 1, n = 1</span><br><span class="line">输出：2</span><br><span class="line">解释：最大的子集是 &#123;&quot;0&quot;, &quot;1&quot;&#125; ，所以答案是 2 。</span><br></pre></td></tr></table></figure>
+
+<h3 id="题目分析"><a href="#题目分析" class="headerlink" title="题目分析"></a>题目分析</h3><p>0-1背包问题，对于空间复杂度进行优化</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">class</span> <span class="title class_">Solution</span> &#123;</span><br><span class="line"><span class="keyword">public</span>:</span><br><span class="line">    <span class="function"><span class="type">int</span> <span class="title">findMaxForm</span><span class="params">(vector&lt;string&gt;&amp; strs, <span class="type">int</span> m, <span class="type">int</span> n)</span> </span>&#123;</span><br><span class="line">        vector&lt;vector&lt;<span class="type">int</span>&gt;&gt; <span class="built_in">dp</span>(m+<span class="number">1</span>, <span class="built_in">vector</span>&lt;<span class="type">int</span>&gt;(n+<span class="number">1</span>, <span class="number">0</span>));</span><br><span class="line">        </span><br><span class="line">        <span class="keyword">for</span>(<span class="keyword">auto</span>&amp; str : strs)&#123;</span><br><span class="line">            <span class="type">int</span> zero=<span class="number">0</span>, one;</span><br><span class="line">            <span class="keyword">for</span>(<span class="keyword">auto</span>&amp; c : str)&#123;</span><br><span class="line">                <span class="keyword">if</span>(c == <span class="string">&#x27;0&#x27;</span>)zero++;</span><br><span class="line">            &#125;</span><br><span class="line">            one = str.<span class="built_in">length</span>()-zero;</span><br><span class="line">            <span class="keyword">for</span>(<span class="type">int</span> i=m; i &gt;= zero; i--)&#123;</span><br><span class="line">                <span class="keyword">for</span>(<span class="type">int</span> j=n; j &gt;= one; j--)&#123;</span><br><span class="line">                    dp[i][j] = <span class="built_in">max</span>(dp[i][j], dp[i - zero][j - one] + <span class="number">1</span>);</span><br><span class="line">                &#125;</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        <span class="keyword">return</span> dp[m][n];</span><br><span class="line">    &#125;</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://example.com/2023/12/20/474.%E4%B8%80%E5%92%8C%E9%9B%B6/" data-id="clqd5b13b000wkmn6dkh3asx3" data-title="一和零" class="article-share-link"><span class="fa fa-share">Share</span></a>
+      
+      
+      
+  <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/c/" rel="tag">c++</a></li></ul>
+
+    </footer>
+  </div>
+  
+</article>
+
+
+
+  
     <article id="post-480.滑动窗口中位数" class="h-entry article article-type-post" itemprop="blogPost" itemscope itemtype="https://schema.org/BlogPosting">
   <div class="article-meta">
     <a href="/2023/12/20/480.%E6%BB%91%E5%8A%A8%E7%AA%97%E5%8F%A3%E4%B8%AD%E4%BD%8D%E6%95%B0/" class="article-date">
@@ -561,216 +744,6 @@
 
 
   
-    <article id="post-699.掉落的方块" class="h-entry article article-type-post" itemprop="blogPost" itemscope itemtype="https://schema.org/BlogPosting">
-  <div class="article-meta">
-    <a href="/2023/12/20/699.%E6%8E%89%E8%90%BD%E7%9A%84%E6%96%B9%E5%9D%97/" class="article-date">
-  <time class="dt-published" datetime="2023-12-20T02:19:02.546Z" itemprop="datePublished">2023-12-20</time>
-</a>
-    
-  <div class="article-category">
-    <a class="article-category-link" href="/categories/leetcode/">leetcode</a>
-  </div>
-
-  </div>
-  <div class="article-inner">
-    
-    
-      <header class="article-header">
-        
-  
-    <h1 itemprop="name">
-      <a class="p-name article-title" href="/2023/12/20/699.%E6%8E%89%E8%90%BD%E7%9A%84%E6%96%B9%E5%9D%97/">掉落的方块</a>
-    </h1>
-  
-
-      </header>
-    
-    <div class="e-content article-entry" itemprop="articleBody">
-      
-        <h4 id="题目要求"><a href="#题目要求" class="headerlink" title="题目要求"></a>题目要求</h4><p>在无限长的数轴（即 x 轴）上，我们根据给定的顺序放置对应的正方形方块。</p>
-<p>第 i 个掉落的方块（positions[i] &#x3D; (left, side_length)）是正方形，其中 left 表示该方块最左边的点位置(positions[i][0])，side_length 表示该方块的边长(positions[i][1])。</p>
-<p>每个方块的底部边缘平行于数轴（即 x 轴），并且从一个比目前所有的落地方块更高的高度掉落而下。在上一个方块结束掉落，并保持静止后，才开始掉落新方块。</p>
-<p>方块的底边具有非常大的粘性，并将保持固定在它们所接触的任何长度表面上（无论是数轴还是其他方块）。邻接掉落的边不会过早地粘合在一起，因为只有底边才具有粘性。</p>
-<p>返回一个堆叠高度列表 ans 。每一个堆叠高度 ans[i] 表示在通过 positions[0], positions[1], …, positions[i] 表示的方块掉落结束后，目前所有已经落稳的方块堆叠的最高高度。</p>
-<p><strong>示例 1:</strong></p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br></pre></td><td class="code"><pre><span class="line">输入: [[1, 2], [2, 3], [6, 1]]</span><br><span class="line">输出: [2, 5, 5]</span><br><span class="line">解释:</span><br><span class="line"></span><br><span class="line">第一个方块 positions[0] = [1, 2] 掉落：</span><br><span class="line">_aa</span><br><span class="line"></span><br><span class="line">_aa</span><br><span class="line">-------</span><br><span class="line"></span><br><span class="line">方块最大高度为 2 。</span><br><span class="line"></span><br><span class="line">第二个方块 positions[1] = [2, 3] 掉落：</span><br><span class="line">__aaa</span><br><span class="line"></span><br><span class="line">__aaa</span><br><span class="line">__aaa</span><br><span class="line">_aa__</span><br><span class="line"></span><br><span class="line">_aa__</span><br><span class="line">--------------</span><br><span class="line"></span><br><span class="line">方块最大高度为5。</span><br><span class="line">大的方块保持在较小的方块的顶部，不论它的重心在哪里，因为方块的底部边缘有非常大的粘性。</span><br><span class="line"></span><br><span class="line">第三个方块 positions[1] = [6, 1] 掉落：</span><br><span class="line">__aaa</span><br><span class="line"></span><br><span class="line">__aaa</span><br><span class="line">__aaa</span><br><span class="line">_aa</span><br><span class="line"></span><br><span class="line">_aa___a</span><br><span class="line">-------------- </span><br><span class="line"></span><br><span class="line">方块最大高度为5。</span><br><span class="line"></span><br><span class="line">因此，我们返回结果[2, 5, 5]。</span><br></pre></td></tr></table></figure>
-
-<p><strong>示例 2:</strong></p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">输入: [[100, 100], [200, 100]]</span><br><span class="line">输出: [100, 100]</span><br><span class="line">解释: 相邻的方块不会过早地卡住，只有它们的底部边缘才能粘在表面上。</span><br></pre></td></tr></table></figure>
-
-<p><strong>注意:</strong></p>
-<ul>
-<li>1 &lt;&#x3D; positions.length &lt;&#x3D; 1000.</li>
-<li>1 &lt;&#x3D; positions[i][0] &lt;&#x3D; 10^8.</li>
-<li>1 &lt;&#x3D; positions[i][1] &lt;&#x3D; 10^6.</li>
-</ul>
-<h4 id="题目分析"><a href="#题目分析" class="headerlink" title="题目分析"></a>题目分析</h4><p>思考一个问题，在新掉落一个方块之后最大高度可能存在的情况</p>
-<ol>
-<li>最大高度为前一个方块掉落后的最大高度</li>
-<li>最大高度为当前方块掉落的高度加上之前方块所在位置的堆叠高度</li>
-</ol>
-<p><strong>暴力枚举</strong></p>
-<p>因此可以直接进行枚举，还好能过吧，通过对于之前掉落的方块进行枚举，选取其中堆叠的高度之后加上当前方块的高度即为堆叠的最大高度。</p>
-<p>如何判断两个方块是否堆叠，如果两个方块是叠在一起的则有，假设left1，right1, left2, right2分别为方块的左右边界。那么两个方块堆叠则必有<br>$$<br>left1 &lt; right2\<br>left2 &lt; right1<br>$$<br>可以根据这个条件来判断边界问题，如果是简单的暴力枚举，那么可以直接根据方块是否堆叠来更新堆叠的高度，但是堆叠的高度未必是最大的高度，还需要进行下一步的更新，有可能堆叠的高度不如之前的高度高，需要对于结果进行更新。</p>
-<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">class</span> <span class="title class_">Solution</span> &#123;</span><br><span class="line"><span class="keyword">public</span>:</span><br><span class="line">    <span class="function">vector&lt;<span class="type">int</span>&gt; <span class="title">fallingSquares</span><span class="params">(vector&lt;vector&lt;<span class="type">int</span>&gt;&gt;&amp; positions)</span> </span>&#123;</span><br><span class="line">        <span class="type">int</span> n = positions.<span class="built_in">size</span>();</span><br><span class="line">        <span class="function">vector&lt;<span class="type">int</span>&gt; <span class="title">heights</span><span class="params">(n)</span></span>;</span><br><span class="line">        <span class="keyword">for</span> (<span class="type">int</span> i = <span class="number">0</span>; i &lt; n; i++) &#123;</span><br><span class="line">            <span class="type">int</span> left1 = positions[i][<span class="number">0</span>], right1 = positions[i][<span class="number">0</span>] + positions[i][<span class="number">1</span>];</span><br><span class="line">            heights[i] = positions[i][<span class="number">1</span>];</span><br><span class="line">            <span class="keyword">for</span> (<span class="type">int</span> j = <span class="number">0</span>; j &lt; i; j++) &#123;</span><br><span class="line">                <span class="type">int</span> left2 = positions[j][<span class="number">0</span>], right2 = positions[j][<span class="number">0</span>] + positions[j][<span class="number">1</span>];</span><br><span class="line">                <span class="keyword">if</span> (right1 &gt; left2 &amp;&amp; right2 &gt; left1) &#123;</span><br><span class="line">                    heights[i] = <span class="built_in">max</span>(heights[i], heights[j] + positions[i][<span class="number">1</span>]);</span><br><span class="line">                &#125;</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">for</span> (<span class="type">int</span> i = <span class="number">1</span>; i &lt; n; i++) &#123;</span><br><span class="line">            heights[i] = <span class="built_in">max</span>(heights[i], heights[i - <span class="number">1</span>]);</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">return</span> heights;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
-
-<p><strong>区间排序搜索</strong></p>
-<p>在上面暴力枚举的时候可以看到进行了很多的无用的搜索，需要搜索所有之前的方块，但是其实正常来说并不需要完全的搜索完全部的方块，只需要根据当前方块的区间搜索即可，可以考虑对于区间进行排序，之后对于给定的区间可以通过二分的方式直接找到对应的堆叠的位置。</p>
-<p>在暴力枚举的时候以及有过相关的堆叠判断条件的介绍，对于二分查找可以直接使用map这种底层红黑树的stl容器，进行快速的实现。</p>
-<p>在进行边界的插入时，我们采取如下的实现方式，<strong>left对应了堆叠的高度，right的部分则设置为未堆叠之前的高度</strong>(<em><strong>因为题目中说了不能贴合边界，所以一定是半开半闭的区间</strong></em>)这里面设置的是右边界开区间。</p>
-<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">class</span> <span class="title class_">Solution</span> &#123;</span><br><span class="line"><span class="keyword">public</span>:</span><br><span class="line">    <span class="function">vector&lt;<span class="type">int</span>&gt; <span class="title">fallingSquares</span><span class="params">(vector&lt;vector&lt;<span class="type">int</span>&gt;&gt;&amp; positions)</span> </span>&#123;</span><br><span class="line">        <span class="type">int</span> n = positions.<span class="built_in">size</span>();</span><br><span class="line">        map&lt;<span class="type">int</span>, <span class="type">int</span>&gt; m;</span><br><span class="line">        m[<span class="number">0</span>] = <span class="number">0</span>;</span><br><span class="line">        vector&lt;<span class="type">int</span>&gt; ans;</span><br><span class="line">        ans.<span class="built_in">reserve</span>(n);</span><br><span class="line"></span><br><span class="line">        <span class="keyword">for</span>(<span class="keyword">auto</span>&amp;&amp; pos : positions)&#123;</span><br><span class="line">            <span class="type">int</span> size = pos[<span class="number">1</span>];</span><br><span class="line">            <span class="type">int</span> height = pos[<span class="number">1</span>];</span><br><span class="line">            <span class="type">int</span> left = pos[<span class="number">0</span>], right = left + height - <span class="number">1</span>;</span><br><span class="line">            <span class="keyword">auto</span> lp = m.<span class="built_in">upper_bound</span>(left), rp=m.<span class="built_in">upper_bound</span>(right);</span><br><span class="line">            <span class="keyword">auto</span> preHeight = <span class="built_in">prev</span>(rp)-&gt;second;</span><br><span class="line"></span><br><span class="line">            <span class="keyword">for</span>(<span class="keyword">auto</span> p = <span class="built_in">prev</span>(lp); p != rp; p++)&#123;</span><br><span class="line">                height = <span class="built_in">max</span>(height, size+p-&gt;second);</span><br><span class="line">            &#125;</span><br><span class="line"></span><br><span class="line">            m.<span class="built_in">erase</span>(lp, rp);</span><br><span class="line">            m[left] = height;</span><br><span class="line">            <span class="keyword">if</span>(rp == m.<span class="built_in">end</span>() || rp-&gt;first != right+<span class="number">1</span>)&#123;</span><br><span class="line">                m[right+<span class="number">1</span>] = preHeight;</span><br><span class="line">            &#125;</span><br><span class="line"></span><br><span class="line">            ans.<span class="built_in">push_back</span>(ans.<span class="built_in">empty</span>()? height:<span class="built_in">max</span>(ans.<span class="built_in">back</span>(), height));</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        <span class="keyword">return</span> ans;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
-
-
-      
-    </div>
-    <footer class="article-footer">
-      <a data-url="http://example.com/2023/12/20/699.%E6%8E%89%E8%90%BD%E7%9A%84%E6%96%B9%E5%9D%97/" data-id="clqd6lzdk00204vn63kkbhhfw" data-title="掉落的方块" class="article-share-link"><span class="fa fa-share">Share</span></a>
-      
-      
-      
-  <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/c/" rel="tag">c++</a></li></ul>
-
-    </footer>
-  </div>
-  
-</article>
-
-
-
-  
-    <article id="post-1846.减小和重新排列数组后的最大元素" class="h-entry article article-type-post" itemprop="blogPost" itemscope itemtype="https://schema.org/BlogPosting">
-  <div class="article-meta">
-    <a href="/2023/12/20/1846.%E5%87%8F%E5%B0%8F%E5%92%8C%E9%87%8D%E6%96%B0%E6%8E%92%E5%88%97%E6%95%B0%E7%BB%84%E5%90%8E%E7%9A%84%E6%9C%80%E5%A4%A7%E5%85%83%E7%B4%A0/" class="article-date">
-  <time class="dt-published" datetime="2023-12-20T02:19:02.545Z" itemprop="datePublished">2023-12-20</time>
-</a>
-    
-  <div class="article-category">
-    <a class="article-category-link" href="/categories/leetcode/">leetcode</a>
-  </div>
-
-  </div>
-  <div class="article-inner">
-    
-    
-      <header class="article-header">
-        
-  
-    <h1 itemprop="name">
-      <a class="p-name article-title" href="/2023/12/20/1846.%E5%87%8F%E5%B0%8F%E5%92%8C%E9%87%8D%E6%96%B0%E6%8E%92%E5%88%97%E6%95%B0%E7%BB%84%E5%90%8E%E7%9A%84%E6%9C%80%E5%A4%A7%E5%85%83%E7%B4%A0/">减小和重新排列后数组后的最大元素</a>
-    </h1>
-  
-
-      </header>
-    
-    <div class="e-content article-entry" itemprop="articleBody">
-      
-        <h3 id="题目描述"><a href="#题目描述" class="headerlink" title="题目描述"></a>题目描述</h3><p>给你一个正整数数组 arr 。请你对 arr 执行一些操作（也可以不进行任何操作），使得数组满足以下条件：</p>
-<p>arr 中 第一个 元素必须为 1 。<br>任意相邻两个元素的差的绝对值 小于等于 1 ，也就是说，对于任意的 1 &lt;&#x3D; i &lt; arr.length （数组下标从 0 开始），都满足 abs(arr[i] - arr[i - 1]) &lt;&#x3D; 1 。abs(x) 为 x 的绝对值。<br>你可以执行以下 2 种操作任意次：</p>
-<p>减小 arr 中任意元素的值，使其变为一个 更小的正整数 。<br>重新排列 arr 中的元素，你可以以任意顺序重新排列。<br>请你返回执行以上操作后，在满足前文所述的条件下，arr 中可能的 最大值 。</p>
-<p><strong>示例1：</strong></p>
-<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">输入：arr = [<span class="number">2</span>,<span class="number">2</span>,<span class="number">1</span>,<span class="number">2</span>,<span class="number">1</span>]</span><br><span class="line">输出：<span class="number">2</span></span><br><span class="line">解释：</span><br><span class="line">我们可以重新排列 arr 得到 [<span class="number">1</span>,<span class="number">2</span>,<span class="number">2</span>,<span class="number">2</span>,<span class="number">1</span>] ，该数组满足所有条件。</span><br><span class="line">arr 中最大元素为 <span class="number">2</span> 。</span><br></pre></td></tr></table></figure>
-
-<p><strong>示例2：</strong></p>
-<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">输入：arr = [<span class="number">100</span>,<span class="number">1</span>,<span class="number">1000</span>]</span><br><span class="line">输出：<span class="number">3</span></span><br><span class="line">解释：</span><br><span class="line">一个可行的方案如下：</span><br><span class="line"><span class="number">1.</span> 重新排列 arr 得到 [<span class="number">1</span>,<span class="number">100</span>,<span class="number">1000</span>] 。</span><br><span class="line"><span class="number">2.</span> 将第二个元素减小为 <span class="number">2</span> 。</span><br><span class="line"><span class="number">3.</span> 将第三个元素减小为 <span class="number">3</span> 。</span><br><span class="line">现在 arr = [<span class="number">1</span>,<span class="number">2</span>,<span class="number">3</span>] ，满足所有条件。</span><br><span class="line">arr 中最大元素为 <span class="number">3</span> 。</span><br></pre></td></tr></table></figure>
-
-<p><strong>示例3：</strong></p>
-<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">输入：arr = [<span class="number">1</span>,<span class="number">2</span>,<span class="number">3</span>,<span class="number">4</span>,<span class="number">5</span>]</span><br><span class="line">输出：<span class="number">5</span></span><br><span class="line">解释：数组已经满足所有条件，最大元素为 <span class="number">5</span> 。</span><br></pre></td></tr></table></figure>
-
-<p><strong>提示：</strong></p>
-<ul>
-<li><code>1 &lt;= arr.length &lt;= 105</code></li>
-<li><code>1 &lt;= arr[i] &lt;= 109</code></li>
-</ul>
-<h3 id="题目分析"><a href="#题目分析" class="headerlink" title="题目分析"></a>题目分析</h3><p>有一种及其暴力的解决办法，那就是先排序再遍历时间复杂度为排序时间复杂度$O(nlogn)$，之后对其进行优化。有这样一种思路，最大的元素结果是不会超过n的，之后所有的较大元素都会被缩小为对应位置的元素值，那么最终结果一定为$[1.m_1…..m_n]$，其中$m_n\leq n$ <em>n</em>为数组长度。那么我们可以首先对于数组进行计数，记录对应值的个数，其中大于<em>n</em>的标记为<em>n</em>，在得到这个数组之后我们可以发现我们最终要得到的是从1开始连续值大于0的数量，其中最多到<em>n</em>。那么我们可以根据计数结果进行填充。对于所有的前面为0的值我们记录其为缺失，用变量<em>miss</em>来记录，每次有缺失值则<em>miss+&#x3D;1</em>。每次当当前值大于1我们则进行填充，将当前位置的值缩小到缺失的位置，<em>miss-&#x3D;1</em>这里面可以直接减去计数的数量，但是miss始终是大于等于0的，最终返回的为<em>n-miss</em>的值，因为缺失都是从前面开始填充，最后没有被填充的数为miss那么最大值即为<em>n-miss</em></p>
-<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">class</span> <span class="title class_">Solution</span> &#123;</span><br><span class="line"><span class="keyword">public</span>:</span><br><span class="line">    <span class="function"><span class="type">int</span> <span class="title">maximumElementAfterDecrementingAndRearranging</span><span class="params">(vector&lt;<span class="type">int</span>&gt;&amp; arr)</span> </span>&#123;</span><br><span class="line">        <span class="type">int</span> n = arr.<span class="built_in">size</span>();</span><br><span class="line">        <span class="type">int</span> miss = <span class="number">0</span>;</span><br><span class="line">        <span class="function">vector&lt;<span class="type">int</span>&gt; <span class="title">counter</span><span class="params">(n+<span class="number">1</span>, <span class="number">0</span>)</span></span>;</span><br><span class="line"></span><br><span class="line">        <span class="keyword">for</span>(<span class="keyword">auto</span>&amp; num : arr)&#123;</span><br><span class="line">            counter[<span class="built_in">min</span>(num, n)]++;</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        <span class="keyword">for</span>(<span class="type">int</span> i=<span class="number">1</span>; i&lt;=n; i++)&#123;</span><br><span class="line">            <span class="keyword">if</span>(counter[i] == <span class="number">0</span>)miss++;</span><br><span class="line">            <span class="keyword">else</span> <span class="keyword">if</span>(counter[i] &gt; <span class="number">1</span>)&#123;</span><br><span class="line">                miss = <span class="built_in">max</span>(<span class="number">0</span>, miss-counter[i]+<span class="number">1</span>);</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        <span class="keyword">return</span> n-miss;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
-
-
-      
-    </div>
-    <footer class="article-footer">
-      <a data-url="http://example.com/2023/12/20/1846.%E5%87%8F%E5%B0%8F%E5%92%8C%E9%87%8D%E6%96%B0%E6%8E%92%E5%88%97%E6%95%B0%E7%BB%84%E5%90%8E%E7%9A%84%E6%9C%80%E5%A4%A7%E5%85%83%E7%B4%A0/" data-id="clqd5b12x000bkmn6bi7p59of" data-title="减小和重新排列后数组后的最大元素" class="article-share-link"><span class="fa fa-share">Share</span></a>
-      
-      
-      
-  <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/c/" rel="tag">c++</a></li></ul>
-
-    </footer>
-  </div>
-  
-</article>
-
-
-
-  
-    <article id="post-1996.游戏中的弱角色" class="h-entry article article-type-post" itemprop="blogPost" itemscope itemtype="https://schema.org/BlogPosting">
-  <div class="article-meta">
-    <a href="/2023/12/20/1996.%E6%B8%B8%E6%88%8F%E4%B8%AD%E7%9A%84%E5%BC%B1%E8%A7%92%E8%89%B2/" class="article-date">
-  <time class="dt-published" datetime="2023-12-20T02:19:02.545Z" itemprop="datePublished">2023-12-20</time>
-</a>
-    
-  <div class="article-category">
-    <a class="article-category-link" href="/categories/leetcode/">leetcode</a>
-  </div>
-
-  </div>
-  <div class="article-inner">
-    
-    
-      <header class="article-header">
-        
-  
-    <h1 itemprop="name">
-      <a class="p-name article-title" href="/2023/12/20/1996.%E6%B8%B8%E6%88%8F%E4%B8%AD%E7%9A%84%E5%BC%B1%E8%A7%92%E8%89%B2/">游戏中的弱角色</a>
-    </h1>
-  
-
-      </header>
-    
-    <div class="e-content article-entry" itemprop="articleBody">
-      
-        <h4 id="题目描述"><a href="#题目描述" class="headerlink" title="题目描述"></a>题目描述</h4><p>你正在参加一个多角色游戏，每个角色都有两个主要属性：攻击 和 防御 。给你一个二维整数数组 properties ，其中 properties[i] &#x3D; [attacki, defensei] 表示游戏中第 i 个角色的属性。</p>
-<p>如果存在一个其他角色的攻击和防御等级 都严格高于 该角色的攻击和防御等级，则认为该角色为 弱角色 。更正式地，如果认为角色 i 弱于 存在的另一个角色 j ，那么 attackj &gt; attacki 且 defensej &gt; defensei 。</p>
-<p>返回 弱角色 的数量。</p>
-<p><strong>示例 1：</strong></p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">输入：properties = [[5,5],[6,3],[3,6]]</span><br><span class="line">输出：0</span><br><span class="line">解释：不存在攻击和防御都严格高于其他角色的角色。</span><br></pre></td></tr></table></figure>
-
-<p><strong>示例 2：</strong></p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">输入：properties = [[2,2],[3,3]]</span><br><span class="line">输出：1</span><br><span class="line">解释：第一个角色是弱角色，因为第二个角色的攻击和防御严格大于该角色。</span><br></pre></td></tr></table></figure>
-
-<p><strong>示例 3：</strong></p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">输入：properties = [[1,5],[10,4],[4,3]]</span><br><span class="line">输出：1</span><br><span class="line">解释：第三个角色是弱角色，因为第二个角色的攻击和防御严格大于该角色。</span><br></pre></td></tr></table></figure>
-
-
-
-<p><strong>提示：</strong></p>
-<ul>
-<li>2 &lt;&#x3D; properties.length &lt;&#x3D; 105</li>
-<li>properties[i].length &#x3D;&#x3D; 2</li>
-<li>1 &lt;&#x3D; attacki, defensei &lt;&#x3D; 105</li>
-</ul>
-<h4 id="题目分析"><a href="#题目分析" class="headerlink" title="题目分析"></a>题目分析</h4><p>排序+单次遍历</p>
-<p>因为要比较的是两个维度，可以在一个维度已经有序的情况下，记录当前遍历的最大值进行遍历。在已经满意一个维度有序的假设下满足第二维度的假设</p>
-<p>实际写的时候可能会有相同数值的情况，考虑将相同数值的情况用第二维度逆序排列(例如第一个维度按照由大到小排序，那么第二个维度则按照由小到大排序)</p>
-<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">class</span> <span class="title class_">Solution</span> &#123;</span><br><span class="line"><span class="keyword">public</span>:</span><br><span class="line">    <span class="keyword">typedef</span> vector&lt;<span class="type">int</span>&gt; P;</span><br><span class="line">    <span class="function"><span class="type">static</span> <span class="type">bool</span> <span class="title">cmp</span><span class="params">(P&amp; p1, P&amp;p2)</span></span>&#123;</span><br><span class="line">        <span class="keyword">if</span>(p1[<span class="number">0</span>] == p2[<span class="number">0</span>])&#123;</span><br><span class="line">            <span class="keyword">return</span> p1[<span class="number">1</span>] &lt; p2[<span class="number">1</span>];</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">return</span> p1[<span class="number">0</span>] &gt; p2[<span class="number">0</span>];        </span><br><span class="line">    &#125;</span><br><span class="line">    <span class="function"><span class="type">int</span> <span class="title">numberOfWeakCharacters</span><span class="params">(vector&lt;vector&lt;<span class="type">int</span>&gt;&gt;&amp; properties)</span> </span>&#123;</span><br><span class="line">        <span class="type">int</span> n = properties.<span class="built_in">size</span>();</span><br><span class="line"></span><br><span class="line">        <span class="built_in">sort</span>(properties.<span class="built_in">begin</span>(), properties.<span class="built_in">end</span>(), cmp);</span><br><span class="line">        <span class="type">int</span> ans = <span class="number">0</span>;</span><br><span class="line">        <span class="type">int</span> maxDef=INT_MIN;</span><br><span class="line">        <span class="keyword">for</span>(<span class="keyword">auto</span>&amp;&amp; property : properties)&#123;</span><br><span class="line">            <span class="keyword">if</span>(maxDef &gt; property[<span class="number">1</span>])&#123;</span><br><span class="line">                ans++;</span><br><span class="line">            &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">                maxDef = property[<span class="number">1</span>];</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        <span class="keyword">return</span> ans;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
-
-
-      
-    </div>
-    <footer class="article-footer">
-      <a data-url="http://example.com/2023/12/20/1996.%E6%B8%B8%E6%88%8F%E4%B8%AD%E7%9A%84%E5%BC%B1%E8%A7%92%E8%89%B2/" data-id="clqd5b12y000ckmn6ht9r2wd7" data-title="游戏中的弱角色" class="article-share-link"><span class="fa fa-share">Share</span></a>
-      
-      
-      
-  <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/c/" rel="tag">c++</a></li></ul>
-
-    </footer>
-  </div>
-  
-</article>
-
-
-
-  
 
 
   <nav id="page-nav">
@@ -786,7 +759,7 @@
   <div class="widget-wrap">
     <h3 class="widget-title">Categories</h3>
     <div class="widget">
-      <ul class="category-list"><li class="category-list-item"><a class="category-list-link" href="/categories/leetcode/">leetcode</a></li></ul>
+      <ul class="category-list"><li class="category-list-item"><a class="category-list-link" href="/categories/jvm/">jvm</a></li><li class="category-list-item"><a class="category-list-link" href="/categories/leetcode/">leetcode</a></li></ul>
     </div>
   </div>
 
@@ -796,7 +769,7 @@
   <div class="widget-wrap">
     <h3 class="widget-title">Tags</h3>
     <div class="widget">
-      <ul class="tag-list" itemprop="keywords"><li class="tag-list-item"><a class="tag-list-link" href="/tags/c/" rel="tag">c++</a></li></ul>
+      <ul class="tag-list" itemprop="keywords"><li class="tag-list-item"><a class="tag-list-link" href="/tags/autotune/" rel="tag">autotune</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/c/" rel="tag">c++</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/gc/" rel="tag">gc</a></li></ul>
     </div>
   </div>
 
@@ -806,7 +779,7 @@
   <div class="widget-wrap">
     <h3 class="widget-title">Tag Cloud</h3>
     <div class="widget tagcloud">
-      <a href="/tags/c/" style="font-size: 10px;">c++</a>
+      <a href="/tags/autotune/" style="font-size: 10px;">autotune</a> <a href="/tags/c/" style="font-size: 20px;">c++</a> <a href="/tags/gc/" style="font-size: 10px;">gc</a>
     </div>
   </div>
 
@@ -828,23 +801,23 @@
       <ul>
         
           <li>
+            <a href="/2023/12/20/oom-oome/">oom oome</a>
+          </li>
+        
+          <li>
+            <a href="/2023/12/20/g1gc/">g1gc</a>
+          </li>
+        
+          <li>
+            <a href="/2023/12/20/jvm-tune-param/">jvm tune param</a>
+          </li>
+        
+          <li>
             <a href="/2023/12/20/%E5%89%91%E6%8C%87offer%2062.%E7%BA%A6%E7%91%9F%E5%A4%AB%E7%8E%AF%E9%97%AE%E9%A2%98/">约瑟夫环问题</a>
           </li>
         
           <li>
             <a href="/2023/12/20/%E5%8C%85%E5%90%ABmin%E5%87%BD%E6%95%B0%E7%9A%84%E6%A0%88/">包含min函数的栈</a>
-          </li>
-        
-          <li>
-            <a href="/2023/12/20/%E5%89%91%E6%8C%87%20Offer%2052.%20%E4%B8%A4%E4%B8%AA%E9%93%BE%E8%A1%A8%E7%9A%84%E7%AC%AC%E4%B8%80%E4%B8%AA%E5%85%AC%E5%85%B1%E8%8A%82%E7%82%B9/">两个链表的第一个公共节点</a>
-          </li>
-        
-          <li>
-            <a href="/2023/12/20/%E6%89%93%E5%AE%B6%E5%8A%AB%E8%88%8DIII/">打家劫舍 III</a>
-          </li>
-        
-          <li>
-            <a href="/2023/12/20/%E9%9D%A2%E8%AF%95%E9%A2%9817.10.%E4%B8%BB%E8%A6%81%E5%85%83%E7%B4%A0/">主要元素</a>
           </li>
         
       </ul>

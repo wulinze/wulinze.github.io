@@ -75,6 +75,161 @@
       <div class="outer">
         <section id="main">
   
+    <article id="post-oom-oome" class="h-entry article article-type-post" itemprop="blogPost" itemscope itemtype="https://schema.org/BlogPosting">
+  <div class="article-meta">
+    <a href="/2023/12/20/oom-oome/" class="article-date">
+  <time class="dt-published" datetime="2023-12-20T03:46:02.000Z" itemprop="datePublished">2023-12-20</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="p-name article-title" href="/2023/12/20/oom-oome/">oom oome</a>
+    </h1>
+  
+
+      </header>
+    
+    <div class="e-content article-entry" itemprop="articleBody">
+      
+        
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://example.com/2023/12/20/oom-oome/" data-id="clqd8y71k0004jgn6ges791ak" data-title="oom oome" class="article-share-link"><span class="fa fa-share">Share</span></a>
+      
+      
+      
+    </footer>
+  </div>
+  
+</article>
+
+
+
+  
+    <article id="post-g1gc" class="h-entry article article-type-post" itemprop="blogPost" itemscope itemtype="https://schema.org/BlogPosting">
+  <div class="article-meta">
+    <a href="/2023/12/20/g1gc/" class="article-date">
+  <time class="dt-published" datetime="2023-12-20T03:19:27.000Z" itemprop="datePublished">2023-12-20</time>
+</a>
+    
+  <div class="article-category">
+    <a class="article-category-link" href="/categories/jvm/">jvm</a>
+  </div>
+
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="p-name article-title" href="/2023/12/20/g1gc/">g1gc</a>
+    </h1>
+  
+
+      </header>
+    
+    <div class="e-content article-entry" itemprop="articleBody">
+      
+        <h2 id="G1-GC算法"><a href="#G1-GC算法" class="headerlink" title="G1 GC算法"></a>G1 GC算法</h2><h3 id="内存模型"><a href="#内存模型" class="headerlink" title="内存模型"></a>内存模型</h3><h4 id="青年代"><a href="#青年代" class="headerlink" title="青年代"></a>青年代</h4><ul>
+<li>Eden<br>初始分配在Eden区，在出发young GC的时候会将存活对象晋升到Survivor中的一个分区</li>
+<li>Survivor<br>等分为两个部分，简称1和2，Survivor1区存放Young GC中Eden区存活的数据，Survivor2存放YoungGC中Survivor1中存活的数据，通过设置JVM参数-XX:MaxTenuringThreshold可以调整比例。-XX:MaxTenuringThreshold代表晋升年龄最大阈值，默认15。在新生代中对象存活次数(经过YGC的次数)后仍然存活，就会晋升到老年代。每经过一次YGC，年龄加1，当survivor区的对象年龄达到TenuringThreshold时，表示该对象是长存活对象，就会直接晋升到老年代。</li>
+</ul>
+<p>整个年轻代内存会在初始空间 -XX:G1NewSizePercent（默认整堆5%）与最大空间 -XX:G1MaxNewSizePercent（默认60%）之间动态变化，且由参数目标暂停时间 -XX:MaxGCPauseMillis（默认200ms）、需要扩缩容的大小以及分区的已记忆集合（RSet）计算得到。当然，G1 依然可以设置固定的年轻代大小（参数 -XX:NewRatio、-Xmn），但同时暂停目标将失去意义。</p>
+<ul>
+<li>Eden和Survivor占比<br>默认情况下Eden:Survivor1:Survivor2 为 8:1:1的比例<br>-XX:TargetSurvivorRatio<br>  设定survivor区的目标使用率。默认50，即survivor区对象目标使用率为50%。</li>
+</ul>
+<p>  JVM会将每个对象的年龄信息、各个年龄段对象的总大小记录在“age table”表中。基于“age table”、survivor区大小、survivor区目标使用率（-XX:TargetSurvivorRatio）、晋升年龄阈值（-XX:MaxTenuringThreshold），JVM会动态的计算tenuring threshold的值。一旦对象年龄达到了tenuring threshold就会晋升到老年代。</p>
+<p>  为什么要动态的计算tenuring threshold的值呢？假设有很多年龄还未达到TenuringThreshold的对象依旧停留在survivor区，这样不利于新对象从eden晋升到survivor。因此设置survivor区的目标使用率，当使用率达到时重新调整TenuringThreshold值，让对象尽早的去old区。</p>
+<h4 id="老年代"><a href="#老年代" class="headerlink" title="老年代"></a>老年代</h4><h4 id="整体内存和GC内存分配"><a href="#整体内存和GC内存分配" class="headerlink" title="整体内存和GC内存分配"></a>整体内存和GC内存分配</h4><ul>
+<li>分区 Region<br>G1 采用了分区（Region）的思路，将整个堆空间分成若干个大小相等的内存区域，每次分配对象空间将逐段地使用内存。因此，在堆的使用上，G1 并不要求对象的存储一定是物理上连续的，只要逻辑上连续即可；每个分区也不会确定地为某个代服务，可以按需在年轻代和老年代之间切换。启动时可以通过参数 -XX:G1HeapRegionSize&#x3D;n 可指定分区大小（1MB~32MB，且必须是2的幂），默认将整堆划分为2048个分区。</li>
+<li>卡片 Card<br>在每个分区内部又被分成了若干个大小为512 Byte 卡片（Card），标识堆内存最小可用粒度所有分区的卡片将会记录在全局卡片表（Global Card Table）中，分配的对象会占用物理上连续的若干个卡片，当查找对分区内对象的引用时便可通过记录卡片来查找该引用对象（见 RSet）。每次对内存的回收，都是对指定分区的卡片进行处理。</li>
+<li>堆 Heap<br>G1 同样可以通过 -Xms&#x2F;-Xmx 来指定堆空间大小。当发生年轻代收集或混合收集时，通过计算 GC 与应用的耗费时间比，自动调整堆空间大小。如果 GC 频率太高，则通过增加堆尺寸，来减少 GC 频率，相应地 GC 占用的时间也随之降低；目标参数 -XX:GCTimeRatio 即为 GC 与应用的耗费时间比，G1 默认为 9，而 CMS 默认为 99，因为 CMS 的设计原则是耗费在 GC 上的时间尽可能的少。另外，当空间不足，如对象空间分配或转移失败时，G1 会首先尝试增加堆空间，如果扩容失败，则发起担保的 Full GC。Full GC 后，堆尺寸计算结果也会调整堆空间。</li>
+</ul>
+<h3 id="垃圾回收类别"><a href="#垃圾回收类别" class="headerlink" title="垃圾回收类别"></a>垃圾回收类别</h3><ul>
+<li>Young GC</li>
+<li>MixedGC</li>
+<li>FullGC</li>
+</ul>
+<h3 id="垃圾回收阶段"><a href="#垃圾回收阶段" class="headerlink" title="垃圾回收阶段"></a>垃圾回收阶段</h3><ul>
+<li>初始标记</li>
+<li>根扫描</li>
+<li>并发标记</li>
+<li>存活数据计算</li>
+<li>重新标记</li>
+<li>清除</li>
+</ul>
+<p>参考：<a target="_blank" rel="noopener" href="http://www.linkedkeeper.com/1511.html">http://www.linkedkeeper.com/1511.html</a></p>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://example.com/2023/12/20/g1gc/" data-id="clqd8y7110000jgn6cv8a9o3s" data-title="g1gc" class="article-share-link"><span class="fa fa-share">Share</span></a>
+      
+      
+      
+  <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/gc/" rel="tag">gc</a></li></ul>
+
+    </footer>
+  </div>
+  
+</article>
+
+
+
+  
+    <article id="post-jvm-tune-param" class="h-entry article article-type-post" itemprop="blogPost" itemscope itemtype="https://schema.org/BlogPosting">
+  <div class="article-meta">
+    <a href="/2023/12/20/jvm-tune-param/" class="article-date">
+  <time class="dt-published" datetime="2023-12-20T03:17:50.000Z" itemprop="datePublished">2023-12-20</time>
+</a>
+    
+  <div class="article-category">
+    <a class="article-category-link" href="/categories/jvm/">jvm</a>
+  </div>
+
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="p-name article-title" href="/2023/12/20/jvm-tune-param/">jvm tune param</a>
+    </h1>
+  
+
+      </header>
+    
+    <div class="e-content article-entry" itemprop="articleBody">
+      
+        <h2 id="调优参数"><a href="#调优参数" class="headerlink" title="调优参数"></a>调优参数</h2><h3 id="gc-参数"><a href="#gc-参数" class="headerlink" title="gc 参数"></a>gc 参数</h3>
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://example.com/2023/12/20/jvm-tune-param/" data-id="clqd8y7150001jgn6ceb2e6mm" data-title="jvm tune param" class="article-share-link"><span class="fa fa-share">Share</span></a>
+      
+      
+      
+  <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/autotune/" rel="tag">autotune</a></li></ul>
+
+    </footer>
+  </div>
+  
+</article>
+
+
+
+  
     <article id="post-剑指offer 62.约瑟夫环问题" class="h-entry article article-type-post" itemprop="blogPost" itemscope itemtype="https://schema.org/BlogPosting">
   <div class="article-meta">
     <a href="/2023/12/20/%E5%89%91%E6%8C%87offer%2062.%E7%BA%A6%E7%91%9F%E5%A4%AB%E7%8E%AF%E9%97%AE%E9%A2%98/" class="article-date">
@@ -483,216 +638,6 @@
 
 
   
-    <article id="post-879. 盈利计划" class="h-entry article article-type-post" itemprop="blogPost" itemscope itemtype="https://schema.org/BlogPosting">
-  <div class="article-meta">
-    <a href="/2023/12/20/879.%20%E7%9B%88%E5%88%A9%E8%AE%A1%E5%88%92/" class="article-date">
-  <time class="dt-published" datetime="2023-12-20T02:19:02.547Z" itemprop="datePublished">2023-12-20</time>
-</a>
-    
-  <div class="article-category">
-    <a class="article-category-link" href="/categories/leetcode/">leetcode</a>
-  </div>
-
-  </div>
-  <div class="article-inner">
-    
-    
-      <header class="article-header">
-        
-  
-    <h1 itemprop="name">
-      <a class="p-name article-title" href="/2023/12/20/879.%20%E7%9B%88%E5%88%A9%E8%AE%A1%E5%88%92/">盈利计划</a>
-    </h1>
-  
-
-      </header>
-    
-    <div class="e-content article-entry" itemprop="articleBody">
-      
-        <h4 id="题目描述"><a href="#题目描述" class="headerlink" title="题目描述"></a>题目描述</h4><p>集团里有 n 名员工，他们可以完成各种各样的工作创造利润。</p>
-<p>第 i 种工作会产生 profit[i] 的利润，它要求 group[i] 名成员共同参与。如果成员参与了其中一项工作，就不能参与另一项工作。</p>
-<p>工作的任何至少产生 minProfit 利润的子集称为 盈利计划 。并且工作的成员总数最多为 n 。</p>
-<p>有多少种计划可以选择？因为答案很大，所以 返回结果模 10^9 + 7 的值。</p>
-<p><strong>示例 1：</strong></p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">输入：n = 5, minProfit = 3, group = [2,2], profit = [2,3]</span><br><span class="line">输出：2</span><br><span class="line">解释：至少产生 3 的利润，该集团可以完成工作 0 和工作 1 ，或仅完成工作 1 。</span><br><span class="line">总的来说，有两种计划。</span><br></pre></td></tr></table></figure>
-
-<p><strong>示例 2：</strong></p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">输入：n = 10, minProfit = 5, group = [2,3,5], profit = [6,7,8]</span><br><span class="line">输出：7</span><br><span class="line">解释：至少产生 5 的利润，只要完成其中一种工作就行，所以该集团可以完成任何工作。</span><br><span class="line">有 7 种可能的计划：(0)，(1)，(2)，(0,1)，(0,2)，(1,2)，以及 (0,1,2) 。</span><br></pre></td></tr></table></figure>
-
-<ul>
-<li>1 &lt;&#x3D; n &lt;&#x3D; 100</li>
-<li>0 &lt;&#x3D; minProfit &lt;&#x3D; 100</li>
-<li>1 &lt;&#x3D; group.length &lt;&#x3D; 100</li>
-<li>1 &lt;&#x3D; group[i] &lt;&#x3D; 100</li>
-<li>profit.length &#x3D;&#x3D; group.length</li>
-<li>0 &lt;&#x3D; profit[i] &lt;&#x3D; 100</li>
-</ul>
-<h4 id="题目分析"><a href="#题目分析" class="headerlink" title="题目分析"></a>题目分析</h4><p>首先分析题目，题目可以很明显的看出来是动态相关而且和背包问题很像，当时想的就是怎么结合背包问题想了好久还没明白，还是太菜了得把背包问题吃透。</p>
-<p>首先考虑限制条件：<strong>员工数量n</strong>，<strong>最小利润minprofit</strong>，<strong>任务总数m</strong></p>
-<p>需要满足的是在不超过员工数量的同时满足最小利润，m为任务总数需要根据条件进行选择，类似于背包问题中的物品。<strong>group代表占据背包空间</strong>，<strong>员工数量n代表背包最大空间</strong>，<strong>profit代表物品价值</strong>。和背包问题不同的是背包问题是尽可能装满，但是本问题是只要装到minprofit即可。因此即为背包容量至少为minprofit的情况下有多少种装法。</p>
-<p>可以列出状态转移方程：<br>$$<br>dp[i][j][k] &#x3D;\left{<br>\begin{aligned}<br>dp[i][j][k] \quad 当员工无法从事任务i时\<br>dp[i][j][k]+dp[i][j-group[i]][max(0, k-profit[i])] \quad 当员工可以从事任务i时<br>\end{aligned}<br>\right.<br>$$<br>可以通过回滚逆向遍历对于空间进行压缩</p>
-<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">class</span> <span class="title class_">Solution</span> &#123;</span><br><span class="line"><span class="keyword">public</span>:</span><br><span class="line">    <span class="function"><span class="type">int</span> <span class="title">profitableSchemes</span><span class="params">(<span class="type">int</span> n, <span class="type">int</span> minProfit, vector&lt;<span class="type">int</span>&gt;&amp; group, vector&lt;<span class="type">int</span>&gt;&amp; profit)</span> </span>&#123;</span><br><span class="line">        <span class="type">long</span> mod = <span class="number">1e9</span> + <span class="number">7</span>;</span><br><span class="line">        <span class="type">long</span> res = <span class="number">0</span>;</span><br><span class="line"></span><br><span class="line">        <span class="type">int</span> m = group.<span class="built_in">size</span>();</span><br><span class="line"></span><br><span class="line">        <span class="type">int</span> dp[n+<span class="number">1</span>][minProfit+<span class="number">1</span>];</span><br><span class="line">        <span class="built_in">memset</span>(dp, <span class="number">0</span>, <span class="built_in">sizeof</span>(dp));</span><br><span class="line">        dp[<span class="number">0</span>][<span class="number">0</span>] = <span class="number">1</span>;</span><br><span class="line"></span><br><span class="line">        <span class="keyword">for</span>(<span class="type">int</span> i=<span class="number">0</span>; i&lt;m; i++)&#123;</span><br><span class="line">            <span class="keyword">for</span>(<span class="type">int</span> j=n; j&gt;=group[i]; j--)&#123;</span><br><span class="line">                <span class="keyword">for</span>(<span class="type">int</span> k=minProfit; k&gt;=<span class="number">0</span>; k--)&#123;</span><br><span class="line">                    dp[j][k] += dp[j-group[i]][<span class="built_in">max</span>(<span class="number">0</span>, k-profit[i])];</span><br><span class="line">                    dp[j][k] %= mod;</span><br><span class="line">                &#125;</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        <span class="keyword">for</span>(<span class="type">int</span> i=<span class="number">0</span>; i&lt;=n; i++)&#123;</span><br><span class="line">            res += dp[i][minProfit];</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        <span class="keyword">return</span> res % mod;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
-
-
-      
-    </div>
-    <footer class="article-footer">
-      <a data-url="http://example.com/2023/12/20/879.%20%E7%9B%88%E5%88%A9%E8%AE%A1%E5%88%92/" data-id="clqd5b13h0016kmn6hz7lafgi" data-title="盈利计划" class="article-share-link"><span class="fa fa-share">Share</span></a>
-      
-      
-      
-  <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/c/" rel="tag">c++</a></li></ul>
-
-    </footer>
-  </div>
-  
-</article>
-
-
-
-  
-    <article id="post-887.鸡蛋掉落" class="h-entry article article-type-post" itemprop="blogPost" itemscope itemtype="https://schema.org/BlogPosting">
-  <div class="article-meta">
-    <a href="/2023/12/20/887.%E9%B8%A1%E8%9B%8B%E6%8E%89%E8%90%BD/" class="article-date">
-  <time class="dt-published" datetime="2023-12-20T02:19:02.547Z" itemprop="datePublished">2023-12-20</time>
-</a>
-    
-  <div class="article-category">
-    <a class="article-category-link" href="/categories/leetcode/">leetcode</a>
-  </div>
-
-  </div>
-  <div class="article-inner">
-    
-    
-      <header class="article-header">
-        
-  
-    <h1 itemprop="name">
-      <a class="p-name article-title" href="/2023/12/20/887.%E9%B8%A1%E8%9B%8B%E6%8E%89%E8%90%BD/">鸡蛋掉落</a>
-    </h1>
-  
-
-      </header>
-    
-    <div class="e-content article-entry" itemprop="articleBody">
-      
-        <h3 id="题目描述"><a href="#题目描述" class="headerlink" title="题目描述"></a>题目描述</h3><p>这道题说实话有点不合理，不过可能这就是数学吧，有的时候比较抽象，这道题还是比较难的，说实话感觉看完题解也够呛能够完全记住。简单的理一下思路。这道题有一个很大的bug就是鸡蛋掉落是否碎有点像薛定谔的鸡蛋只要是没有下落就有多种可能，因此在求解的时候让我觉得只和它占得层数有关，因此可以考虑DP，使用DP进行计算。分析DP方程。</p>
-<p>$dp[K][N]$表示K个鸡蛋在N层楼所需要的最小移动次数，那么在x层进行一次下落有两种情况。</p>
-<ul>
-<li><p>$鸡蛋碎了那么还剩下K-1个鸡蛋，x楼层以上一定会碎因此可以得到方程dp[K][N] &#x3D; dp[K-1][x-1]+1$</p>
-</li>
-<li><p>$如果鸡蛋没有碎，那么还有K个鸡蛋而且x层以下不需要继续测试得到方程dp[K][N] &#x3D; dp[K][N-x]+1$</p>
-</li>
-</ul>
-<p>可以最终得到方程:</p>
-<p>$dp[K][N] &#x3D; 1+$ $min_{1 \leq x\leq N}(dp[K-1][x-1],dp[K][N-x])$</p>
-<p>这样来看时间复杂度是$O(K<em>N</em>N)$会TLE</p>
-<p>因此对其进行优化，根据单调性可以考虑使用二分查找</p>
-<ul>
-<li>方法一：动态规划+二分查找($O(K<em>N</em>logN)$,$O(K*N)$)</li>
-</ul>
-<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">class</span> <span class="title class_">Solution</span> &#123;</span><br><span class="line">    unordered_map&lt;<span class="type">int</span>, <span class="type">int</span>&gt; memo;</span><br><span class="line">    <span class="function"><span class="type">int</span> <span class="title">dp</span><span class="params">(<span class="type">int</span> K, <span class="type">int</span> N)</span> </span>&#123;</span><br><span class="line">        <span class="keyword">if</span> (memo.<span class="built_in">find</span>(N * <span class="number">100</span> + K) == memo.<span class="built_in">end</span>()) &#123;</span><br><span class="line">            <span class="type">int</span> ans;</span><br><span class="line">            <span class="keyword">if</span> (N == <span class="number">0</span>) ans = <span class="number">0</span>;</span><br><span class="line">            <span class="keyword">else</span> <span class="keyword">if</span> (K == <span class="number">1</span>) ans = N;</span><br><span class="line">            <span class="keyword">else</span> &#123;</span><br><span class="line">                <span class="type">int</span> lo = <span class="number">1</span>, hi = N;</span><br><span class="line">                <span class="keyword">while</span> (lo + <span class="number">1</span> &lt; hi) &#123;</span><br><span class="line">                    <span class="type">int</span> x = (lo + hi) / <span class="number">2</span>;</span><br><span class="line">                    <span class="type">int</span> t1 = <span class="built_in">dp</span>(K<span class="number">-1</span>, x<span class="number">-1</span>);</span><br><span class="line">                    <span class="type">int</span> t2 = <span class="built_in">dp</span>(K, N-x);</span><br><span class="line"></span><br><span class="line">                    <span class="keyword">if</span> (t1 &lt; t2) lo = x;</span><br><span class="line">                    <span class="keyword">else</span> <span class="keyword">if</span> (t1 &gt; t2) hi = x;</span><br><span class="line">                    <span class="keyword">else</span> lo = hi = x;</span><br><span class="line">                &#125;</span><br><span class="line"></span><br><span class="line">                ans = <span class="number">1</span> + <span class="built_in">min</span>(<span class="built_in">max</span>(<span class="built_in">dp</span>(K<span class="number">-1</span>, lo<span class="number">-1</span>), <span class="built_in">dp</span>(K, N-lo)),</span><br><span class="line">                                   <span class="built_in">max</span>(<span class="built_in">dp</span>(K<span class="number">-1</span>, hi<span class="number">-1</span>), <span class="built_in">dp</span>(K, N-hi)));</span><br><span class="line">            &#125;</span><br><span class="line"></span><br><span class="line">            memo[N * <span class="number">100</span> + K] = ans;</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        <span class="keyword">return</span> memo[N * <span class="number">100</span> + K];</span><br><span class="line">    &#125;</span><br><span class="line"><span class="keyword">public</span>:</span><br><span class="line">    <span class="function"><span class="type">int</span> <span class="title">superEggDrop</span><span class="params">(<span class="type">int</span> K, <span class="type">int</span> N)</span> </span>&#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="built_in">dp</span>(K, N);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
-
-<ul>
-<li>方法二：决策单调性(在竞赛中常用)在方法一的基础上进行优化，可以根据单调性优化到</li>
-</ul>
-<p>$O(K*N)$ (现在还没有弄的很明白)</p>
-<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">class</span> <span class="title class_">Solution</span> &#123;</span><br><span class="line"><span class="keyword">public</span>:</span><br><span class="line">    <span class="function"><span class="type">int</span> <span class="title">superEggDrop</span><span class="params">(<span class="type">int</span> K, <span class="type">int</span> N)</span> </span>&#123;</span><br><span class="line">        <span class="type">int</span> dp[N + <span class="number">1</span>];</span><br><span class="line">        <span class="keyword">for</span> (<span class="type">int</span> i = <span class="number">0</span>; i &lt;= N; ++i) dp[i] = i;</span><br><span class="line"></span><br><span class="line">        <span class="keyword">for</span> (<span class="type">int</span> k = <span class="number">2</span>; k &lt;= K; ++k) &#123;</span><br><span class="line">            <span class="type">int</span> dp2[N + <span class="number">1</span>];</span><br><span class="line">            <span class="type">int</span> x = <span class="number">1</span>; </span><br><span class="line">            dp2[<span class="number">0</span>] = <span class="number">0</span>;</span><br><span class="line">            <span class="keyword">for</span> (<span class="type">int</span> n = <span class="number">1</span>; n &lt;= N; ++n) &#123;</span><br><span class="line">                <span class="keyword">while</span> (x &lt; n &amp;&amp; <span class="built_in">max</span>(dp[x<span class="number">-1</span>], dp2[n-x]) &gt;= <span class="built_in">max</span>(dp[x], dp2[n-x<span class="number">-1</span>])) x++;</span><br><span class="line">                dp2[n] = <span class="number">1</span> + <span class="built_in">max</span>(dp[x<span class="number">-1</span>], dp2[n-x]);</span><br><span class="line">            &#125;</span><br><span class="line">            <span class="keyword">for</span> (<span class="type">int</span> n = <span class="number">1</span>; n &lt;= N; ++n) dp[n] = dp2[n];</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">return</span> dp[N];</span><br><span class="line">    &#125;</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
-
-<ul>
-<li>方法三：数学法</li>
-</ul>
-<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">class</span> <span class="title class_">Solution</span> &#123;</span><br><span class="line"><span class="keyword">public</span>:</span><br><span class="line">    <span class="function"><span class="type">int</span> <span class="title">superEggDrop</span><span class="params">(<span class="type">int</span> K, <span class="type">int</span> N)</span> </span>&#123;</span><br><span class="line">        <span class="function">vector&lt;<span class="type">int</span>&gt; <span class="title">dp</span><span class="params">(K + <span class="number">1</span>)</span></span>;</span><br><span class="line">		<span class="type">int</span> m = <span class="number">0</span>;</span><br><span class="line">		<span class="keyword">while</span> (dp[K] &lt; N) &#123;</span><br><span class="line">			++m;</span><br><span class="line">			<span class="keyword">for</span> (<span class="type">int</span> k = K; k &gt; <span class="number">0</span>; k--) &#123;</span><br><span class="line">				dp[k] = dp[k] + dp[k - <span class="number">1</span>] + <span class="number">1</span>;</span><br><span class="line">			&#125;</span><br><span class="line">		&#125;</span><br><span class="line">		<span class="keyword">return</span> m;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
-
-
-      
-    </div>
-    <footer class="article-footer">
-      <a data-url="http://example.com/2023/12/20/887.%E9%B8%A1%E8%9B%8B%E6%8E%89%E8%90%BD/" data-id="clqd5b13h0017kmn60kdo9n8e" data-title="鸡蛋掉落" class="article-share-link"><span class="fa fa-share">Share</span></a>
-      
-      
-      
-  <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/c/" rel="tag">c++</a></li></ul>
-
-    </footer>
-  </div>
-  
-</article>
-
-
-
-  
-    <article id="post-930.和相同的二元子数组" class="h-entry article article-type-post" itemprop="blogPost" itemscope itemtype="https://schema.org/BlogPosting">
-  <div class="article-meta">
-    <a href="/2023/12/20/930.%E5%92%8C%E7%9B%B8%E5%90%8C%E7%9A%84%E4%BA%8C%E5%85%83%E5%AD%90%E6%95%B0%E7%BB%84/" class="article-date">
-  <time class="dt-published" datetime="2023-12-20T02:19:02.547Z" itemprop="datePublished">2023-12-20</time>
-</a>
-    
-  <div class="article-category">
-    <a class="article-category-link" href="/categories/leetcode/">leetcode</a>
-  </div>
-
-  </div>
-  <div class="article-inner">
-    
-    
-      <header class="article-header">
-        
-  
-    <h1 itemprop="name">
-      <a class="p-name article-title" href="/2023/12/20/930.%E5%92%8C%E7%9B%B8%E5%90%8C%E7%9A%84%E4%BA%8C%E5%85%83%E5%AD%90%E6%95%B0%E7%BB%84/">和相同的二元子数组</a>
-    </h1>
-  
-
-      </header>
-    
-    <div class="e-content article-entry" itemprop="articleBody">
-      
-        <h3 id="题目描述"><a href="#题目描述" class="headerlink" title="题目描述"></a>题目描述</h3><p>给你一个二元数组 <code>nums</code> ，和一个整数 <code>goal</code> ，请你统计并返回有多少个和为 <code>goal</code> 的 <strong>非空</strong> 子数组。</p>
-<p><strong>子数组</strong> 是数组的一段连续部分。</p>
-<p><strong>示例1：</strong></p>
-<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">输入：nums = [<span class="number">1</span>,<span class="number">0</span>,<span class="number">1</span>,<span class="number">0</span>,<span class="number">1</span>], goal = <span class="number">2</span></span><br><span class="line">输出：<span class="number">4</span></span><br><span class="line">解释：</span><br><span class="line">如下面黑体所示，有 <span class="number">4</span> 个满足题目要求的子数组：</span><br><span class="line">[<span class="number">1</span>,<span class="number">0</span>,<span class="number">1</span>,<span class="number">0</span>,<span class="number">1</span>]</span><br><span class="line">[<span class="number">1</span>,<span class="number">0</span>,<span class="number">1</span>,<span class="number">0</span>,<span class="number">1</span>]</span><br><span class="line">[<span class="number">1</span>,<span class="number">0</span>,<span class="number">1</span>,<span class="number">0</span>,<span class="number">1</span>]</span><br><span class="line">[<span class="number">1</span>,<span class="number">0</span>,<span class="number">1</span>,<span class="number">0</span>,<span class="number">1</span>]</span><br></pre></td></tr></table></figure>
-
-<p><strong>示例2：</strong></p>
-<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">输入：nums = [<span class="number">0</span>,<span class="number">0</span>,<span class="number">0</span>,<span class="number">0</span>,<span class="number">0</span>], goal = <span class="number">0</span></span><br><span class="line">输出：<span class="number">15</span></span><br></pre></td></tr></table></figure>
-
-<p><strong>提示：</strong></p>
-<ul>
-<li><code>1 &lt;= nums.length &lt;= 3 * 104</code></li>
-<li><code>nums[i]</code> 不是 <code>0</code> 就是 <code>1</code></li>
-<li><code>0 &lt;= goal &lt;= nums.length</code></li>
-</ul>
-<h3 id="题目分析"><a href="#题目分析" class="headerlink" title="题目分析"></a>题目分析</h3><ul>
-<li>使用哈希表储存之前的结果，使用部分和进行计算</li>
-</ul>
-<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">class</span> <span class="title class_">Solution</span> &#123;</span><br><span class="line"><span class="keyword">public</span>:</span><br><span class="line">    <span class="function"><span class="type">int</span> <span class="title">numSubarraysWithSum</span><span class="params">(vector&lt;<span class="type">int</span>&gt;&amp; nums, <span class="type">int</span> goal)</span> </span>&#123;</span><br><span class="line">        <span class="type">int</span> n = nums.<span class="built_in">size</span>();</span><br><span class="line">        <span class="type">int</span> res = <span class="number">0</span>;</span><br><span class="line">        unordered_map&lt;<span class="type">int</span>, <span class="type">int</span>&gt; m;</span><br><span class="line">        <span class="type">int</span> sum = <span class="number">0</span>;</span><br><span class="line"></span><br><span class="line">        <span class="keyword">for</span>(<span class="keyword">auto</span>&amp; num : nums)&#123;</span><br><span class="line">            m[sum]++;</span><br><span class="line">            sum += num;</span><br><span class="line">            res += m[sum-goal];</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        <span class="keyword">return</span> res;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
-
-<ul>
-<li>使用滑动窗口对于部分和进行计算，设置两个对应的左边界对于数据进行计算</li>
-</ul>
-<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">class</span> <span class="title class_">Solution</span> &#123;</span><br><span class="line"><span class="keyword">public</span>:</span><br><span class="line">    <span class="function"><span class="type">int</span> <span class="title">numSubarraysWithSum</span><span class="params">(vector&lt;<span class="type">int</span>&gt;&amp; nums, <span class="type">int</span> goal)</span> </span>&#123;</span><br><span class="line">        <span class="type">int</span> n = nums.<span class="built_in">size</span>();</span><br><span class="line">        <span class="type">int</span> res = <span class="number">0</span>;</span><br><span class="line">        <span class="type">int</span> left1=<span class="number">0</span>, left2=<span class="number">0</span>, right=<span class="number">0</span>;</span><br><span class="line">        <span class="type">int</span> sum = <span class="number">0</span>;</span><br><span class="line"></span><br><span class="line">        <span class="keyword">while</span>(right &lt; n)&#123;</span><br><span class="line">            sum += nums[right++];</span><br><span class="line">            <span class="keyword">while</span>(sum &gt; goal)&#123;</span><br><span class="line">                sum -= nums[left2++];</span><br><span class="line">                left1 = left2;</span><br><span class="line">            &#125;</span><br><span class="line">            <span class="keyword">while</span>(sum == goal &amp;&amp; nums[left2] == <span class="number">0</span> &amp;&amp; left2 &lt; right<span class="number">-1</span>)&#123;</span><br><span class="line">                left2++;</span><br><span class="line">            &#125;</span><br><span class="line">            <span class="keyword">if</span>(sum == goal &amp;&amp; left2 &lt; right)&#123;</span><br><span class="line">                res += left2 - left1 + <span class="number">1</span>;</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        <span class="keyword">return</span> res;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
-
-
-
-
-      
-    </div>
-    <footer class="article-footer">
-      <a data-url="http://example.com/2023/12/20/930.%E5%92%8C%E7%9B%B8%E5%90%8C%E7%9A%84%E4%BA%8C%E5%85%83%E5%AD%90%E6%95%B0%E7%BB%84/" data-id="clqd5b13i0018kmn60xhkg78c" data-title="和相同的二元子数组" class="article-share-link"><span class="fa fa-share">Share</span></a>
-      
-      
-      
-  <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/c/" rel="tag">c++</a></li></ul>
-
-    </footer>
-  </div>
-  
-</article>
-
-
-
-  
 
 
   <nav id="page-nav">
@@ -708,7 +653,7 @@
   <div class="widget-wrap">
     <h3 class="widget-title">Categories</h3>
     <div class="widget">
-      <ul class="category-list"><li class="category-list-item"><a class="category-list-link" href="/categories/leetcode/">leetcode</a></li></ul>
+      <ul class="category-list"><li class="category-list-item"><a class="category-list-link" href="/categories/jvm/">jvm</a></li><li class="category-list-item"><a class="category-list-link" href="/categories/leetcode/">leetcode</a></li></ul>
     </div>
   </div>
 
@@ -718,7 +663,7 @@
   <div class="widget-wrap">
     <h3 class="widget-title">Tags</h3>
     <div class="widget">
-      <ul class="tag-list" itemprop="keywords"><li class="tag-list-item"><a class="tag-list-link" href="/tags/c/" rel="tag">c++</a></li></ul>
+      <ul class="tag-list" itemprop="keywords"><li class="tag-list-item"><a class="tag-list-link" href="/tags/autotune/" rel="tag">autotune</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/c/" rel="tag">c++</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/gc/" rel="tag">gc</a></li></ul>
     </div>
   </div>
 
@@ -728,7 +673,7 @@
   <div class="widget-wrap">
     <h3 class="widget-title">Tag Cloud</h3>
     <div class="widget tagcloud">
-      <a href="/tags/c/" style="font-size: 10px;">c++</a>
+      <a href="/tags/autotune/" style="font-size: 10px;">autotune</a> <a href="/tags/c/" style="font-size: 20px;">c++</a> <a href="/tags/gc/" style="font-size: 10px;">gc</a>
     </div>
   </div>
 
@@ -750,23 +695,23 @@
       <ul>
         
           <li>
+            <a href="/2023/12/20/oom-oome/">oom oome</a>
+          </li>
+        
+          <li>
+            <a href="/2023/12/20/g1gc/">g1gc</a>
+          </li>
+        
+          <li>
+            <a href="/2023/12/20/jvm-tune-param/">jvm tune param</a>
+          </li>
+        
+          <li>
             <a href="/2023/12/20/%E5%89%91%E6%8C%87offer%2062.%E7%BA%A6%E7%91%9F%E5%A4%AB%E7%8E%AF%E9%97%AE%E9%A2%98/">约瑟夫环问题</a>
           </li>
         
           <li>
             <a href="/2023/12/20/%E5%8C%85%E5%90%ABmin%E5%87%BD%E6%95%B0%E7%9A%84%E6%A0%88/">包含min函数的栈</a>
-          </li>
-        
-          <li>
-            <a href="/2023/12/20/%E5%89%91%E6%8C%87%20Offer%2052.%20%E4%B8%A4%E4%B8%AA%E9%93%BE%E8%A1%A8%E7%9A%84%E7%AC%AC%E4%B8%80%E4%B8%AA%E5%85%AC%E5%85%B1%E8%8A%82%E7%82%B9/">两个链表的第一个公共节点</a>
-          </li>
-        
-          <li>
-            <a href="/2023/12/20/%E6%89%93%E5%AE%B6%E5%8A%AB%E8%88%8DIII/">打家劫舍 III</a>
-          </li>
-        
-          <li>
-            <a href="/2023/12/20/%E9%9D%A2%E8%AF%95%E9%A2%9817.10.%E4%B8%BB%E8%A6%81%E5%85%83%E7%B4%A0/">主要元素</a>
           </li>
         
       </ul>

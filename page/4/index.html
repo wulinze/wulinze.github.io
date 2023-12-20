@@ -75,6 +75,216 @@
       <div class="outer">
         <section id="main">
   
+    <article id="post-699.掉落的方块" class="h-entry article article-type-post" itemprop="blogPost" itemscope itemtype="https://schema.org/BlogPosting">
+  <div class="article-meta">
+    <a href="/2023/12/20/699.%E6%8E%89%E8%90%BD%E7%9A%84%E6%96%B9%E5%9D%97/" class="article-date">
+  <time class="dt-published" datetime="2023-12-20T02:19:02.546Z" itemprop="datePublished">2023-12-20</time>
+</a>
+    
+  <div class="article-category">
+    <a class="article-category-link" href="/categories/leetcode/">leetcode</a>
+  </div>
+
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="p-name article-title" href="/2023/12/20/699.%E6%8E%89%E8%90%BD%E7%9A%84%E6%96%B9%E5%9D%97/">掉落的方块</a>
+    </h1>
+  
+
+      </header>
+    
+    <div class="e-content article-entry" itemprop="articleBody">
+      
+        <h4 id="题目要求"><a href="#题目要求" class="headerlink" title="题目要求"></a>题目要求</h4><p>在无限长的数轴（即 x 轴）上，我们根据给定的顺序放置对应的正方形方块。</p>
+<p>第 i 个掉落的方块（positions[i] &#x3D; (left, side_length)）是正方形，其中 left 表示该方块最左边的点位置(positions[i][0])，side_length 表示该方块的边长(positions[i][1])。</p>
+<p>每个方块的底部边缘平行于数轴（即 x 轴），并且从一个比目前所有的落地方块更高的高度掉落而下。在上一个方块结束掉落，并保持静止后，才开始掉落新方块。</p>
+<p>方块的底边具有非常大的粘性，并将保持固定在它们所接触的任何长度表面上（无论是数轴还是其他方块）。邻接掉落的边不会过早地粘合在一起，因为只有底边才具有粘性。</p>
+<p>返回一个堆叠高度列表 ans 。每一个堆叠高度 ans[i] 表示在通过 positions[0], positions[1], …, positions[i] 表示的方块掉落结束后，目前所有已经落稳的方块堆叠的最高高度。</p>
+<p><strong>示例 1:</strong></p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br></pre></td><td class="code"><pre><span class="line">输入: [[1, 2], [2, 3], [6, 1]]</span><br><span class="line">输出: [2, 5, 5]</span><br><span class="line">解释:</span><br><span class="line"></span><br><span class="line">第一个方块 positions[0] = [1, 2] 掉落：</span><br><span class="line">_aa</span><br><span class="line"></span><br><span class="line">_aa</span><br><span class="line">-------</span><br><span class="line"></span><br><span class="line">方块最大高度为 2 。</span><br><span class="line"></span><br><span class="line">第二个方块 positions[1] = [2, 3] 掉落：</span><br><span class="line">__aaa</span><br><span class="line"></span><br><span class="line">__aaa</span><br><span class="line">__aaa</span><br><span class="line">_aa__</span><br><span class="line"></span><br><span class="line">_aa__</span><br><span class="line">--------------</span><br><span class="line"></span><br><span class="line">方块最大高度为5。</span><br><span class="line">大的方块保持在较小的方块的顶部，不论它的重心在哪里，因为方块的底部边缘有非常大的粘性。</span><br><span class="line"></span><br><span class="line">第三个方块 positions[1] = [6, 1] 掉落：</span><br><span class="line">__aaa</span><br><span class="line"></span><br><span class="line">__aaa</span><br><span class="line">__aaa</span><br><span class="line">_aa</span><br><span class="line"></span><br><span class="line">_aa___a</span><br><span class="line">-------------- </span><br><span class="line"></span><br><span class="line">方块最大高度为5。</span><br><span class="line"></span><br><span class="line">因此，我们返回结果[2, 5, 5]。</span><br></pre></td></tr></table></figure>
+
+<p><strong>示例 2:</strong></p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">输入: [[100, 100], [200, 100]]</span><br><span class="line">输出: [100, 100]</span><br><span class="line">解释: 相邻的方块不会过早地卡住，只有它们的底部边缘才能粘在表面上。</span><br></pre></td></tr></table></figure>
+
+<p><strong>注意:</strong></p>
+<ul>
+<li>1 &lt;&#x3D; positions.length &lt;&#x3D; 1000.</li>
+<li>1 &lt;&#x3D; positions[i][0] &lt;&#x3D; 10^8.</li>
+<li>1 &lt;&#x3D; positions[i][1] &lt;&#x3D; 10^6.</li>
+</ul>
+<h4 id="题目分析"><a href="#题目分析" class="headerlink" title="题目分析"></a>题目分析</h4><p>思考一个问题，在新掉落一个方块之后最大高度可能存在的情况</p>
+<ol>
+<li>最大高度为前一个方块掉落后的最大高度</li>
+<li>最大高度为当前方块掉落的高度加上之前方块所在位置的堆叠高度</li>
+</ol>
+<p><strong>暴力枚举</strong></p>
+<p>因此可以直接进行枚举，还好能过吧，通过对于之前掉落的方块进行枚举，选取其中堆叠的高度之后加上当前方块的高度即为堆叠的最大高度。</p>
+<p>如何判断两个方块是否堆叠，如果两个方块是叠在一起的则有，假设left1，right1, left2, right2分别为方块的左右边界。那么两个方块堆叠则必有<br>$$<br>left1 &lt; right2\<br>left2 &lt; right1<br>$$<br>可以根据这个条件来判断边界问题，如果是简单的暴力枚举，那么可以直接根据方块是否堆叠来更新堆叠的高度，但是堆叠的高度未必是最大的高度，还需要进行下一步的更新，有可能堆叠的高度不如之前的高度高，需要对于结果进行更新。</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">class</span> <span class="title class_">Solution</span> &#123;</span><br><span class="line"><span class="keyword">public</span>:</span><br><span class="line">    <span class="function">vector&lt;<span class="type">int</span>&gt; <span class="title">fallingSquares</span><span class="params">(vector&lt;vector&lt;<span class="type">int</span>&gt;&gt;&amp; positions)</span> </span>&#123;</span><br><span class="line">        <span class="type">int</span> n = positions.<span class="built_in">size</span>();</span><br><span class="line">        <span class="function">vector&lt;<span class="type">int</span>&gt; <span class="title">heights</span><span class="params">(n)</span></span>;</span><br><span class="line">        <span class="keyword">for</span> (<span class="type">int</span> i = <span class="number">0</span>; i &lt; n; i++) &#123;</span><br><span class="line">            <span class="type">int</span> left1 = positions[i][<span class="number">0</span>], right1 = positions[i][<span class="number">0</span>] + positions[i][<span class="number">1</span>];</span><br><span class="line">            heights[i] = positions[i][<span class="number">1</span>];</span><br><span class="line">            <span class="keyword">for</span> (<span class="type">int</span> j = <span class="number">0</span>; j &lt; i; j++) &#123;</span><br><span class="line">                <span class="type">int</span> left2 = positions[j][<span class="number">0</span>], right2 = positions[j][<span class="number">0</span>] + positions[j][<span class="number">1</span>];</span><br><span class="line">                <span class="keyword">if</span> (right1 &gt; left2 &amp;&amp; right2 &gt; left1) &#123;</span><br><span class="line">                    heights[i] = <span class="built_in">max</span>(heights[i], heights[j] + positions[i][<span class="number">1</span>]);</span><br><span class="line">                &#125;</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">for</span> (<span class="type">int</span> i = <span class="number">1</span>; i &lt; n; i++) &#123;</span><br><span class="line">            heights[i] = <span class="built_in">max</span>(heights[i], heights[i - <span class="number">1</span>]);</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">return</span> heights;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+
+<p><strong>区间排序搜索</strong></p>
+<p>在上面暴力枚举的时候可以看到进行了很多的无用的搜索，需要搜索所有之前的方块，但是其实正常来说并不需要完全的搜索完全部的方块，只需要根据当前方块的区间搜索即可，可以考虑对于区间进行排序，之后对于给定的区间可以通过二分的方式直接找到对应的堆叠的位置。</p>
+<p>在暴力枚举的时候以及有过相关的堆叠判断条件的介绍，对于二分查找可以直接使用map这种底层红黑树的stl容器，进行快速的实现。</p>
+<p>在进行边界的插入时，我们采取如下的实现方式，<strong>left对应了堆叠的高度，right的部分则设置为未堆叠之前的高度</strong>(<em><strong>因为题目中说了不能贴合边界，所以一定是半开半闭的区间</strong></em>)这里面设置的是右边界开区间。</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">class</span> <span class="title class_">Solution</span> &#123;</span><br><span class="line"><span class="keyword">public</span>:</span><br><span class="line">    <span class="function">vector&lt;<span class="type">int</span>&gt; <span class="title">fallingSquares</span><span class="params">(vector&lt;vector&lt;<span class="type">int</span>&gt;&gt;&amp; positions)</span> </span>&#123;</span><br><span class="line">        <span class="type">int</span> n = positions.<span class="built_in">size</span>();</span><br><span class="line">        map&lt;<span class="type">int</span>, <span class="type">int</span>&gt; m;</span><br><span class="line">        m[<span class="number">0</span>] = <span class="number">0</span>;</span><br><span class="line">        vector&lt;<span class="type">int</span>&gt; ans;</span><br><span class="line">        ans.<span class="built_in">reserve</span>(n);</span><br><span class="line"></span><br><span class="line">        <span class="keyword">for</span>(<span class="keyword">auto</span>&amp;&amp; pos : positions)&#123;</span><br><span class="line">            <span class="type">int</span> size = pos[<span class="number">1</span>];</span><br><span class="line">            <span class="type">int</span> height = pos[<span class="number">1</span>];</span><br><span class="line">            <span class="type">int</span> left = pos[<span class="number">0</span>], right = left + height - <span class="number">1</span>;</span><br><span class="line">            <span class="keyword">auto</span> lp = m.<span class="built_in">upper_bound</span>(left), rp=m.<span class="built_in">upper_bound</span>(right);</span><br><span class="line">            <span class="keyword">auto</span> preHeight = <span class="built_in">prev</span>(rp)-&gt;second;</span><br><span class="line"></span><br><span class="line">            <span class="keyword">for</span>(<span class="keyword">auto</span> p = <span class="built_in">prev</span>(lp); p != rp; p++)&#123;</span><br><span class="line">                height = <span class="built_in">max</span>(height, size+p-&gt;second);</span><br><span class="line">            &#125;</span><br><span class="line"></span><br><span class="line">            m.<span class="built_in">erase</span>(lp, rp);</span><br><span class="line">            m[left] = height;</span><br><span class="line">            <span class="keyword">if</span>(rp == m.<span class="built_in">end</span>() || rp-&gt;first != right+<span class="number">1</span>)&#123;</span><br><span class="line">                m[right+<span class="number">1</span>] = preHeight;</span><br><span class="line">            &#125;</span><br><span class="line"></span><br><span class="line">            ans.<span class="built_in">push_back</span>(ans.<span class="built_in">empty</span>()? height:<span class="built_in">max</span>(ans.<span class="built_in">back</span>(), height));</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        <span class="keyword">return</span> ans;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://example.com/2023/12/20/699.%E6%8E%89%E8%90%BD%E7%9A%84%E6%96%B9%E5%9D%97/" data-id="clqd6lzdk00204vn63kkbhhfw" data-title="掉落的方块" class="article-share-link"><span class="fa fa-share">Share</span></a>
+      
+      
+      
+  <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/c/" rel="tag">c++</a></li></ul>
+
+    </footer>
+  </div>
+  
+</article>
+
+
+
+  
+    <article id="post-1846.减小和重新排列数组后的最大元素" class="h-entry article article-type-post" itemprop="blogPost" itemscope itemtype="https://schema.org/BlogPosting">
+  <div class="article-meta">
+    <a href="/2023/12/20/1846.%E5%87%8F%E5%B0%8F%E5%92%8C%E9%87%8D%E6%96%B0%E6%8E%92%E5%88%97%E6%95%B0%E7%BB%84%E5%90%8E%E7%9A%84%E6%9C%80%E5%A4%A7%E5%85%83%E7%B4%A0/" class="article-date">
+  <time class="dt-published" datetime="2023-12-20T02:19:02.545Z" itemprop="datePublished">2023-12-20</time>
+</a>
+    
+  <div class="article-category">
+    <a class="article-category-link" href="/categories/leetcode/">leetcode</a>
+  </div>
+
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="p-name article-title" href="/2023/12/20/1846.%E5%87%8F%E5%B0%8F%E5%92%8C%E9%87%8D%E6%96%B0%E6%8E%92%E5%88%97%E6%95%B0%E7%BB%84%E5%90%8E%E7%9A%84%E6%9C%80%E5%A4%A7%E5%85%83%E7%B4%A0/">减小和重新排列后数组后的最大元素</a>
+    </h1>
+  
+
+      </header>
+    
+    <div class="e-content article-entry" itemprop="articleBody">
+      
+        <h3 id="题目描述"><a href="#题目描述" class="headerlink" title="题目描述"></a>题目描述</h3><p>给你一个正整数数组 arr 。请你对 arr 执行一些操作（也可以不进行任何操作），使得数组满足以下条件：</p>
+<p>arr 中 第一个 元素必须为 1 。<br>任意相邻两个元素的差的绝对值 小于等于 1 ，也就是说，对于任意的 1 &lt;&#x3D; i &lt; arr.length （数组下标从 0 开始），都满足 abs(arr[i] - arr[i - 1]) &lt;&#x3D; 1 。abs(x) 为 x 的绝对值。<br>你可以执行以下 2 种操作任意次：</p>
+<p>减小 arr 中任意元素的值，使其变为一个 更小的正整数 。<br>重新排列 arr 中的元素，你可以以任意顺序重新排列。<br>请你返回执行以上操作后，在满足前文所述的条件下，arr 中可能的 最大值 。</p>
+<p><strong>示例1：</strong></p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">输入：arr = [<span class="number">2</span>,<span class="number">2</span>,<span class="number">1</span>,<span class="number">2</span>,<span class="number">1</span>]</span><br><span class="line">输出：<span class="number">2</span></span><br><span class="line">解释：</span><br><span class="line">我们可以重新排列 arr 得到 [<span class="number">1</span>,<span class="number">2</span>,<span class="number">2</span>,<span class="number">2</span>,<span class="number">1</span>] ，该数组满足所有条件。</span><br><span class="line">arr 中最大元素为 <span class="number">2</span> 。</span><br></pre></td></tr></table></figure>
+
+<p><strong>示例2：</strong></p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">输入：arr = [<span class="number">100</span>,<span class="number">1</span>,<span class="number">1000</span>]</span><br><span class="line">输出：<span class="number">3</span></span><br><span class="line">解释：</span><br><span class="line">一个可行的方案如下：</span><br><span class="line"><span class="number">1.</span> 重新排列 arr 得到 [<span class="number">1</span>,<span class="number">100</span>,<span class="number">1000</span>] 。</span><br><span class="line"><span class="number">2.</span> 将第二个元素减小为 <span class="number">2</span> 。</span><br><span class="line"><span class="number">3.</span> 将第三个元素减小为 <span class="number">3</span> 。</span><br><span class="line">现在 arr = [<span class="number">1</span>,<span class="number">2</span>,<span class="number">3</span>] ，满足所有条件。</span><br><span class="line">arr 中最大元素为 <span class="number">3</span> 。</span><br></pre></td></tr></table></figure>
+
+<p><strong>示例3：</strong></p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">输入：arr = [<span class="number">1</span>,<span class="number">2</span>,<span class="number">3</span>,<span class="number">4</span>,<span class="number">5</span>]</span><br><span class="line">输出：<span class="number">5</span></span><br><span class="line">解释：数组已经满足所有条件，最大元素为 <span class="number">5</span> 。</span><br></pre></td></tr></table></figure>
+
+<p><strong>提示：</strong></p>
+<ul>
+<li><code>1 &lt;= arr.length &lt;= 105</code></li>
+<li><code>1 &lt;= arr[i] &lt;= 109</code></li>
+</ul>
+<h3 id="题目分析"><a href="#题目分析" class="headerlink" title="题目分析"></a>题目分析</h3><p>有一种及其暴力的解决办法，那就是先排序再遍历时间复杂度为排序时间复杂度$O(nlogn)$，之后对其进行优化。有这样一种思路，最大的元素结果是不会超过n的，之后所有的较大元素都会被缩小为对应位置的元素值，那么最终结果一定为$[1.m_1…..m_n]$，其中$m_n\leq n$ <em>n</em>为数组长度。那么我们可以首先对于数组进行计数，记录对应值的个数，其中大于<em>n</em>的标记为<em>n</em>，在得到这个数组之后我们可以发现我们最终要得到的是从1开始连续值大于0的数量，其中最多到<em>n</em>。那么我们可以根据计数结果进行填充。对于所有的前面为0的值我们记录其为缺失，用变量<em>miss</em>来记录，每次有缺失值则<em>miss+&#x3D;1</em>。每次当当前值大于1我们则进行填充，将当前位置的值缩小到缺失的位置，<em>miss-&#x3D;1</em>这里面可以直接减去计数的数量，但是miss始终是大于等于0的，最终返回的为<em>n-miss</em>的值，因为缺失都是从前面开始填充，最后没有被填充的数为miss那么最大值即为<em>n-miss</em></p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">class</span> <span class="title class_">Solution</span> &#123;</span><br><span class="line"><span class="keyword">public</span>:</span><br><span class="line">    <span class="function"><span class="type">int</span> <span class="title">maximumElementAfterDecrementingAndRearranging</span><span class="params">(vector&lt;<span class="type">int</span>&gt;&amp; arr)</span> </span>&#123;</span><br><span class="line">        <span class="type">int</span> n = arr.<span class="built_in">size</span>();</span><br><span class="line">        <span class="type">int</span> miss = <span class="number">0</span>;</span><br><span class="line">        <span class="function">vector&lt;<span class="type">int</span>&gt; <span class="title">counter</span><span class="params">(n+<span class="number">1</span>, <span class="number">0</span>)</span></span>;</span><br><span class="line"></span><br><span class="line">        <span class="keyword">for</span>(<span class="keyword">auto</span>&amp; num : arr)&#123;</span><br><span class="line">            counter[<span class="built_in">min</span>(num, n)]++;</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        <span class="keyword">for</span>(<span class="type">int</span> i=<span class="number">1</span>; i&lt;=n; i++)&#123;</span><br><span class="line">            <span class="keyword">if</span>(counter[i] == <span class="number">0</span>)miss++;</span><br><span class="line">            <span class="keyword">else</span> <span class="keyword">if</span>(counter[i] &gt; <span class="number">1</span>)&#123;</span><br><span class="line">                miss = <span class="built_in">max</span>(<span class="number">0</span>, miss-counter[i]+<span class="number">1</span>);</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        <span class="keyword">return</span> n-miss;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://example.com/2023/12/20/1846.%E5%87%8F%E5%B0%8F%E5%92%8C%E9%87%8D%E6%96%B0%E6%8E%92%E5%88%97%E6%95%B0%E7%BB%84%E5%90%8E%E7%9A%84%E6%9C%80%E5%A4%A7%E5%85%83%E7%B4%A0/" data-id="clqd5b12x000bkmn6bi7p59of" data-title="减小和重新排列后数组后的最大元素" class="article-share-link"><span class="fa fa-share">Share</span></a>
+      
+      
+      
+  <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/c/" rel="tag">c++</a></li></ul>
+
+    </footer>
+  </div>
+  
+</article>
+
+
+
+  
+    <article id="post-1996.游戏中的弱角色" class="h-entry article article-type-post" itemprop="blogPost" itemscope itemtype="https://schema.org/BlogPosting">
+  <div class="article-meta">
+    <a href="/2023/12/20/1996.%E6%B8%B8%E6%88%8F%E4%B8%AD%E7%9A%84%E5%BC%B1%E8%A7%92%E8%89%B2/" class="article-date">
+  <time class="dt-published" datetime="2023-12-20T02:19:02.545Z" itemprop="datePublished">2023-12-20</time>
+</a>
+    
+  <div class="article-category">
+    <a class="article-category-link" href="/categories/leetcode/">leetcode</a>
+  </div>
+
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="p-name article-title" href="/2023/12/20/1996.%E6%B8%B8%E6%88%8F%E4%B8%AD%E7%9A%84%E5%BC%B1%E8%A7%92%E8%89%B2/">游戏中的弱角色</a>
+    </h1>
+  
+
+      </header>
+    
+    <div class="e-content article-entry" itemprop="articleBody">
+      
+        <h4 id="题目描述"><a href="#题目描述" class="headerlink" title="题目描述"></a>题目描述</h4><p>你正在参加一个多角色游戏，每个角色都有两个主要属性：攻击 和 防御 。给你一个二维整数数组 properties ，其中 properties[i] &#x3D; [attacki, defensei] 表示游戏中第 i 个角色的属性。</p>
+<p>如果存在一个其他角色的攻击和防御等级 都严格高于 该角色的攻击和防御等级，则认为该角色为 弱角色 。更正式地，如果认为角色 i 弱于 存在的另一个角色 j ，那么 attackj &gt; attacki 且 defensej &gt; defensei 。</p>
+<p>返回 弱角色 的数量。</p>
+<p><strong>示例 1：</strong></p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">输入：properties = [[5,5],[6,3],[3,6]]</span><br><span class="line">输出：0</span><br><span class="line">解释：不存在攻击和防御都严格高于其他角色的角色。</span><br></pre></td></tr></table></figure>
+
+<p><strong>示例 2：</strong></p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">输入：properties = [[2,2],[3,3]]</span><br><span class="line">输出：1</span><br><span class="line">解释：第一个角色是弱角色，因为第二个角色的攻击和防御严格大于该角色。</span><br></pre></td></tr></table></figure>
+
+<p><strong>示例 3：</strong></p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">输入：properties = [[1,5],[10,4],[4,3]]</span><br><span class="line">输出：1</span><br><span class="line">解释：第三个角色是弱角色，因为第二个角色的攻击和防御严格大于该角色。</span><br></pre></td></tr></table></figure>
+
+
+
+<p><strong>提示：</strong></p>
+<ul>
+<li>2 &lt;&#x3D; properties.length &lt;&#x3D; 105</li>
+<li>properties[i].length &#x3D;&#x3D; 2</li>
+<li>1 &lt;&#x3D; attacki, defensei &lt;&#x3D; 105</li>
+</ul>
+<h4 id="题目分析"><a href="#题目分析" class="headerlink" title="题目分析"></a>题目分析</h4><p>排序+单次遍历</p>
+<p>因为要比较的是两个维度，可以在一个维度已经有序的情况下，记录当前遍历的最大值进行遍历。在已经满意一个维度有序的假设下满足第二维度的假设</p>
+<p>实际写的时候可能会有相同数值的情况，考虑将相同数值的情况用第二维度逆序排列(例如第一个维度按照由大到小排序，那么第二个维度则按照由小到大排序)</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">class</span> <span class="title class_">Solution</span> &#123;</span><br><span class="line"><span class="keyword">public</span>:</span><br><span class="line">    <span class="keyword">typedef</span> vector&lt;<span class="type">int</span>&gt; P;</span><br><span class="line">    <span class="function"><span class="type">static</span> <span class="type">bool</span> <span class="title">cmp</span><span class="params">(P&amp; p1, P&amp;p2)</span></span>&#123;</span><br><span class="line">        <span class="keyword">if</span>(p1[<span class="number">0</span>] == p2[<span class="number">0</span>])&#123;</span><br><span class="line">            <span class="keyword">return</span> p1[<span class="number">1</span>] &lt; p2[<span class="number">1</span>];</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">return</span> p1[<span class="number">0</span>] &gt; p2[<span class="number">0</span>];        </span><br><span class="line">    &#125;</span><br><span class="line">    <span class="function"><span class="type">int</span> <span class="title">numberOfWeakCharacters</span><span class="params">(vector&lt;vector&lt;<span class="type">int</span>&gt;&gt;&amp; properties)</span> </span>&#123;</span><br><span class="line">        <span class="type">int</span> n = properties.<span class="built_in">size</span>();</span><br><span class="line"></span><br><span class="line">        <span class="built_in">sort</span>(properties.<span class="built_in">begin</span>(), properties.<span class="built_in">end</span>(), cmp);</span><br><span class="line">        <span class="type">int</span> ans = <span class="number">0</span>;</span><br><span class="line">        <span class="type">int</span> maxDef=INT_MIN;</span><br><span class="line">        <span class="keyword">for</span>(<span class="keyword">auto</span>&amp;&amp; property : properties)&#123;</span><br><span class="line">            <span class="keyword">if</span>(maxDef &gt; property[<span class="number">1</span>])&#123;</span><br><span class="line">                ans++;</span><br><span class="line">            &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">                maxDef = property[<span class="number">1</span>];</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        <span class="keyword">return</span> ans;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://example.com/2023/12/20/1996.%E6%B8%B8%E6%88%8F%E4%B8%AD%E7%9A%84%E5%BC%B1%E8%A7%92%E8%89%B2/" data-id="clqd5b12y000ckmn6ht9r2wd7" data-title="游戏中的弱角色" class="article-share-link"><span class="fa fa-share">Share</span></a>
+      
+      
+      
+  <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/c/" rel="tag">c++</a></li></ul>
+
+    </footer>
+  </div>
+  
+</article>
+
+
+
+  
     <article id="post-2039.网络空闲的时刻" class="h-entry article article-type-post" itemprop="blogPost" itemscope itemtype="https://schema.org/BlogPosting">
   <div class="article-meta">
     <a href="/2023/12/20/2039.%E7%BD%91%E7%BB%9C%E7%A9%BA%E9%97%B2%E7%9A%84%E6%97%B6%E5%88%BB/" class="article-date">
@@ -531,208 +741,6 @@
 
 
   
-    <article id="post-301.删除无效的括号" class="h-entry article article-type-post" itemprop="blogPost" itemscope itemtype="https://schema.org/BlogPosting">
-  <div class="article-meta">
-    <a href="/2023/12/20/301.%E5%88%A0%E9%99%A4%E6%97%A0%E6%95%88%E7%9A%84%E6%8B%AC%E5%8F%B7/" class="article-date">
-  <time class="dt-published" datetime="2023-12-20T02:19:02.545Z" itemprop="datePublished">2023-12-20</time>
-</a>
-    
-  <div class="article-category">
-    <a class="article-category-link" href="/categories/leetcode/">leetcode</a>
-  </div>
-
-  </div>
-  <div class="article-inner">
-    
-    
-      <header class="article-header">
-        
-  
-    <h1 itemprop="name">
-      <a class="p-name article-title" href="/2023/12/20/301.%E5%88%A0%E9%99%A4%E6%97%A0%E6%95%88%E7%9A%84%E6%8B%AC%E5%8F%B7/">删除无效的括号</a>
-    </h1>
-  
-
-      </header>
-    
-    <div class="e-content article-entry" itemprop="articleBody">
-      
-        <p>给你一个由若干括号和字母组成的字符串 <code>s</code> ，删除最小数量的无效括号，使得输入的字符串有效。</p>
-<p>返回所有可能的结果。答案可以按 <strong>任意顺序</strong> 返回。</p>
-<p><strong>示例 1：</strong></p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">输入：s = &quot;()())()&quot;</span><br><span class="line">输出：[&quot;(())()&quot;,&quot;()()()&quot;]</span><br></pre></td></tr></table></figure>
-
-<p><strong>示例 2：</strong></p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">输入：s = &quot;(a)())()&quot;</span><br><span class="line">输出：[&quot;(a())()&quot;,&quot;(a)()()&quot;]</span><br></pre></td></tr></table></figure>
-
-<p><strong>示例 3：</strong></p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">输入：s = &quot;)(&quot;</span><br><span class="line">输出：[&quot;&quot;]</span><br></pre></td></tr></table></figure>
-
-<p>提示：</p>
-<ul>
-<li><code>1 &lt;= s.length &lt;= 25</code></li>
-<li><code>s</code> 由小写英文字母以及括号 <code>&#39;(&#39;</code> 和 <code>&#39;)&#39;</code> 组成</li>
-<li><code>s</code> 中至多含 <code>20</code> 个括号</li>
-</ul>
-<h3 id="题目分析"><a href="#题目分析" class="headerlink" title="题目分析"></a>题目分析</h3><p>乍一看应该用递归直接暴力回溯，但是直接回溯可能超时，需要进行剪枝操作。设置剪枝条件。</p>
-<ol>
-<li><strong>计数性剪枝：</strong>记录左括号和右括号数量，判断需要删除掉的括号数量。之后更具删除数量进行剪枝</li>
-<li><strong>合理性剪枝：</strong>判断当前右括号数量是否大于左括号数量</li>
-</ol>
-<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">class</span> <span class="title class_">Solution</span> &#123;</span><br><span class="line"><span class="keyword">private</span>:</span><br><span class="line">    vector&lt;string&gt; res;</span><br><span class="line"><span class="keyword">public</span>:</span><br><span class="line">    <span class="function"><span class="type">void</span> <span class="title">helper</span><span class="params">(<span class="type">const</span> string&amp; s, <span class="type">int</span> start, <span class="type">int</span> lcount, <span class="type">int</span> rcount, <span class="type">int</span> lremove, <span class="type">int</span> rremove)</span></span>&#123;</span><br><span class="line">        <span class="keyword">if</span>(lremove==<span class="number">0</span> &amp;&amp; rremove==<span class="number">0</span> &amp;&amp; <span class="built_in">isValid</span>(s))&#123;</span><br><span class="line">            res.<span class="built_in">push_back</span>(s);</span><br><span class="line">            <span class="keyword">return</span>;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">for</span>(<span class="type">int</span> i=start; i&lt;s.<span class="built_in">length</span>(); i++)&#123;</span><br><span class="line">            <span class="keyword">if</span>(i!=<span class="number">0</span> &amp;&amp; s[i] == s[i<span class="number">-1</span>])&#123;</span><br><span class="line">                <span class="keyword">if</span>(s[i] == <span class="string">&#x27;(&#x27;</span>)lcount++;</span><br><span class="line">                <span class="keyword">else</span> <span class="keyword">if</span>(s[i] == <span class="string">&#x27;)&#x27;</span>)rcount++;</span><br><span class="line">                <span class="keyword">continue</span>;</span><br><span class="line">            &#125;</span><br><span class="line">            <span class="keyword">if</span>(lremove &gt; <span class="number">0</span> &amp;&amp; s[i] == <span class="string">&#x27;(&#x27;</span>)&#123;</span><br><span class="line">                <span class="built_in">helper</span>(s.<span class="built_in">substr</span>(<span class="number">0</span>, i) + s.<span class="built_in">substr</span>(i+<span class="number">1</span>), i, lcount, rcount, lremove<span class="number">-1</span>, rremove);</span><br><span class="line">            &#125;</span><br><span class="line">            <span class="keyword">if</span>(rremove &gt; <span class="number">0</span> &amp;&amp; s[i] == <span class="string">&#x27;)&#x27;</span>)&#123;</span><br><span class="line">                <span class="built_in">helper</span>(s.<span class="built_in">substr</span>(<span class="number">0</span>, i) + s.<span class="built_in">substr</span>(i+<span class="number">1</span>), i, lcount, rcount, lremove, rremove<span class="number">-1</span>);</span><br><span class="line">            &#125;</span><br><span class="line">            <span class="keyword">if</span>(s[i] == <span class="string">&#x27;(&#x27;</span>)lcount++;</span><br><span class="line">            <span class="keyword">else</span> <span class="keyword">if</span>(s[i] == <span class="string">&#x27;)&#x27;</span>)rcount++;</span><br><span class="line">            <span class="keyword">if</span>(rcount &gt; lcount)<span class="keyword">break</span>;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="function">vector&lt;string&gt; <span class="title">removeInvalidParentheses</span><span class="params">(string s)</span> </span>&#123;</span><br><span class="line">        <span class="function"><span class="type">int</span> <span class="title">m</span><span class="params">(<span class="number">0</span>)</span>, <span class="title">n</span><span class="params">(<span class="number">0</span>)</span></span>;</span><br><span class="line">        <span class="keyword">for</span>(<span class="keyword">auto</span>&amp;&amp; c : s)&#123;</span><br><span class="line">            <span class="keyword">if</span>(c == <span class="string">&#x27;(&#x27;</span>)&#123;</span><br><span class="line">                m++;</span><br><span class="line">            &#125; <span class="keyword">else</span> <span class="keyword">if</span>(c == <span class="string">&#x27;)&#x27;</span>)&#123;</span><br><span class="line">                <span class="keyword">if</span>(m &gt; <span class="number">0</span>)m--;</span><br><span class="line">                <span class="keyword">else</span> n++;</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">if</span>(m &gt; <span class="number">0</span>)&#123;</span><br><span class="line">            <span class="built_in">helper</span>(s, <span class="number">0</span>, <span class="number">0</span>, <span class="number">0</span>, m, n);</span><br><span class="line">        &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">            <span class="built_in">helper</span>(s, <span class="number">0</span>, <span class="number">0</span>, <span class="number">0</span>, m, n);</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        <span class="keyword">if</span>(res.<span class="built_in">empty</span>())<span class="keyword">return</span> &#123;<span class="string">&quot;&quot;</span>&#125;;</span><br><span class="line">        <span class="keyword">return</span> res;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="function"><span class="type">bool</span> <span class="title">isValid</span><span class="params">(<span class="type">const</span> string&amp; str)</span></span>&#123;</span><br><span class="line">        <span class="type">int</span> count=<span class="number">0</span>;</span><br><span class="line">        <span class="keyword">for</span>(<span class="keyword">auto</span>&amp;&amp; c : str)&#123;</span><br><span class="line">            <span class="keyword">if</span>(c == <span class="string">&#x27;(&#x27;</span>)count++;</span><br><span class="line">            <span class="keyword">else</span> <span class="keyword">if</span>(c == <span class="string">&#x27;)&#x27;</span>)&#123;</span><br><span class="line">                count--;</span><br><span class="line">                <span class="keyword">if</span>(count &lt; <span class="number">0</span>)<span class="keyword">return</span> <span class="literal">false</span>;</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        <span class="keyword">return</span> count == <span class="number">0</span>;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
-
-
-      
-    </div>
-    <footer class="article-footer">
-      <a data-url="http://example.com/2023/12/20/301.%E5%88%A0%E9%99%A4%E6%97%A0%E6%95%88%E7%9A%84%E6%8B%AC%E5%8F%B7/" data-id="clqd5b133000kkmn6a8k711fu" data-title="删除无效的括号" class="article-share-link"><span class="fa fa-share">Share</span></a>
-      
-      
-      
-  <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/c/" rel="tag">c++</a></li></ul>
-
-    </footer>
-  </div>
-  
-</article>
-
-
-
-  
-    <article id="post-32.最长有效括号" class="h-entry article article-type-post" itemprop="blogPost" itemscope itemtype="https://schema.org/BlogPosting">
-  <div class="article-meta">
-    <a href="/2023/12/20/32.%E6%9C%80%E9%95%BF%E6%9C%89%E6%95%88%E6%8B%AC%E5%8F%B7/" class="article-date">
-  <time class="dt-published" datetime="2023-12-20T02:19:02.545Z" itemprop="datePublished">2023-12-20</time>
-</a>
-    
-  <div class="article-category">
-    <a class="article-category-link" href="/categories/leetcode/">leetcode</a>
-  </div>
-
-  </div>
-  <div class="article-inner">
-    
-    
-      <header class="article-header">
-        
-  
-    <h1 itemprop="name">
-      <a class="p-name article-title" href="/2023/12/20/32.%E6%9C%80%E9%95%BF%E6%9C%89%E6%95%88%E6%8B%AC%E5%8F%B7/">最长有效括号</a>
-    </h1>
-  
-
-      </header>
-    
-    <div class="e-content article-entry" itemprop="articleBody">
-      
-        <p>主要目的是选择子串匹配最长的有效括号。</p>
-<ul>
-<li>方法一：DP</li>
-</ul>
-<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">class</span> <span class="title class_">Solution</span> &#123;</span><br><span class="line"><span class="keyword">public</span>:</span><br><span class="line">    <span class="function"><span class="type">int</span> <span class="title">longestValidParentheses</span><span class="params">(string s)</span> </span>&#123;</span><br><span class="line">        <span class="keyword">if</span>(s.<span class="built_in">length</span>() == <span class="number">0</span>)<span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">        <span class="type">int</span> res = <span class="number">0</span>;</span><br><span class="line">        <span class="function">vector&lt;<span class="type">int</span>&gt; <span class="title">dp</span><span class="params">(s.length()+<span class="number">1</span>, <span class="number">0</span>)</span></span>;</span><br><span class="line"></span><br><span class="line">        <span class="keyword">for</span>(<span class="type">int</span> i=<span class="number">1</span>; i&lt;s.<span class="built_in">length</span>(); i++)&#123;</span><br><span class="line">            <span class="keyword">if</span>(s[i] == <span class="string">&#x27;)&#x27;</span>)&#123;</span><br><span class="line">                <span class="keyword">if</span>(s[i<span class="number">-1</span>] == <span class="string">&#x27;(&#x27;</span>)&#123;</span><br><span class="line">                    dp[i+<span class="number">1</span>] = dp[i<span class="number">-1</span>]+<span class="number">2</span>;</span><br><span class="line">                &#125; <span class="keyword">else</span> <span class="keyword">if</span>(i-dp[i]<span class="number">-1</span> &gt;=<span class="number">0</span> &amp;&amp; s[i-dp[i]<span class="number">-1</span>]==<span class="string">&#x27;(&#x27;</span>)&#123;</span><br><span class="line">                    dp[i+<span class="number">1</span>] = dp[i]+dp[i-dp[i]<span class="number">-1</span>]+<span class="number">2</span>;</span><br><span class="line">                &#125;</span><br><span class="line">                </span><br><span class="line">                res = <span class="built_in">max</span>(res, dp[i+<span class="number">1</span>]);</span><br><span class="line">            &#125;</span><br><span class="line">            </span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        <span class="keyword">return</span> res;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
-
-<ul>
-<li>方法二：栈</li>
-</ul>
-<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">class</span> <span class="title class_">Solution</span> &#123;</span><br><span class="line"><span class="keyword">public</span>:</span><br><span class="line">    <span class="function"><span class="type">int</span> <span class="title">longestValidParentheses</span><span class="params">(string s)</span> </span>&#123;</span><br><span class="line">        <span class="keyword">if</span>(s.<span class="built_in">length</span>() == <span class="number">0</span>)<span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">        <span class="type">int</span> res = <span class="number">0</span>;</span><br><span class="line">        stack&lt;<span class="type">int</span>&gt; pos;</span><br><span class="line">        pos.<span class="built_in">push</span>(<span class="number">-1</span>);</span><br><span class="line"></span><br><span class="line">        <span class="keyword">for</span>(<span class="type">int</span> i=<span class="number">0</span>; i&lt;s.<span class="built_in">length</span>(); i++)&#123;</span><br><span class="line">            <span class="keyword">if</span>(s[i] == <span class="string">&#x27;(&#x27;</span>)pos.<span class="built_in">push</span>(i);</span><br><span class="line">            <span class="keyword">else</span> <span class="keyword">if</span>(s[i] == <span class="string">&#x27;)&#x27;</span>)&#123;</span><br><span class="line">                <span class="keyword">if</span>(pos.<span class="built_in">top</span>() == <span class="number">-1</span> || s[pos.<span class="built_in">top</span>()] == <span class="string">&#x27;)&#x27;</span>)pos.<span class="built_in">push</span>(i);</span><br><span class="line">                <span class="keyword">else</span> &#123;pos.<span class="built_in">pop</span>();res = <span class="built_in">max</span>(res, i-pos.<span class="built_in">top</span>());&#125;</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        <span class="keyword">return</span> res;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
-
-<ul>
-<li>方法三：巧妙对接</li>
-</ul>
-<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">class</span> <span class="title class_">Solution</span> &#123;</span><br><span class="line"><span class="keyword">public</span>:</span><br><span class="line">    <span class="function"><span class="type">int</span> <span class="title">longestValidParentheses</span><span class="params">(string s)</span> </span>&#123;</span><br><span class="line">        <span class="keyword">if</span>(s.<span class="built_in">length</span>() == <span class="number">0</span>)<span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">        <span class="type">int</span> res = <span class="number">0</span>;</span><br><span class="line">        <span class="type">int</span>  left=<span class="number">0</span>, right=<span class="number">0</span>;</span><br><span class="line">        </span><br><span class="line">        <span class="keyword">for</span>(<span class="keyword">auto</span>&amp; c : s)&#123;</span><br><span class="line">            <span class="keyword">if</span>(c == <span class="string">&#x27;(&#x27;</span>)left++;</span><br><span class="line">            <span class="keyword">if</span>(c == <span class="string">&#x27;)&#x27;</span>)right++;</span><br><span class="line">            <span class="keyword">if</span>(right &gt; left)&#123;</span><br><span class="line">                left = right = <span class="number">0</span>;</span><br><span class="line">            &#125; <span class="keyword">else</span> <span class="keyword">if</span>(left == right)&#123;</span><br><span class="line">                res = <span class="built_in">max</span>(res, <span class="number">2</span>*right);</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        right = left = <span class="number">0</span>;</span><br><span class="line">        <span class="keyword">for</span>(<span class="type">int</span> i=s.<span class="built_in">length</span>()<span class="number">-1</span>; i&gt;=<span class="number">0</span>; i--)&#123;</span><br><span class="line">            <span class="keyword">if</span>(s[i] == <span class="string">&#x27;)&#x27;</span>)left++;</span><br><span class="line">            <span class="keyword">if</span>(s[i] == <span class="string">&#x27;(&#x27;</span>)right++;</span><br><span class="line">            <span class="keyword">if</span>(right &gt; left)&#123;</span><br><span class="line">                left = right = <span class="number">0</span>;</span><br><span class="line">            &#125; <span class="keyword">else</span> <span class="keyword">if</span>(left == right)&#123;</span><br><span class="line">                res = <span class="built_in">max</span>(res, <span class="number">2</span>*right);</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        <span class="keyword">return</span> res;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
-
-
-
-
-      
-    </div>
-    <footer class="article-footer">
-      <a data-url="http://example.com/2023/12/20/32.%E6%9C%80%E9%95%BF%E6%9C%89%E6%95%88%E6%8B%AC%E5%8F%B7/" data-id="clqd5b133000lkmn6fyan93f1" data-title="最长有效括号" class="article-share-link"><span class="fa fa-share">Share</span></a>
-      
-      
-      
-  <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/c/" rel="tag">c++</a></li></ul>
-
-    </footer>
-  </div>
-  
-</article>
-
-
-
-  
-    <article id="post-331.验证二叉树的前序序列化" class="h-entry article article-type-post" itemprop="blogPost" itemscope itemtype="https://schema.org/BlogPosting">
-  <div class="article-meta">
-    <a href="/2023/12/20/331.%E9%AA%8C%E8%AF%81%E4%BA%8C%E5%8F%89%E6%A0%91%E7%9A%84%E5%89%8D%E5%BA%8F%E5%BA%8F%E5%88%97%E5%8C%96/" class="article-date">
-  <time class="dt-published" datetime="2023-12-20T02:19:02.545Z" itemprop="datePublished">2023-12-20</time>
-</a>
-    
-  <div class="article-category">
-    <a class="article-category-link" href="/categories/leetcode/">leetcode</a>
-  </div>
-
-  </div>
-  <div class="article-inner">
-    
-    
-      <header class="article-header">
-        
-  
-    <h1 itemprop="name">
-      <a class="p-name article-title" href="/2023/12/20/331.%E9%AA%8C%E8%AF%81%E4%BA%8C%E5%8F%89%E6%A0%91%E7%9A%84%E5%89%8D%E5%BA%8F%E5%BA%8F%E5%88%97%E5%8C%96/">验证二叉树的前序序列化</a>
-    </h1>
-  
-
-      </header>
-    
-    <div class="e-content article-entry" itemprop="articleBody">
-      
-        <h3 id="题目描述"><a href="#题目描述" class="headerlink" title="题目描述"></a>题目描述</h3><p>序列化二叉树的一种方法是使用前序遍历。当我们遇到一个非空节点时，我们可以记录下这个节点的值。如果它是一个空节点，我们可以使用一个标记值记录，例如 <code>#</code>。</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"> 	 _9_</span><br><span class="line">    /   \</span><br><span class="line">   3     2</span><br><span class="line">  / \   / \</span><br><span class="line"> 4   1  #  6</span><br><span class="line">/ \ / \   / \</span><br><span class="line"># # # #   # #</span><br></pre></td></tr></table></figure>
-
-<p>例如，上面的二叉树可以被序列化为字符串 “9,3,4,#,#,1,#,#,2,#,6,#,#”，其中 # 代表一个空节点。</p>
-<p>给定一串以逗号分隔的序列，验证它是否是正确的二叉树的前序序列化。编写一个在不重构树的条件下的可行算法。</p>
-<p>每个以逗号分隔的字符或为一个整数或为一个表示 null 指针的 ‘#’ 。</p>
-<p>你可以认为输入格式总是有效的，例如它永远不会包含两个连续的逗号，比如 “1,,3” 。</p>
-<p><strong>示例1：</strong></p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">输入: &quot;9,3,4,#,#,1,#,#,2,#,6,#,#&quot;</span><br><span class="line">输出: true</span><br></pre></td></tr></table></figure>
-
-<p><strong>示例2：</strong></p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">输入: &quot;1,#&quot;</span><br><span class="line">输出: false</span><br></pre></td></tr></table></figure>
-
-<p><strong>示例3：</strong></p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">输入: &quot;9,#,#,1&quot;</span><br><span class="line">输出: false</span><br></pre></td></tr></table></figure>
-
-<h3 id="题目分析"><a href="#题目分析" class="headerlink" title="题目分析"></a>题目分析</h3><p>对于一个符合正常逻辑的树结构需要满足的是，</p>
-<ul>
-<li>任何非空节点必须有左右子树</li>
-<li>任何空节点必须没有左右子树</li>
-</ul>
-<p>考虑使用栈对于空槽节点进行存储，对于非空节点则需要占据父亲节点的一个槽位，并且对应两个之后的节点，而空节点则只需要占据父节点槽位。</p>
-<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">class</span> <span class="title class_">Solution</span> &#123;</span><br><span class="line"><span class="keyword">public</span>:</span><br><span class="line">    <span class="function">vector&lt;string&gt; <span class="title">split</span><span class="params">(string&amp; s)</span></span>&#123;</span><br><span class="line">        string t;</span><br><span class="line">        vector&lt;string&gt; res;</span><br><span class="line"></span><br><span class="line">        <span class="keyword">for</span>(<span class="keyword">auto</span>&amp; c : s)&#123;</span><br><span class="line">            <span class="keyword">if</span>(c != <span class="string">&#x27;,&#x27;</span>)&#123;</span><br><span class="line">                t += c;</span><br><span class="line">            &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">                res.<span class="built_in">emplace_back</span>(t);</span><br><span class="line">                t.<span class="built_in">clear</span>();</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">        res.<span class="built_in">emplace_back</span>(t);</span><br><span class="line"></span><br><span class="line">        <span class="keyword">return</span> res;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="function"><span class="type">bool</span> <span class="title">isValidSerialization</span><span class="params">(string preorder)</span> </span>&#123;</span><br><span class="line">        <span class="type">int</span> num=<span class="number">1</span>;</span><br><span class="line">        <span class="keyword">auto</span> v = <span class="built_in">split</span>(preorder);</span><br><span class="line">        <span class="type">int</span> l = v.<span class="built_in">size</span>();</span><br><span class="line"></span><br><span class="line">        <span class="keyword">for</span>(<span class="type">int</span> i=<span class="number">0</span>; i&lt;l ;i++)&#123;</span><br><span class="line">            num --;</span><br><span class="line">            <span class="keyword">if</span>(num &lt; <span class="number">0</span>)<span class="keyword">return</span> <span class="literal">false</span>;</span><br><span class="line">            <span class="keyword">if</span>(v[i] != <span class="string">&quot;#&quot;</span>)&#123;</span><br><span class="line">                num += <span class="number">2</span>;</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        <span class="keyword">return</span> num == <span class="number">0</span>;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
-
-<p><strong>考虑一个问题是否需要对于每一个节点的槽位进行单独存储？如果直接存储所有槽位的总数是否会有区别？</strong></p>
-<p><strong>分析：</strong>对于存储总和来说，总和和单一节点之间的区别在于是否存在多个节点单独链接到一个节点而使得二叉树结构不成立，即总和大于0但是单个节点槽位置小于0。很明显如果单个节点的度不满足要求则必定存在一个满足二叉树结构的树。因此直接记录总和即可。</p>
-<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">class</span> <span class="title class_">Solution</span> &#123;</span><br><span class="line"><span class="keyword">public</span>:</span><br><span class="line">    <span class="function"><span class="type">bool</span> <span class="title">isValidSerialization</span><span class="params">(string preorder)</span> </span>&#123;</span><br><span class="line">        <span class="type">int</span> num=<span class="number">1</span>;</span><br><span class="line">        <span class="type">int</span> i=<span class="number">0</span>;</span><br><span class="line">        preorder.<span class="built_in">push_back</span>(<span class="string">&#x27;,&#x27;</span>);</span><br><span class="line">        <span class="type">int</span> l = preorder.<span class="built_in">length</span>();</span><br><span class="line"></span><br><span class="line">        <span class="keyword">while</span>(i &lt; l)&#123;</span><br><span class="line">            <span class="keyword">if</span>(preorder[i] == <span class="string">&#x27;,&#x27;</span>)&#123;</span><br><span class="line">                num --;</span><br><span class="line">                <span class="keyword">if</span>(num &lt; <span class="number">0</span>)<span class="keyword">return</span> <span class="literal">false</span>;</span><br><span class="line">                num += <span class="number">2</span>;</span><br><span class="line">                i++;</span><br><span class="line">            &#125; <span class="keyword">else</span> <span class="keyword">if</span>(preorder[i] == <span class="string">&#x27;#&#x27;</span>)&#123;</span><br><span class="line">                num--;</span><br><span class="line">                <span class="keyword">if</span>(num &lt; <span class="number">0</span>)<span class="keyword">return</span> <span class="literal">false</span>;</span><br><span class="line">                i += <span class="number">2</span>;</span><br><span class="line">            &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">                i++;</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        <span class="keyword">return</span> num == <span class="number">0</span>;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
-
-
-      
-    </div>
-    <footer class="article-footer">
-      <a data-url="http://example.com/2023/12/20/331.%E9%AA%8C%E8%AF%81%E4%BA%8C%E5%8F%89%E6%A0%91%E7%9A%84%E5%89%8D%E5%BA%8F%E5%BA%8F%E5%88%97%E5%8C%96/" data-id="clqd5b134000mkmn6g7b9hoxo" data-title="验证二叉树的前序序列化" class="article-share-link"><span class="fa fa-share">Share</span></a>
-      
-      
-      
-  <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/c/" rel="tag">c++</a></li></ul>
-
-    </footer>
-  </div>
-  
-</article>
-
-
-
-  
 
 
   <nav id="page-nav">
@@ -748,7 +756,7 @@
   <div class="widget-wrap">
     <h3 class="widget-title">Categories</h3>
     <div class="widget">
-      <ul class="category-list"><li class="category-list-item"><a class="category-list-link" href="/categories/leetcode/">leetcode</a></li></ul>
+      <ul class="category-list"><li class="category-list-item"><a class="category-list-link" href="/categories/jvm/">jvm</a></li><li class="category-list-item"><a class="category-list-link" href="/categories/leetcode/">leetcode</a></li></ul>
     </div>
   </div>
 
@@ -758,7 +766,7 @@
   <div class="widget-wrap">
     <h3 class="widget-title">Tags</h3>
     <div class="widget">
-      <ul class="tag-list" itemprop="keywords"><li class="tag-list-item"><a class="tag-list-link" href="/tags/c/" rel="tag">c++</a></li></ul>
+      <ul class="tag-list" itemprop="keywords"><li class="tag-list-item"><a class="tag-list-link" href="/tags/autotune/" rel="tag">autotune</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/c/" rel="tag">c++</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/gc/" rel="tag">gc</a></li></ul>
     </div>
   </div>
 
@@ -768,7 +776,7 @@
   <div class="widget-wrap">
     <h3 class="widget-title">Tag Cloud</h3>
     <div class="widget tagcloud">
-      <a href="/tags/c/" style="font-size: 10px;">c++</a>
+      <a href="/tags/autotune/" style="font-size: 10px;">autotune</a> <a href="/tags/c/" style="font-size: 20px;">c++</a> <a href="/tags/gc/" style="font-size: 10px;">gc</a>
     </div>
   </div>
 
@@ -790,23 +798,23 @@
       <ul>
         
           <li>
+            <a href="/2023/12/20/oom-oome/">oom oome</a>
+          </li>
+        
+          <li>
+            <a href="/2023/12/20/g1gc/">g1gc</a>
+          </li>
+        
+          <li>
+            <a href="/2023/12/20/jvm-tune-param/">jvm tune param</a>
+          </li>
+        
+          <li>
             <a href="/2023/12/20/%E5%89%91%E6%8C%87offer%2062.%E7%BA%A6%E7%91%9F%E5%A4%AB%E7%8E%AF%E9%97%AE%E9%A2%98/">约瑟夫环问题</a>
           </li>
         
           <li>
             <a href="/2023/12/20/%E5%8C%85%E5%90%ABmin%E5%87%BD%E6%95%B0%E7%9A%84%E6%A0%88/">包含min函数的栈</a>
-          </li>
-        
-          <li>
-            <a href="/2023/12/20/%E5%89%91%E6%8C%87%20Offer%2052.%20%E4%B8%A4%E4%B8%AA%E9%93%BE%E8%A1%A8%E7%9A%84%E7%AC%AC%E4%B8%80%E4%B8%AA%E5%85%AC%E5%85%B1%E8%8A%82%E7%82%B9/">两个链表的第一个公共节点</a>
-          </li>
-        
-          <li>
-            <a href="/2023/12/20/%E6%89%93%E5%AE%B6%E5%8A%AB%E8%88%8DIII/">打家劫舍 III</a>
-          </li>
-        
-          <li>
-            <a href="/2023/12/20/%E9%9D%A2%E8%AF%95%E9%A2%9817.10.%E4%B8%BB%E8%A6%81%E5%85%83%E7%B4%A0/">主要元素</a>
           </li>
         
       </ul>
