@@ -75,59 +75,33 @@
       <div class="outer">
         <section id="main">
   
-    <article id="post-474.一和零" class="h-entry article article-type-post" itemprop="blogPost" itemscope itemtype="https://schema.org/BlogPosting">
-  <div class="article-meta">
-    <a href="/2023/12/20/474.%E4%B8%80%E5%92%8C%E9%9B%B6/" class="article-date">
-  <time class="dt-published" datetime="2023-12-20T02:19:02.546Z" itemprop="datePublished">2023-12-20</time>
-</a>
-    
-  </div>
-  <div class="article-inner">
-    
-    
-    <div class="e-content article-entry" itemprop="articleBody">
-      
-        <h3 id="题目描述"><a href="#题目描述" class="headerlink" title="题目描述"></a>题目描述</h3><p>给你一个二进制字符串数组 strs 和两个整数 m 和 n 。</p>
-<p>请你找出并返回 strs 的最大子集的大小，该子集中 最多 有 m 个 0 和 n 个 1 。</p>
-<p>如果 x 的所有元素也是 y 的元素，集合 x 是集合 y 的 子集 。</p>
-<p><strong>示例1：</strong></p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">输入：strs = [&quot;10&quot;, &quot;0001&quot;, &quot;111001&quot;, &quot;1&quot;, &quot;0&quot;], m = 5, n = 3</span><br><span class="line">输出：4</span><br><span class="line">解释：最多有 5 个 0 和 3 个 1 的最大子集是 &#123;&quot;10&quot;,&quot;0001&quot;,&quot;1&quot;,&quot;0&quot;&#125; ，因此答案是 4 。</span><br><span class="line">其他满足题意但较小的子集包括 &#123;&quot;0001&quot;,&quot;1&quot;&#125; 和 &#123;&quot;10&quot;,&quot;1&quot;,&quot;0&quot;&#125; 。&#123;&quot;111001&quot;&#125; 不满足题意，因为它含 4 个 1 ，大于 n 的值 3 。</span><br></pre></td></tr></table></figure>
-
-<p><strong>示例2：</strong></p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">输入：strs = [&quot;10&quot;, &quot;0&quot;, &quot;1&quot;], m = 1, n = 1</span><br><span class="line">输出：2</span><br><span class="line">解释：最大的子集是 &#123;&quot;0&quot;, &quot;1&quot;&#125; ，所以答案是 2 。</span><br></pre></td></tr></table></figure>
-
-<h3 id="题目分析"><a href="#题目分析" class="headerlink" title="题目分析"></a>题目分析</h3><p>0-1背包问题，对于空间复杂度进行优化</p>
-<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">class</span> <span class="title class_">Solution</span> &#123;</span><br><span class="line"><span class="keyword">public</span>:</span><br><span class="line">    <span class="function"><span class="type">int</span> <span class="title">findMaxForm</span><span class="params">(vector&lt;string&gt;&amp; strs, <span class="type">int</span> m, <span class="type">int</span> n)</span> </span>&#123;</span><br><span class="line">        vector&lt;vector&lt;<span class="type">int</span>&gt;&gt; <span class="built_in">dp</span>(m+<span class="number">1</span>, <span class="built_in">vector</span>&lt;<span class="type">int</span>&gt;(n+<span class="number">1</span>, <span class="number">0</span>));</span><br><span class="line">        </span><br><span class="line">        <span class="keyword">for</span>(<span class="keyword">auto</span>&amp; str : strs)&#123;</span><br><span class="line">            <span class="type">int</span> zero=<span class="number">0</span>, one;</span><br><span class="line">            <span class="keyword">for</span>(<span class="keyword">auto</span>&amp; c : str)&#123;</span><br><span class="line">                <span class="keyword">if</span>(c == <span class="string">&#x27;0&#x27;</span>)zero++;</span><br><span class="line">            &#125;</span><br><span class="line">            one = str.<span class="built_in">length</span>()-zero;</span><br><span class="line">            <span class="keyword">for</span>(<span class="type">int</span> i=m; i &gt;= zero; i--)&#123;</span><br><span class="line">                <span class="keyword">for</span>(<span class="type">int</span> j=n; j &gt;= one; j--)&#123;</span><br><span class="line">                    dp[i][j] = <span class="built_in">max</span>(dp[i][j], dp[i - zero][j - one] + <span class="number">1</span>);</span><br><span class="line">                &#125;</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        <span class="keyword">return</span> dp[m][n];</span><br><span class="line">    &#125;</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
-
-
-      
-    </div>
-    <footer class="article-footer">
-      <a data-url="http://example.com/2023/12/20/474.%E4%B8%80%E5%92%8C%E9%9B%B6/" data-id="clqd5b13b000wkmn6dkh3asx3" data-title="" class="article-share-link"><span class="fa fa-share">Share</span></a>
-      
-      
-      
-    </footer>
-  </div>
-  
-</article>
-
-
-
-  
     <article id="post-480.滑动窗口中位数" class="h-entry article article-type-post" itemprop="blogPost" itemscope itemtype="https://schema.org/BlogPosting">
   <div class="article-meta">
     <a href="/2023/12/20/480.%E6%BB%91%E5%8A%A8%E7%AA%97%E5%8F%A3%E4%B8%AD%E4%BD%8D%E6%95%B0/" class="article-date">
   <time class="dt-published" datetime="2023-12-20T02:19:02.546Z" itemprop="datePublished">2023-12-20</time>
 </a>
     
+  <div class="article-category">
+    <a class="article-category-link" href="/categories/leetcode/">leetcode</a>
+  </div>
+
   </div>
   <div class="article-inner">
     
     
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="p-name article-title" href="/2023/12/20/480.%E6%BB%91%E5%8A%A8%E7%AA%97%E5%8F%A3%E4%B8%AD%E4%BD%8D%E6%95%B0/">滑动窗口中位数</a>
+    </h1>
+  
+
+      </header>
+    
     <div class="e-content article-entry" itemprop="articleBody">
       
-        <h3 id="题目描述"><a href="#题目描述" class="headerlink" title="题目描述"></a>题目描述</h3><p>中位数是有序序列最中间的那个数。如果序列的长度是偶数，则没有最中间的数；此时中位数是最中间的两个数的平均数。</p>
+        <h2 id="滑动窗口中位数"><a href="#滑动窗口中位数" class="headerlink" title="滑动窗口中位数"></a>滑动窗口中位数</h2><h3 id="题目描述"><a href="#题目描述" class="headerlink" title="题目描述"></a>题目描述</h3><p>中位数是有序序列最中间的那个数。如果序列的长度是偶数，则没有最中间的数；此时中位数是最中间的两个数的平均数。</p>
 <p>例如：</p>
 <ul>
 <li>[2,3,4]，中位数是 3</li>
@@ -146,10 +120,12 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://example.com/2023/12/20/480.%E6%BB%91%E5%8A%A8%E7%AA%97%E5%8F%A3%E4%B8%AD%E4%BD%8D%E6%95%B0/" data-id="clqd5b13b000xkmn6a9215jjc" data-title="" class="article-share-link"><span class="fa fa-share">Share</span></a>
+      <a data-url="http://example.com/2023/12/20/480.%E6%BB%91%E5%8A%A8%E7%AA%97%E5%8F%A3%E4%B8%AD%E4%BD%8D%E6%95%B0/" data-id="clqd5b13b000xkmn6a9215jjc" data-title="滑动窗口中位数" class="article-share-link"><span class="fa fa-share">Share</span></a>
       
       
       
+  <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/c/" rel="tag">c++</a></li></ul>
+
     </footer>
   </div>
   
@@ -164,13 +140,27 @@
   <time class="dt-published" datetime="2023-12-20T02:19:02.546Z" itemprop="datePublished">2023-12-20</time>
 </a>
     
+  <div class="article-category">
+    <a class="article-category-link" href="/categories/leetcode/">leetcode</a>
+  </div>
+
   </div>
   <div class="article-inner">
     
     
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="p-name article-title" href="/2023/12/20/5.%20%E6%9C%80%E9%95%BF%E5%9B%9E%E6%96%87%E5%AD%90%E4%B8%B2/">最长回文子串</a>
+    </h1>
+  
+
+      </header>
+    
     <div class="e-content article-entry" itemprop="articleBody">
       
-        <h3 id="最长回文子串"><a href="#最长回文子串" class="headerlink" title="最长回文子串"></a>最长回文子串</h3><ul>
+        <h2 id="最长回文子串"><a href="#最长回文子串" class="headerlink" title="最长回文子串"></a>最长回文子串</h2><ul>
 <li>方法一：动态规划</li>
 </ul>
 <p>空间换时间的思想采用动态规划可以计算转移方程</p>
@@ -203,10 +193,12 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://example.com/2023/12/20/5.%20%E6%9C%80%E9%95%BF%E5%9B%9E%E6%96%87%E5%AD%90%E4%B8%B2/" data-id="clqd5b13c000ykmn6fzc99mo9" data-title="" class="article-share-link"><span class="fa fa-share">Share</span></a>
+      <a data-url="http://example.com/2023/12/20/5.%20%E6%9C%80%E9%95%BF%E5%9B%9E%E6%96%87%E5%AD%90%E4%B8%B2/" data-id="clqd5b13c000ykmn6fzc99mo9" data-title="最长回文子串" class="article-share-link"><span class="fa fa-share">Share</span></a>
       
       
       
+  <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/c/" rel="tag">c++</a></li></ul>
+
     </footer>
   </div>
   
@@ -221,13 +213,27 @@
   <time class="dt-published" datetime="2023-12-20T02:19:02.546Z" itemprop="datePublished">2023-12-20</time>
 </a>
     
+  <div class="article-category">
+    <a class="article-category-link" href="/categories/leetcode/">leetcode</a>
+  </div>
+
   </div>
   <div class="article-inner">
     
     
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="p-name article-title" href="/2023/12/20/518.%E9%9B%B6%E9%92%B1%E5%85%91%E6%8D%A2II/">零钱兑换II</a>
+    </h1>
+  
+
+      </header>
+    
     <div class="e-content article-entry" itemprop="articleBody">
       
-        <h3 id="518-零钱兑换II"><a href="#518-零钱兑换II" class="headerlink" title="518.零钱兑换II"></a>518.零钱兑换II</h3><h4 id="题目描述"><a href="#题目描述" class="headerlink" title="题目描述"></a>题目描述</h4><p>给定不同面额的硬币和一个总金额。写出函数来计算可以凑成总金额的硬币组合数。假设每一种面额的硬币有无限个。 </p>
+        <h2 id="零钱兑换II"><a href="#零钱兑换II" class="headerlink" title="零钱兑换II"></a>零钱兑换II</h2><h4 id="题目描述"><a href="#题目描述" class="headerlink" title="题目描述"></a>题目描述</h4><p>给定不同面额的硬币和一个总金额。写出函数来计算可以凑成总金额的硬币组合数。假设每一种面额的硬币有无限个。 </p>
 <p><strong>示例 1:</strong></p>
 <figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">输入: amount = 5, coins = [1, 2, 5]</span><br><span class="line">输出: 4</span><br><span class="line">解释: 有四种方式可以凑成总金额:</span><br><span class="line">5=5</span><br><span class="line">5=2+2+1</span><br><span class="line">5=2+1+1+1</span><br><span class="line">5=1+1+1+1+1</span><br></pre></td></tr></table></figure>
 
@@ -256,10 +262,12 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://example.com/2023/12/20/518.%E9%9B%B6%E9%92%B1%E5%85%91%E6%8D%A2II/" data-id="clqd5b13c000zkmn64wkcggw4" data-title="" class="article-share-link"><span class="fa fa-share">Share</span></a>
+      <a data-url="http://example.com/2023/12/20/518.%E9%9B%B6%E9%92%B1%E5%85%91%E6%8D%A2II/" data-id="clqd5b13c000zkmn64wkcggw4" data-title="零钱兑换II" class="article-share-link"><span class="fa fa-share">Share</span></a>
       
       
       
+  <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/c/" rel="tag">c++</a></li></ul>
+
     </footer>
   </div>
   
@@ -274,13 +282,27 @@
   <time class="dt-published" datetime="2023-12-20T02:19:02.546Z" itemprop="datePublished">2023-12-20</time>
 </a>
     
+  <div class="article-category">
+    <a class="article-category-link" href="/categories/leetcode/">leetcode</a>
+  </div>
+
   </div>
   <div class="article-inner">
     
     
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="p-name article-title" href="/2023/12/20/581.%E6%9C%80%E7%9F%AD%E6%97%A0%E5%BA%8F%E8%BF%9E%E7%BB%AD%E5%AD%90%E6%95%B0%E7%BB%84/">最短无序连续子数组</a>
+    </h1>
+  
+
+      </header>
+    
     <div class="e-content article-entry" itemprop="articleBody">
       
-        <h3 id="题目描述"><a href="#题目描述" class="headerlink" title="题目描述"></a>题目描述</h3><p>给你一个整数数组 nums ，你需要找出一个 连续子数组 ，如果对这个子数组进行升序排序，那么整个数组都会变为升序排序。</p>
+        <h2 id="最短无序连续子数组"><a href="#最短无序连续子数组" class="headerlink" title="最短无序连续子数组"></a>最短无序连续子数组</h2><h3 id="题目描述"><a href="#题目描述" class="headerlink" title="题目描述"></a>题目描述</h3><p>给你一个整数数组 nums ，你需要找出一个 连续子数组 ，如果对这个子数组进行升序排序，那么整个数组都会变为升序排序。</p>
 <p>请你找出符合题意的 最短 子数组，并输出它的长度。</p>
 <p><strong>示例 1：</strong></p>
 <figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">输入：nums = [2,6,4,8,10,9,15]</span><br><span class="line">输出：5</span><br><span class="line">解释：你只需要对 [6, 4, 8, 10, 9] 进行升序排序，那么整个表都会变为升序排序。</span><br></pre></td></tr></table></figure>
@@ -306,10 +328,12 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://example.com/2023/12/20/581.%E6%9C%80%E7%9F%AD%E6%97%A0%E5%BA%8F%E8%BF%9E%E7%BB%AD%E5%AD%90%E6%95%B0%E7%BB%84/" data-id="clqd5b13d0010kmn6cbw6cuc5" data-title="" class="article-share-link"><span class="fa fa-share">Share</span></a>
+      <a data-url="http://example.com/2023/12/20/581.%E6%9C%80%E7%9F%AD%E6%97%A0%E5%BA%8F%E8%BF%9E%E7%BB%AD%E5%AD%90%E6%95%B0%E7%BB%84/" data-id="clqd5b13d0010kmn6cbw6cuc5" data-title="最短无序连续子数组" class="article-share-link"><span class="fa fa-share">Share</span></a>
       
       
       
+  <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/c/" rel="tag">c++</a></li></ul>
+
     </footer>
   </div>
   
@@ -324,13 +348,27 @@
   <time class="dt-published" datetime="2023-12-20T02:19:02.546Z" itemprop="datePublished">2023-12-20</time>
 </a>
     
+  <div class="article-category">
+    <a class="article-category-link" href="/categories/leetcode/">leetcode</a>
+  </div>
+
   </div>
   <div class="article-inner">
     
     
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="p-name article-title" href="/2023/12/20/5835.%E6%9C%80%E5%A4%A7%E6%96%B9%E9%98%B5%E5%92%8C/">最大方阵和</a>
+    </h1>
+  
+
+      </header>
+    
     <div class="e-content article-entry" itemprop="articleBody">
       
-        <h3 id="题目描述"><a href="#题目描述" class="headerlink" title="题目描述"></a>题目描述</h3><p>给你一个 <code>n x n</code> 的整数方阵 <code>matrix</code> 。你可以执行以下操作 <strong>任意次</strong> ：</p>
+        <h2 id="最大方阵和"><a href="#最大方阵和" class="headerlink" title="最大方阵和"></a>最大方阵和</h2><h3 id="题目描述"><a href="#题目描述" class="headerlink" title="题目描述"></a>题目描述</h3><p>给你一个 <code>n x n</code> 的整数方阵 <code>matrix</code> 。你可以执行以下操作 <strong>任意次</strong> ：</p>
 <ul>
 <li>选择 <code>matrix</code> 中 <strong>相邻</strong> 两个元素，并将它们都 <strong>乘以</strong> <code>-1</code> 。</li>
 </ul>
@@ -378,10 +416,12 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://example.com/2023/12/20/5835.%E6%9C%80%E5%A4%A7%E6%96%B9%E9%98%B5%E5%92%8C/" data-id="clqd5b13e0011kmn69q5bb48h" data-title="" class="article-share-link"><span class="fa fa-share">Share</span></a>
+      <a data-url="http://example.com/2023/12/20/5835.%E6%9C%80%E5%A4%A7%E6%96%B9%E9%98%B5%E5%92%8C/" data-id="clqd5b13e0011kmn69q5bb48h" data-title="最大方阵和" class="article-share-link"><span class="fa fa-share">Share</span></a>
       
       
       
+  <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/c/" rel="tag">c++</a></li></ul>
+
     </footer>
   </div>
   
@@ -396,13 +436,27 @@
   <time class="dt-published" datetime="2023-12-20T02:19:02.546Z" itemprop="datePublished">2023-12-20</time>
 </a>
     
+  <div class="article-category">
+    <a class="article-category-link" href="/categories/leetcode/">leetcode</a>
+  </div>
+
   </div>
   <div class="article-inner">
     
     
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="p-name article-title" href="/2023/12/20/617.%E5%90%88%E5%B9%B6%E4%BA%8C%E5%8F%89%E6%A0%91/">合并二叉树(简单)</a>
+    </h1>
+  
+
+      </header>
+    
     <div class="e-content article-entry" itemprop="articleBody">
       
-        <h3 id="617-合并二叉树-简单"><a href="#617-合并二叉树-简单" class="headerlink" title="617 .合并二叉树(简单)"></a>617 .合并二叉树(简单)</h3><ul>
+        <h2 id="合并二叉树-简单"><a href="#合并二叉树-简单" class="headerlink" title="合并二叉树(简单)"></a>合并二叉树(简单)</h2><ul>
 <li><p>题目描述:给定两个二叉树，想象当你将它们中的一个覆盖到另一个上时，两个二叉树的一些节点便会重叠。</p>
 <p>你需要将他们合并为一个新的二叉树。合并的规则是如果两个节点重叠，那么将他们的值相加作为节点合并后的新值，否则不为 NULL 的节点将直接作为新二叉树的节点。</p>
 <p><img src="/.%5Cimages%5C1600830004885.png" alt="1600830004885"></p>
@@ -421,10 +475,12 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://example.com/2023/12/20/617.%E5%90%88%E5%B9%B6%E4%BA%8C%E5%8F%89%E6%A0%91/" data-id="clqd5b13e0012kmn66i056adx" data-title="" class="article-share-link"><span class="fa fa-share">Share</span></a>
+      <a data-url="http://example.com/2023/12/20/617.%E5%90%88%E5%B9%B6%E4%BA%8C%E5%8F%89%E6%A0%91/" data-id="clqd5b13e0012kmn66i056adx" data-title="合并二叉树(简单)" class="article-share-link"><span class="fa fa-share">Share</span></a>
       
       
       
+  <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/c/" rel="tag">c++</a></li></ul>
+
     </footer>
   </div>
   
@@ -439,13 +495,27 @@
   <time class="dt-published" datetime="2023-12-20T02:19:02.546Z" itemprop="datePublished">2023-12-20</time>
 </a>
     
+  <div class="article-category">
+    <a class="article-category-link" href="/categories/leetcode/">leetcode</a>
+  </div>
+
   </div>
   <div class="article-inner">
     
     
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="p-name article-title" href="/2023/12/20/726.%E5%8E%9F%E5%AD%90%E7%9A%84%E6%95%B0%E9%87%8F/">原子的数量</a>
+    </h1>
+  
+
+      </header>
+    
     <div class="e-content article-entry" itemprop="articleBody">
       
-        <h3 id="题目描述"><a href="#题目描述" class="headerlink" title="题目描述"></a>题目描述</h3><p>给定一个化学式formula（作为字符串），返回每种原子的数量。</p>
+        <h2 id="原子的数量"><a href="#原子的数量" class="headerlink" title="原子的数量"></a>原子的数量</h2><h3 id="题目描述"><a href="#题目描述" class="headerlink" title="题目描述"></a>题目描述</h3><p>给定一个化学式formula（作为字符串），返回每种原子的数量。</p>
 <p>原子总是以一个大写字母开始，接着跟随0个或任意个小写字母，表示原子的名字。</p>
 <p>如果数量大于 1，原子后会跟着数字表示原子的数量。如果数量等于 1 则不会跟数字。例如，H2O 和 H2O2 是可行的，但 H1O2 这个表达是不可行的。</p>
 <p>两个化学式连在一起是新的化学式。例如 H2O2He3Mg4 也是化学式。</p>
@@ -477,10 +547,89 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://example.com/2023/12/20/726.%E5%8E%9F%E5%AD%90%E7%9A%84%E6%95%B0%E9%87%8F/" data-id="clqd5b13f0013kmn64a31d95v" data-title="" class="article-share-link"><span class="fa fa-share">Share</span></a>
+      <a data-url="http://example.com/2023/12/20/726.%E5%8E%9F%E5%AD%90%E7%9A%84%E6%95%B0%E9%87%8F/" data-id="clqd5b13f0013kmn64a31d95v" data-title="原子的数量" class="article-share-link"><span class="fa fa-share">Share</span></a>
       
       
       
+  <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/c/" rel="tag">c++</a></li></ul>
+
+    </footer>
+  </div>
+  
+</article>
+
+
+
+  
+    <article id="post-699.掉落的方块" class="h-entry article article-type-post" itemprop="blogPost" itemscope itemtype="https://schema.org/BlogPosting">
+  <div class="article-meta">
+    <a href="/2023/12/20/699.%E6%8E%89%E8%90%BD%E7%9A%84%E6%96%B9%E5%9D%97/" class="article-date">
+  <time class="dt-published" datetime="2023-12-20T02:19:02.546Z" itemprop="datePublished">2023-12-20</time>
+</a>
+    
+  <div class="article-category">
+    <a class="article-category-link" href="/categories/leetcode/">leetcode</a>
+  </div>
+
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="p-name article-title" href="/2023/12/20/699.%E6%8E%89%E8%90%BD%E7%9A%84%E6%96%B9%E5%9D%97/">掉落的方块</a>
+    </h1>
+  
+
+      </header>
+    
+    <div class="e-content article-entry" itemprop="articleBody">
+      
+        <h2 id="掉落的方块"><a href="#掉落的方块" class="headerlink" title="掉落的方块"></a>掉落的方块</h2><h4 id="题目要求"><a href="#题目要求" class="headerlink" title="题目要求"></a>题目要求</h4><p>在无限长的数轴（即 x 轴）上，我们根据给定的顺序放置对应的正方形方块。</p>
+<p>第 i 个掉落的方块（positions[i] &#x3D; (left, side_length)）是正方形，其中 left 表示该方块最左边的点位置(positions[i][0])，side_length 表示该方块的边长(positions[i][1])。</p>
+<p>每个方块的底部边缘平行于数轴（即 x 轴），并且从一个比目前所有的落地方块更高的高度掉落而下。在上一个方块结束掉落，并保持静止后，才开始掉落新方块。</p>
+<p>方块的底边具有非常大的粘性，并将保持固定在它们所接触的任何长度表面上（无论是数轴还是其他方块）。邻接掉落的边不会过早地粘合在一起，因为只有底边才具有粘性。</p>
+<p>返回一个堆叠高度列表 ans 。每一个堆叠高度 ans[i] 表示在通过 positions[0], positions[1], …, positions[i] 表示的方块掉落结束后，目前所有已经落稳的方块堆叠的最高高度。</p>
+<p><strong>示例 1:</strong></p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br></pre></td><td class="code"><pre><span class="line">输入: [[1, 2], [2, 3], [6, 1]]</span><br><span class="line">输出: [2, 5, 5]</span><br><span class="line">解释:</span><br><span class="line"></span><br><span class="line">第一个方块 positions[0] = [1, 2] 掉落：</span><br><span class="line">_aa</span><br><span class="line"></span><br><span class="line">_aa</span><br><span class="line">-------</span><br><span class="line"></span><br><span class="line">方块最大高度为 2 。</span><br><span class="line"></span><br><span class="line">第二个方块 positions[1] = [2, 3] 掉落：</span><br><span class="line">__aaa</span><br><span class="line"></span><br><span class="line">__aaa</span><br><span class="line">__aaa</span><br><span class="line">_aa__</span><br><span class="line"></span><br><span class="line">_aa__</span><br><span class="line">--------------</span><br><span class="line"></span><br><span class="line">方块最大高度为5。</span><br><span class="line">大的方块保持在较小的方块的顶部，不论它的重心在哪里，因为方块的底部边缘有非常大的粘性。</span><br><span class="line"></span><br><span class="line">第三个方块 positions[1] = [6, 1] 掉落：</span><br><span class="line">__aaa</span><br><span class="line"></span><br><span class="line">__aaa</span><br><span class="line">__aaa</span><br><span class="line">_aa</span><br><span class="line"></span><br><span class="line">_aa___a</span><br><span class="line">-------------- </span><br><span class="line"></span><br><span class="line">方块最大高度为5。</span><br><span class="line"></span><br><span class="line">因此，我们返回结果[2, 5, 5]。</span><br></pre></td></tr></table></figure>
+
+<p><strong>示例 2:</strong></p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">输入: [[100, 100], [200, 100]]</span><br><span class="line">输出: [100, 100]</span><br><span class="line">解释: 相邻的方块不会过早地卡住，只有它们的底部边缘才能粘在表面上。</span><br></pre></td></tr></table></figure>
+
+<p><strong>注意:</strong></p>
+<ul>
+<li>1 &lt;&#x3D; positions.length &lt;&#x3D; 1000.</li>
+<li>1 &lt;&#x3D; positions[i][0] &lt;&#x3D; 10^8.</li>
+<li>1 &lt;&#x3D; positions[i][1] &lt;&#x3D; 10^6.</li>
+</ul>
+<h4 id="题目分析"><a href="#题目分析" class="headerlink" title="题目分析"></a>题目分析</h4><p>思考一个问题，在新掉落一个方块之后最大高度可能存在的情况</p>
+<ol>
+<li>最大高度为前一个方块掉落后的最大高度</li>
+<li>最大高度为当前方块掉落的高度加上之前方块所在位置的堆叠高度</li>
+</ol>
+<p><strong>暴力枚举</strong></p>
+<p>因此可以直接进行枚举，还好能过吧，通过对于之前掉落的方块进行枚举，选取其中堆叠的高度之后加上当前方块的高度即为堆叠的最大高度。</p>
+<p>如何判断两个方块是否堆叠，如果两个方块是叠在一起的则有，假设left1，right1, left2, right2分别为方块的左右边界。那么两个方块堆叠则必有<br>$$<br>left1 &lt; right2\<br>left2 &lt; right1<br>$$<br>可以根据这个条件来判断边界问题，如果是简单的暴力枚举，那么可以直接根据方块是否堆叠来更新堆叠的高度，但是堆叠的高度未必是最大的高度，还需要进行下一步的更新，有可能堆叠的高度不如之前的高度高，需要对于结果进行更新。</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">class</span> <span class="title class_">Solution</span> &#123;</span><br><span class="line"><span class="keyword">public</span>:</span><br><span class="line">    <span class="function">vector&lt;<span class="type">int</span>&gt; <span class="title">fallingSquares</span><span class="params">(vector&lt;vector&lt;<span class="type">int</span>&gt;&gt;&amp; positions)</span> </span>&#123;</span><br><span class="line">        <span class="type">int</span> n = positions.<span class="built_in">size</span>();</span><br><span class="line">        <span class="function">vector&lt;<span class="type">int</span>&gt; <span class="title">heights</span><span class="params">(n)</span></span>;</span><br><span class="line">        <span class="keyword">for</span> (<span class="type">int</span> i = <span class="number">0</span>; i &lt; n; i++) &#123;</span><br><span class="line">            <span class="type">int</span> left1 = positions[i][<span class="number">0</span>], right1 = positions[i][<span class="number">0</span>] + positions[i][<span class="number">1</span>];</span><br><span class="line">            heights[i] = positions[i][<span class="number">1</span>];</span><br><span class="line">            <span class="keyword">for</span> (<span class="type">int</span> j = <span class="number">0</span>; j &lt; i; j++) &#123;</span><br><span class="line">                <span class="type">int</span> left2 = positions[j][<span class="number">0</span>], right2 = positions[j][<span class="number">0</span>] + positions[j][<span class="number">1</span>];</span><br><span class="line">                <span class="keyword">if</span> (right1 &gt; left2 &amp;&amp; right2 &gt; left1) &#123;</span><br><span class="line">                    heights[i] = <span class="built_in">max</span>(heights[i], heights[j] + positions[i][<span class="number">1</span>]);</span><br><span class="line">                &#125;</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">for</span> (<span class="type">int</span> i = <span class="number">1</span>; i &lt; n; i++) &#123;</span><br><span class="line">            heights[i] = <span class="built_in">max</span>(heights[i], heights[i - <span class="number">1</span>]);</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">return</span> heights;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+
+<p><strong>区间排序搜索</strong></p>
+<p>在上面暴力枚举的时候可以看到进行了很多的无用的搜索，需要搜索所有之前的方块，但是其实正常来说并不需要完全的搜索完全部的方块，只需要根据当前方块的区间搜索即可，可以考虑对于区间进行排序，之后对于给定的区间可以通过二分的方式直接找到对应的堆叠的位置。</p>
+<p>在暴力枚举的时候以及有过相关的堆叠判断条件的介绍，对于二分查找可以直接使用map这种底层红黑树的stl容器，进行快速的实现。</p>
+<p>在进行边界的插入时，我们采取如下的实现方式，<strong>left对应了堆叠的高度，right的部分则设置为未堆叠之前的高度</strong>(<em><strong>因为题目中说了不能贴合边界，所以一定是半开半闭的区间</strong></em>)这里面设置的是右边界开区间。</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">class</span> <span class="title class_">Solution</span> &#123;</span><br><span class="line"><span class="keyword">public</span>:</span><br><span class="line">    <span class="function">vector&lt;<span class="type">int</span>&gt; <span class="title">fallingSquares</span><span class="params">(vector&lt;vector&lt;<span class="type">int</span>&gt;&gt;&amp; positions)</span> </span>&#123;</span><br><span class="line">        <span class="type">int</span> n = positions.<span class="built_in">size</span>();</span><br><span class="line">        map&lt;<span class="type">int</span>, <span class="type">int</span>&gt; m;</span><br><span class="line">        m[<span class="number">0</span>] = <span class="number">0</span>;</span><br><span class="line">        vector&lt;<span class="type">int</span>&gt; ans;</span><br><span class="line">        ans.<span class="built_in">reserve</span>(n);</span><br><span class="line"></span><br><span class="line">        <span class="keyword">for</span>(<span class="keyword">auto</span>&amp;&amp; pos : positions)&#123;</span><br><span class="line">            <span class="type">int</span> size = pos[<span class="number">1</span>];</span><br><span class="line">            <span class="type">int</span> height = pos[<span class="number">1</span>];</span><br><span class="line">            <span class="type">int</span> left = pos[<span class="number">0</span>], right = left + height - <span class="number">1</span>;</span><br><span class="line">            <span class="keyword">auto</span> lp = m.<span class="built_in">upper_bound</span>(left), rp=m.<span class="built_in">upper_bound</span>(right);</span><br><span class="line">            <span class="keyword">auto</span> preHeight = <span class="built_in">prev</span>(rp)-&gt;second;</span><br><span class="line"></span><br><span class="line">            <span class="keyword">for</span>(<span class="keyword">auto</span> p = <span class="built_in">prev</span>(lp); p != rp; p++)&#123;</span><br><span class="line">                height = <span class="built_in">max</span>(height, size+p-&gt;second);</span><br><span class="line">            &#125;</span><br><span class="line"></span><br><span class="line">            m.<span class="built_in">erase</span>(lp, rp);</span><br><span class="line">            m[left] = height;</span><br><span class="line">            <span class="keyword">if</span>(rp == m.<span class="built_in">end</span>() || rp-&gt;first != right+<span class="number">1</span>)&#123;</span><br><span class="line">                m[right+<span class="number">1</span>] = preHeight;</span><br><span class="line">            &#125;</span><br><span class="line"></span><br><span class="line">            ans.<span class="built_in">push_back</span>(ans.<span class="built_in">empty</span>()? height:<span class="built_in">max</span>(ans.<span class="built_in">back</span>(), height));</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        <span class="keyword">return</span> ans;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://example.com/2023/12/20/699.%E6%8E%89%E8%90%BD%E7%9A%84%E6%96%B9%E5%9D%97/" data-id="clqd6lzdk00204vn63kkbhhfw" data-title="掉落的方块" class="article-share-link"><span class="fa fa-share">Share</span></a>
+      
+      
+      
+  <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/c/" rel="tag">c++</a></li></ul>
+
     </footer>
   </div>
   
@@ -495,13 +644,27 @@
   <time class="dt-published" datetime="2023-12-20T02:19:02.545Z" itemprop="datePublished">2023-12-20</time>
 </a>
     
+  <div class="article-category">
+    <a class="article-category-link" href="/categories/leetcode/">leetcode</a>
+  </div>
+
   </div>
   <div class="article-inner">
     
     
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="p-name article-title" href="/2023/12/20/1846.%E5%87%8F%E5%B0%8F%E5%92%8C%E9%87%8D%E6%96%B0%E6%8E%92%E5%88%97%E6%95%B0%E7%BB%84%E5%90%8E%E7%9A%84%E6%9C%80%E5%A4%A7%E5%85%83%E7%B4%A0/">减小和重新排列后数组后的最大元素</a>
+    </h1>
+  
+
+      </header>
+    
     <div class="e-content article-entry" itemprop="articleBody">
       
-        <h3 id="题目描述"><a href="#题目描述" class="headerlink" title="题目描述"></a>题目描述</h3><p>给你一个正整数数组 arr 。请你对 arr 执行一些操作（也可以不进行任何操作），使得数组满足以下条件：</p>
+        <h2 id="减小和重新排列后数组后的最大元素"><a href="#减小和重新排列后数组后的最大元素" class="headerlink" title="减小和重新排列后数组后的最大元素"></a>减小和重新排列后数组后的最大元素</h2><h3 id="题目描述"><a href="#题目描述" class="headerlink" title="题目描述"></a>题目描述</h3><p>给你一个正整数数组 arr 。请你对 arr 执行一些操作（也可以不进行任何操作），使得数组满足以下条件：</p>
 <p>arr 中 第一个 元素必须为 1 。<br>任意相邻两个元素的差的绝对值 小于等于 1 ，也就是说，对于任意的 1 &lt;&#x3D; i &lt; arr.length （数组下标从 0 开始），都满足 abs(arr[i] - arr[i - 1]) &lt;&#x3D; 1 。abs(x) 为 x 的绝对值。<br>你可以执行以下 2 种操作任意次：</p>
 <p>减小 arr 中任意元素的值，使其变为一个 更小的正整数 。<br>重新排列 arr 中的元素，你可以以任意顺序重新排列。<br>请你返回执行以上操作后，在满足前文所述的条件下，arr 中可能的 最大值 。</p>
 <p><strong>示例1：</strong></p>
@@ -525,10 +688,12 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://example.com/2023/12/20/1846.%E5%87%8F%E5%B0%8F%E5%92%8C%E9%87%8D%E6%96%B0%E6%8E%92%E5%88%97%E6%95%B0%E7%BB%84%E5%90%8E%E7%9A%84%E6%9C%80%E5%A4%A7%E5%85%83%E7%B4%A0/" data-id="clqd5b12x000bkmn6bi7p59of" data-title="" class="article-share-link"><span class="fa fa-share">Share</span></a>
+      <a data-url="http://example.com/2023/12/20/1846.%E5%87%8F%E5%B0%8F%E5%92%8C%E9%87%8D%E6%96%B0%E6%8E%92%E5%88%97%E6%95%B0%E7%BB%84%E5%90%8E%E7%9A%84%E6%9C%80%E5%A4%A7%E5%85%83%E7%B4%A0/" data-id="clqd5b12x000bkmn6bi7p59of" data-title="减小和重新排列后数组后的最大元素" class="article-share-link"><span class="fa fa-share">Share</span></a>
       
       
       
+  <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/c/" rel="tag">c++</a></li></ul>
+
     </footer>
   </div>
   
@@ -543,13 +708,27 @@
   <time class="dt-published" datetime="2023-12-20T02:19:02.545Z" itemprop="datePublished">2023-12-20</time>
 </a>
     
+  <div class="article-category">
+    <a class="article-category-link" href="/categories/leetcode/">leetcode</a>
+  </div>
+
   </div>
   <div class="article-inner">
     
     
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="p-name article-title" href="/2023/12/20/1996.%E6%B8%B8%E6%88%8F%E4%B8%AD%E7%9A%84%E5%BC%B1%E8%A7%92%E8%89%B2/">游戏中的弱角色</a>
+    </h1>
+  
+
+      </header>
+    
     <div class="e-content article-entry" itemprop="articleBody">
       
-        <h3 id="1996-游戏中的弱角色"><a href="#1996-游戏中的弱角色" class="headerlink" title="1996.游戏中的弱角色"></a>1996.游戏中的弱角色</h3><h4 id="题目描述"><a href="#题目描述" class="headerlink" title="题目描述"></a>题目描述</h4><p>你正在参加一个多角色游戏，每个角色都有两个主要属性：攻击 和 防御 。给你一个二维整数数组 properties ，其中 properties[i] &#x3D; [attacki, defensei] 表示游戏中第 i 个角色的属性。</p>
+        <h2 id="游戏中的弱角色"><a href="#游戏中的弱角色" class="headerlink" title="游戏中的弱角色"></a>游戏中的弱角色</h2><h4 id="题目描述"><a href="#题目描述" class="headerlink" title="题目描述"></a>题目描述</h4><p>你正在参加一个多角色游戏，每个角色都有两个主要属性：攻击 和 防御 。给你一个二维整数数组 properties ，其中 properties[i] &#x3D; [attacki, defensei] 表示游戏中第 i 个角色的属性。</p>
 <p>如果存在一个其他角色的攻击和防御等级 都严格高于 该角色的攻击和防御等级，则认为该角色为 弱角色 。更正式地，如果认为角色 i 弱于 存在的另一个角色 j ，那么 attackj &gt; attacki 且 defensej &gt; defensei 。</p>
 <p>返回 弱角色 的数量。</p>
 <p><strong>示例 1：</strong></p>
@@ -578,10 +757,12 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://example.com/2023/12/20/1996.%E6%B8%B8%E6%88%8F%E4%B8%AD%E7%9A%84%E5%BC%B1%E8%A7%92%E8%89%B2/" data-id="clqd5b12y000ckmn6ht9r2wd7" data-title="" class="article-share-link"><span class="fa fa-share">Share</span></a>
+      <a data-url="http://example.com/2023/12/20/1996.%E6%B8%B8%E6%88%8F%E4%B8%AD%E7%9A%84%E5%BC%B1%E8%A7%92%E8%89%B2/" data-id="clqd5b12y000ckmn6ht9r2wd7" data-title="游戏中的弱角色" class="article-share-link"><span class="fa fa-share">Share</span></a>
       
       
       
+  <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/c/" rel="tag">c++</a></li></ul>
+
     </footer>
   </div>
   
@@ -602,12 +783,33 @@
           <aside id="sidebar">
   
     
+  <div class="widget-wrap">
+    <h3 class="widget-title">Categories</h3>
+    <div class="widget">
+      <ul class="category-list"><li class="category-list-item"><a class="category-list-link" href="/categories/leetcode/">leetcode</a></li></ul>
+    </div>
+  </div>
+
 
   
     
+  <div class="widget-wrap">
+    <h3 class="widget-title">Tags</h3>
+    <div class="widget">
+      <ul class="tag-list" itemprop="keywords"><li class="tag-list-item"><a class="tag-list-link" href="/tags/c/" rel="tag">c++</a></li></ul>
+    </div>
+  </div>
+
 
   
     
+  <div class="widget-wrap">
+    <h3 class="widget-title">Tag Cloud</h3>
+    <div class="widget tagcloud">
+      <a href="/tags/c/" style="font-size: 10px;">c++</a>
+    </div>
+  </div>
+
   
     
   <div class="widget-wrap">
@@ -626,23 +828,23 @@
       <ul>
         
           <li>
-            <a href="/2023/12/20/%E5%89%91%E6%8C%87offer%2062.%E7%BA%A6%E7%91%9F%E5%A4%AB%E7%8E%AF%E9%97%AE%E9%A2%98/">(no title)</a>
+            <a href="/2023/12/20/%E5%89%91%E6%8C%87offer%2062.%E7%BA%A6%E7%91%9F%E5%A4%AB%E7%8E%AF%E9%97%AE%E9%A2%98/">约瑟夫环问题</a>
           </li>
         
           <li>
-            <a href="/2023/12/20/%E5%8C%85%E5%90%ABmin%E5%87%BD%E6%95%B0%E7%9A%84%E6%A0%88/">(no title)</a>
+            <a href="/2023/12/20/%E5%8C%85%E5%90%ABmin%E5%87%BD%E6%95%B0%E7%9A%84%E6%A0%88/">包含min函数的栈</a>
           </li>
         
           <li>
-            <a href="/2023/12/20/%E5%89%91%E6%8C%87%20Offer%2052.%20%E4%B8%A4%E4%B8%AA%E9%93%BE%E8%A1%A8%E7%9A%84%E7%AC%AC%E4%B8%80%E4%B8%AA%E5%85%AC%E5%85%B1%E8%8A%82%E7%82%B9/">(no title)</a>
+            <a href="/2023/12/20/%E5%89%91%E6%8C%87%20Offer%2052.%20%E4%B8%A4%E4%B8%AA%E9%93%BE%E8%A1%A8%E7%9A%84%E7%AC%AC%E4%B8%80%E4%B8%AA%E5%85%AC%E5%85%B1%E8%8A%82%E7%82%B9/">两个链表的第一个公共节点</a>
           </li>
         
           <li>
-            <a href="/2023/12/20/%E6%89%93%E5%AE%B6%E5%8A%AB%E8%88%8DIII/">(no title)</a>
+            <a href="/2023/12/20/%E6%89%93%E5%AE%B6%E5%8A%AB%E8%88%8DIII/">打家劫舍 III</a>
           </li>
         
           <li>
-            <a href="/2023/12/20/%E9%9D%A2%E8%AF%95%E9%A2%9817.10.%E4%B8%BB%E8%A6%81%E5%85%83%E7%B4%A0/">(no title)</a>
+            <a href="/2023/12/20/%E9%9D%A2%E8%AF%95%E9%A2%9817.10.%E4%B8%BB%E8%A6%81%E5%85%83%E7%B4%A0/">主要元素</a>
           </li>
         
       </ul>

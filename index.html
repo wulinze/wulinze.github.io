@@ -81,13 +81,27 @@
   <time class="dt-published" datetime="2023-12-20T02:19:02.548Z" itemprop="datePublished">2023-12-20</time>
 </a>
     
+  <div class="article-category">
+    <a class="article-category-link" href="/categories/leetcode/">leetcode</a>
+  </div>
+
   </div>
   <div class="article-inner">
     
     
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="p-name article-title" href="/2023/12/20/%E5%89%91%E6%8C%87offer%2062.%E7%BA%A6%E7%91%9F%E5%A4%AB%E7%8E%AF%E9%97%AE%E9%A2%98/">约瑟夫环问题</a>
+    </h1>
+  
+
+      </header>
+    
     <div class="e-content article-entry" itemprop="articleBody">
       
-        <h3 id="约瑟夫环问题"><a href="#约瑟夫环问题" class="headerlink" title="约瑟夫环问题"></a>约瑟夫环问题</h3><h4 id="题目描述"><a href="#题目描述" class="headerlink" title="题目描述"></a>题目描述</h4><p>n个数字排成了圆圈，每次删除第m个数字，看最后剩下哪个数字。</p>
+        <h2 id="约瑟夫环问题"><a href="#约瑟夫环问题" class="headerlink" title="约瑟夫环问题"></a>约瑟夫环问题</h2><h4 id="题目描述"><a href="#题目描述" class="headerlink" title="题目描述"></a>题目描述</h4><p>n个数字排成了圆圈，每次删除第m个数字，看最后剩下哪个数字。</p>
 <h4 id="题目分析"><a href="#题目分析" class="headerlink" title="题目分析"></a>题目分析</h4><p>当f(n, m)的答案为x，那么假设f(n-1, m)的答案为y则有关系,$$x&#x3D;(m%n+y%n)%n$$</p>
 <p>因此有递归关系</p>
 <figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">class</span> <span class="title class_">Solution</span> &#123;</span><br><span class="line"><span class="keyword">public</span>:</span><br><span class="line">    <span class="function"><span class="type">int</span> <span class="title">lastRemaining</span><span class="params">(<span class="type">int</span> n, <span class="type">int</span> m)</span> </span>&#123;</span><br><span class="line">        <span class="comment">// if(n == 1)return 0;</span></span><br><span class="line">        <span class="comment">// return (m + lastRemaining(n-1, m)) % n;</span></span><br><span class="line">        <span class="type">int</span> x = <span class="number">0</span>;</span><br><span class="line">        <span class="keyword">for</span>(<span class="type">int</span> i=<span class="number">2</span>; i&lt;=n ;i++)&#123;</span><br><span class="line">            x = (m+x) % i;</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        <span class="keyword">return</span> x;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
@@ -97,10 +111,12 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://example.com/2023/12/20/%E5%89%91%E6%8C%87offer%2062.%E7%BA%A6%E7%91%9F%E5%A4%AB%E7%8E%AF%E9%97%AE%E9%A2%98/" data-id="clqd5b13m001ekmn692i43cof" data-title="" class="article-share-link"><span class="fa fa-share">Share</span></a>
+      <a data-url="http://example.com/2023/12/20/%E5%89%91%E6%8C%87offer%2062.%E7%BA%A6%E7%91%9F%E5%A4%AB%E7%8E%AF%E9%97%AE%E9%A2%98/" data-id="clqd5b13m001ekmn692i43cof" data-title="约瑟夫环问题" class="article-share-link"><span class="fa fa-share">Share</span></a>
       
       
       
+  <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/c/" rel="tag">c++</a></li></ul>
+
     </footer>
   </div>
   
@@ -115,24 +131,40 @@
   <time class="dt-published" datetime="2023-12-20T02:19:02.548Z" itemprop="datePublished">2023-12-20</time>
 </a>
     
+  <div class="article-category">
+    <a class="article-category-link" href="/categories/leetcode/">leetcode</a>
+  </div>
+
   </div>
   <div class="article-inner">
     
     
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="p-name article-title" href="/2023/12/20/%E5%8C%85%E5%90%ABmin%E5%87%BD%E6%95%B0%E7%9A%84%E6%A0%88/">包含min函数的栈</a>
+    </h1>
+  
+
+      </header>
+    
     <div class="e-content article-entry" itemprop="articleBody">
       
-        <h4 id="题目要求"><a href="#题目要求" class="headerlink" title="题目要求"></a>题目要求</h4><p>定义栈的数据结构，请在该类型中实现一个能够得到栈的最小元素的 min 函数在该栈中，调用 min、push 及 pop 的时间复杂度都是 O(1)。</p>
-<h4 id="题目分析"><a href="#题目分析" class="headerlink" title="题目分析"></a>题目分析</h4><p>要求min,push,pop的时间复杂度都是1,因为是栈结构,push和pop的复杂度本来就是O(1),考虑创建辅助栈,通过同步原始栈记录栈中最小元素实现min的复杂度也是O(1)。</p>
+        <h2 id="包含min函数的栈"><a href="#包含min函数的栈" class="headerlink" title="包含min函数的栈"></a>包含min函数的栈</h2><h3 id="题目要求"><a href="#题目要求" class="headerlink" title="题目要求"></a>题目要求</h3><p>定义栈的数据结构，请在该类型中实现一个能够得到栈的最小元素的 min 函数在该栈中，调用 min、push 及 pop 的时间复杂度都是 O(1)。</p>
+<h3 id="题目分析"><a href="#题目分析" class="headerlink" title="题目分析"></a>题目分析</h3><p>要求min,push,pop的时间复杂度都是1,因为是栈结构,push和pop的复杂度本来就是O(1),考虑创建辅助栈,通过同步原始栈记录栈中最小元素实现min的复杂度也是O(1)。</p>
 <figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">class</span> <span class="title class_">MinStack</span> &#123;</span><br><span class="line"><span class="keyword">private</span>:</span><br><span class="line">    stack&lt;<span class="type">int</span>&gt; s1, s2;</span><br><span class="line"><span class="keyword">public</span>:</span><br><span class="line">    <span class="comment">/** initialize your data structure here. */</span></span><br><span class="line">    <span class="built_in">MinStack</span>() &#123;</span><br><span class="line">        s2.<span class="built_in">push</span>(INT_MAX);</span><br><span class="line">    &#125;</span><br><span class="line">    </span><br><span class="line">    <span class="function"><span class="type">void</span> <span class="title">push</span><span class="params">(<span class="type">int</span> x)</span> </span>&#123;</span><br><span class="line">        s1.<span class="built_in">push</span>(x);</span><br><span class="line">        s2.<span class="built_in">push</span>(std::<span class="built_in">min</span>(s2.<span class="built_in">top</span>(), x));</span><br><span class="line">    &#125;</span><br><span class="line">    </span><br><span class="line">    <span class="function"><span class="type">void</span> <span class="title">pop</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        s1.<span class="built_in">pop</span>();</span><br><span class="line">        s2.<span class="built_in">pop</span>();</span><br><span class="line">    &#125;</span><br><span class="line">    </span><br><span class="line">    <span class="function"><span class="type">int</span> <span class="title">top</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        <span class="keyword">return</span> s1.<span class="built_in">top</span>();</span><br><span class="line">    &#125;</span><br><span class="line">    </span><br><span class="line">    <span class="function"><span class="type">int</span> <span class="title">min</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        <span class="keyword">return</span> s2.<span class="built_in">top</span>();</span><br><span class="line">    &#125;</span><br><span class="line">&#125;;</span><br><span class="line"></span><br><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * Your MinStack object will be instantiated and called as such:</span></span><br><span class="line"><span class="comment"> * MinStack* obj = new MinStack();</span></span><br><span class="line"><span class="comment"> * obj-&gt;push(x);</span></span><br><span class="line"><span class="comment"> * obj-&gt;pop();</span></span><br><span class="line"><span class="comment"> * int param_3 = obj-&gt;top();</span></span><br><span class="line"><span class="comment"> * int param_4 = obj-&gt;min();</span></span><br><span class="line"><span class="comment"> */</span></span><br></pre></td></tr></table></figure>
 
 
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://example.com/2023/12/20/%E5%8C%85%E5%90%ABmin%E5%87%BD%E6%95%B0%E7%9A%84%E6%A0%88/" data-id="clqd5b13m001fkmn69hmhcrln" data-title="" class="article-share-link"><span class="fa fa-share">Share</span></a>
+      <a data-url="http://example.com/2023/12/20/%E5%8C%85%E5%90%ABmin%E5%87%BD%E6%95%B0%E7%9A%84%E6%A0%88/" data-id="clqd5b13m001fkmn69hmhcrln" data-title="包含min函数的栈" class="article-share-link"><span class="fa fa-share">Share</span></a>
       
       
       
+  <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/c/" rel="tag">c++</a></li></ul>
+
     </footer>
   </div>
   
@@ -147,13 +179,27 @@
   <time class="dt-published" datetime="2023-12-20T02:19:02.548Z" itemprop="datePublished">2023-12-20</time>
 </a>
     
+  <div class="article-category">
+    <a class="article-category-link" href="/categories/leetcode/">leetcode</a>
+  </div>
+
   </div>
   <div class="article-inner">
     
     
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="p-name article-title" href="/2023/12/20/%E5%89%91%E6%8C%87%20Offer%2052.%20%E4%B8%A4%E4%B8%AA%E9%93%BE%E8%A1%A8%E7%9A%84%E7%AC%AC%E4%B8%80%E4%B8%AA%E5%85%AC%E5%85%B1%E8%8A%82%E7%82%B9/">两个链表的第一个公共节点</a>
+    </h1>
+  
+
+      </header>
+    
     <div class="e-content article-entry" itemprop="articleBody">
       
-        <h3 id="题目描述"><a href="#题目描述" class="headerlink" title="题目描述"></a>题目描述</h3><p>输入两个链表，找出它们的第一个公共节点。</p>
+        <h2 id="两个链表的第一个公共节点"><a href="#两个链表的第一个公共节点" class="headerlink" title="两个链表的第一个公共节点"></a>两个链表的第一个公共节点</h2><h3 id="题目描述"><a href="#题目描述" class="headerlink" title="题目描述"></a>题目描述</h3><p>输入两个链表，找出它们的第一个公共节点。</p>
 <p><strong>示例1：</strong></p>
 <figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">输入：intersectVal = 8, listA = [4,1,8,4,5], listB = [5,0,1,8,4,5], skipA = 2, skipB = 3</span><br><span class="line">输出：Reference of the node with value = 8</span><br><span class="line">输入解释：相交节点的值为 8 （注意，如果两个列表相交则不能为 0）。从各自的表头开始算起，链表 A 为 [4,1,8,4,5]，链表 B 为 [5,0,1,8,4,5]。在 A 中，相交节点前有 2 个节点；在 B 中，相交节点前有 3 个节点。</span><br></pre></td></tr></table></figure>
 
@@ -176,10 +222,12 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://example.com/2023/12/20/%E5%89%91%E6%8C%87%20Offer%2052.%20%E4%B8%A4%E4%B8%AA%E9%93%BE%E8%A1%A8%E7%9A%84%E7%AC%AC%E4%B8%80%E4%B8%AA%E5%85%AC%E5%85%B1%E8%8A%82%E7%82%B9/" data-id="clqd5b13n001gkmn62qqid0lq" data-title="" class="article-share-link"><span class="fa fa-share">Share</span></a>
+      <a data-url="http://example.com/2023/12/20/%E5%89%91%E6%8C%87%20Offer%2052.%20%E4%B8%A4%E4%B8%AA%E9%93%BE%E8%A1%A8%E7%9A%84%E7%AC%AC%E4%B8%80%E4%B8%AA%E5%85%AC%E5%85%B1%E8%8A%82%E7%82%B9/" data-id="clqd5b13n001gkmn62qqid0lq" data-title="两个链表的第一个公共节点" class="article-share-link"><span class="fa fa-share">Share</span></a>
       
       
       
+  <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/c/" rel="tag">c++</a></li></ul>
+
     </footer>
   </div>
   
@@ -194,13 +242,27 @@
   <time class="dt-published" datetime="2023-12-20T02:19:02.548Z" itemprop="datePublished">2023-12-20</time>
 </a>
     
+  <div class="article-category">
+    <a class="article-category-link" href="/categories/leetcode/">leetcode</a>
+  </div>
+
   </div>
   <div class="article-inner">
     
     
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="p-name article-title" href="/2023/12/20/%E6%89%93%E5%AE%B6%E5%8A%AB%E8%88%8DIII/">打家劫舍 III</a>
+    </h1>
+  
+
+      </header>
+    
     <div class="e-content article-entry" itemprop="articleBody">
       
-        <h3 id="题目描述"><a href="#题目描述" class="headerlink" title="题目描述"></a>题目描述</h3><p>打家劫舍是一个系列题，都是用DP做的前两个比较简单，主要说一下第三个。</p>
+        <h2 id="打家劫舍-III"><a href="#打家劫舍-III" class="headerlink" title="打家劫舍 III"></a>打家劫舍 III</h2><h3 id="题目描述"><a href="#题目描述" class="headerlink" title="题目描述"></a>题目描述</h3><p>打家劫舍是一个系列题，都是用DP做的前两个比较简单，主要说一下第三个。</p>
 <p>在上次打劫完一条街道之后和一圈房屋后，小偷又发现了一个新的可行窃的地区。这个地区只有一个入口，我们称之为“根”。 除了“根”之外，每栋房子有且只有一个“父“房子与之相连。一番侦察之后，聪明的小偷意识到“这个地方的所有房屋的排列类似于一棵二叉树”。 如果两个直接相连的房子在同一天晚上被打劫，房屋将自动报警。</p>
 <p>计算在不触动警报的情况下，小偷一晚能够盗取的最高金额。</p>
 <p><strong>示例1：</strong></p>
@@ -218,10 +280,12 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://example.com/2023/12/20/%E6%89%93%E5%AE%B6%E5%8A%AB%E8%88%8DIII/" data-id="clqd5b13n001hkmn6g4kfcpb0" data-title="" class="article-share-link"><span class="fa fa-share">Share</span></a>
+      <a data-url="http://example.com/2023/12/20/%E6%89%93%E5%AE%B6%E5%8A%AB%E8%88%8DIII/" data-id="clqd5b13n001hkmn6g4kfcpb0" data-title="打家劫舍 III" class="article-share-link"><span class="fa fa-share">Share</span></a>
       
       
       
+  <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/c/" rel="tag">c++</a></li></ul>
+
     </footer>
   </div>
   
@@ -236,13 +300,27 @@
   <time class="dt-published" datetime="2023-12-20T02:19:02.548Z" itemprop="datePublished">2023-12-20</time>
 </a>
     
+  <div class="article-category">
+    <a class="article-category-link" href="/categories/leetcode/">leetcode</a>
+  </div>
+
   </div>
   <div class="article-inner">
     
     
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="p-name article-title" href="/2023/12/20/%E9%9D%A2%E8%AF%95%E9%A2%9817.10.%E4%B8%BB%E8%A6%81%E5%85%83%E7%B4%A0/">主要元素</a>
+    </h1>
+  
+
+      </header>
+    
     <div class="e-content article-entry" itemprop="articleBody">
       
-        <h3 id="题目分析"><a href="#题目分析" class="headerlink" title="题目分析"></a>题目分析</h3><p>数组中占比超过一半的元素称之为主要元素。给你一个 整数 数组，找出其中的主要元素。若没有，返回 -1 。请设计时间复杂度为 O(N) 、空间复杂度为 O(1) 的解决方案。</p>
+        <h2 id="主要元素"><a href="#主要元素" class="headerlink" title="主要元素"></a>主要元素</h2><h3 id="题目分析"><a href="#题目分析" class="headerlink" title="题目分析"></a>题目分析</h3><p>数组中占比超过一半的元素称之为主要元素。给你一个 整数 数组，找出其中的主要元素。若没有，返回 -1 。请设计时间复杂度为 O(N) 、空间复杂度为 O(1) 的解决方案。</p>
 <p><strong>示例1：</strong></p>
 <figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">输入：[1,2,5,9,5,9,5,5,5]</span><br><span class="line">输出：5</span><br></pre></td></tr></table></figure>
 
@@ -265,10 +343,12 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://example.com/2023/12/20/%E9%9D%A2%E8%AF%95%E9%A2%9817.10.%E4%B8%BB%E8%A6%81%E5%85%83%E7%B4%A0/" data-id="clqd5b13u001ikmn67jaw8nw7" data-title="" class="article-share-link"><span class="fa fa-share">Share</span></a>
+      <a data-url="http://example.com/2023/12/20/%E9%9D%A2%E8%AF%95%E9%A2%9817.10.%E4%B8%BB%E8%A6%81%E5%85%83%E7%B4%A0/" data-id="clqd5b13u001ikmn67jaw8nw7" data-title="主要元素" class="article-share-link"><span class="fa fa-share">Share</span></a>
       
       
       
+  <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/c/" rel="tag">c++</a></li></ul>
+
     </footer>
   </div>
   
@@ -283,13 +363,27 @@
   <time class="dt-published" datetime="2023-12-20T02:19:02.547Z" itemprop="datePublished">2023-12-20</time>
 </a>
     
+  <div class="article-category">
+    <a class="article-category-link" href="/categories/leetcode/">leetcode</a>
+  </div>
+
   </div>
   <div class="article-inner">
     
     
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="p-name article-title" href="/2023/12/20/765.%E6%83%85%E4%BE%A3%E7%89%B5%E6%89%8B/">情侣牵手</a>
+    </h1>
+  
+
+      </header>
+    
     <div class="e-content article-entry" itemprop="articleBody">
       
-        <h3 id="题目描述"><a href="#题目描述" class="headerlink" title="题目描述"></a>题目描述</h3><p>N 对情侣坐在连续排列的 2N 个座位上，想要牵到对方的手。 计算最少交换座位的次数，以便每对情侣可以并肩坐在一起。 一次交换可选择任意两人，让他们站起来交换座位。</p>
+        <h2 id="情侣牵手"><a href="#情侣牵手" class="headerlink" title="情侣牵手"></a>情侣牵手</h2><h3 id="题目描述"><a href="#题目描述" class="headerlink" title="题目描述"></a>题目描述</h3><p>N 对情侣坐在连续排列的 2N 个座位上，想要牵到对方的手。 计算最少交换座位的次数，以便每对情侣可以并肩坐在一起。 一次交换可选择任意两人，让他们站起来交换座位。</p>
 <p>人和座位用 0 到 2N-1 的整数表示，情侣们按顺序编号，第一对是 (0, 1)，第二对是 (2, 3)，以此类推，最后一对是 (2N-2, 2N-1)。</p>
 <p>这些情侣的初始座位  row[i] 是由最初始坐在第 i 个座位上的人决定的。</p>
 <p><strong>示例1：</strong></p>
@@ -308,10 +402,12 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://example.com/2023/12/20/765.%E6%83%85%E4%BE%A3%E7%89%B5%E6%89%8B/" data-id="clqd5b13g0014kmn63bgi5oyn" data-title="" class="article-share-link"><span class="fa fa-share">Share</span></a>
+      <a data-url="http://example.com/2023/12/20/765.%E6%83%85%E4%BE%A3%E7%89%B5%E6%89%8B/" data-id="clqd5b13g0014kmn63bgi5oyn" data-title="情侣牵手" class="article-share-link"><span class="fa fa-share">Share</span></a>
       
       
       
+  <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/c/" rel="tag">c++</a></li></ul>
+
     </footer>
   </div>
   
@@ -326,13 +422,27 @@
   <time class="dt-published" datetime="2023-12-20T02:19:02.547Z" itemprop="datePublished">2023-12-20</time>
 </a>
     
+  <div class="article-category">
+    <a class="article-category-link" href="/categories/leetcode/">leetcode</a>
+  </div>
+
   </div>
   <div class="article-inner">
     
     
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="p-name article-title" href="/2023/12/20/844%E6%AF%94%E8%BE%83%E5%90%AB%E9%80%80%E6%A0%BC%E7%9A%84%E5%AD%97%E7%AC%A6%E4%B8%B2/">比较含退格的字符串</a>
+    </h1>
+  
+
+      </header>
+    
     <div class="e-content article-entry" itemprop="articleBody">
       
-        <h3 id="题目描述"><a href="#题目描述" class="headerlink" title="题目描述"></a>题目描述</h3><p>给定 S 和 T 两个字符串，当它们分别被输入到空白的文本编辑器后，判断二者是否相等，并返回结果。 # 代表退格字符。</p>
+        <h2 id="比较含退格的字符串"><a href="#比较含退格的字符串" class="headerlink" title="比较含退格的字符串"></a>比较含退格的字符串</h2><h3 id="题目描述"><a href="#题目描述" class="headerlink" title="题目描述"></a>题目描述</h3><p>给定 S 和 T 两个字符串，当它们分别被输入到空白的文本编辑器后，判断二者是否相等，并返回结果。 # 代表退格字符。</p>
 <p>注意：如果对空文本输入退格字符，文本继续为空。</p>
 <p><strong>示例 1：</strong></p>
 <figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">输入：S = &quot;ab#c&quot;, T = &quot;ad#c&quot;</span><br><span class="line">输出：true</span><br><span class="line">解释：S 和 T 都会变成 “ac”。</span><br></pre></td></tr></table></figure>
@@ -359,10 +469,12 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://example.com/2023/12/20/844%E6%AF%94%E8%BE%83%E5%90%AB%E9%80%80%E6%A0%BC%E7%9A%84%E5%AD%97%E7%AC%A6%E4%B8%B2/" data-id="clqd5b13g0015kmn6h2ge0l9h" data-title="" class="article-share-link"><span class="fa fa-share">Share</span></a>
+      <a data-url="http://example.com/2023/12/20/844%E6%AF%94%E8%BE%83%E5%90%AB%E9%80%80%E6%A0%BC%E7%9A%84%E5%AD%97%E7%AC%A6%E4%B8%B2/" data-id="clqd5b13g0015kmn6h2ge0l9h" data-title="比较含退格的字符串" class="article-share-link"><span class="fa fa-share">Share</span></a>
       
       
       
+  <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/c/" rel="tag">c++</a></li></ul>
+
     </footer>
   </div>
   
@@ -377,13 +489,27 @@
   <time class="dt-published" datetime="2023-12-20T02:19:02.547Z" itemprop="datePublished">2023-12-20</time>
 </a>
     
+  <div class="article-category">
+    <a class="article-category-link" href="/categories/leetcode/">leetcode</a>
+  </div>
+
   </div>
   <div class="article-inner">
     
     
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="p-name article-title" href="/2023/12/20/879.%20%E7%9B%88%E5%88%A9%E8%AE%A1%E5%88%92/">盈利计划</a>
+    </h1>
+  
+
+      </header>
+    
     <div class="e-content article-entry" itemprop="articleBody">
       
-        <h3 id="879-盈利计划"><a href="#879-盈利计划" class="headerlink" title="879.盈利计划"></a>879.盈利计划</h3><h4 id="题目描述"><a href="#题目描述" class="headerlink" title="题目描述"></a>题目描述</h4><p>集团里有 n 名员工，他们可以完成各种各样的工作创造利润。</p>
+        <h2 id="盈利计划"><a href="#盈利计划" class="headerlink" title="盈利计划"></a>盈利计划</h2><h4 id="题目描述"><a href="#题目描述" class="headerlink" title="题目描述"></a>题目描述</h4><p>集团里有 n 名员工，他们可以完成各种各样的工作创造利润。</p>
 <p>第 i 种工作会产生 profit[i] 的利润，它要求 group[i] 名成员共同参与。如果成员参与了其中一项工作，就不能参与另一项工作。</p>
 <p>工作的任何至少产生 minProfit 利润的子集称为 盈利计划 。并且工作的成员总数最多为 n 。</p>
 <p>有多少种计划可以选择？因为答案很大，所以 返回结果模 10^9 + 7 的值。</p>
@@ -411,10 +537,12 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://example.com/2023/12/20/879.%20%E7%9B%88%E5%88%A9%E8%AE%A1%E5%88%92/" data-id="clqd5b13h0016kmn6hz7lafgi" data-title="" class="article-share-link"><span class="fa fa-share">Share</span></a>
+      <a data-url="http://example.com/2023/12/20/879.%20%E7%9B%88%E5%88%A9%E8%AE%A1%E5%88%92/" data-id="clqd5b13h0016kmn6hz7lafgi" data-title="盈利计划" class="article-share-link"><span class="fa fa-share">Share</span></a>
       
       
       
+  <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/c/" rel="tag">c++</a></li></ul>
+
     </footer>
   </div>
   
@@ -429,13 +557,27 @@
   <time class="dt-published" datetime="2023-12-20T02:19:02.547Z" itemprop="datePublished">2023-12-20</time>
 </a>
     
+  <div class="article-category">
+    <a class="article-category-link" href="/categories/leetcode/">leetcode</a>
+  </div>
+
   </div>
   <div class="article-inner">
     
     
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="p-name article-title" href="/2023/12/20/887.%E9%B8%A1%E8%9B%8B%E6%8E%89%E8%90%BD/">鸡蛋掉落</a>
+    </h1>
+  
+
+      </header>
+    
     <div class="e-content article-entry" itemprop="articleBody">
       
-        <h3 id="鸡蛋掉落"><a href="#鸡蛋掉落" class="headerlink" title="鸡蛋掉落"></a>鸡蛋掉落</h3><p>这道题说实话有点不合理，不过可能这就是数学吧，有的时候比较抽象，这道题还是比较难的，说实话感觉看完题解也够呛能够完全记住。简单的理一下思路。这道题有一个很大的bug就是鸡蛋掉落是否碎有点像薛定谔的鸡蛋只要是没有下落就有多种可能，因此在求解的时候让我觉得只和它占得层数有关，因此可以考虑DP，使用DP进行计算。分析DP方程。</p>
+        <h2 id="鸡蛋掉落"><a href="#鸡蛋掉落" class="headerlink" title="鸡蛋掉落"></a>鸡蛋掉落</h2><h3 id="题目描述"><a href="#题目描述" class="headerlink" title="题目描述"></a>题目描述</h3><p>这道题说实话有点不合理，不过可能这就是数学吧，有的时候比较抽象，这道题还是比较难的，说实话感觉看完题解也够呛能够完全记住。简单的理一下思路。这道题有一个很大的bug就是鸡蛋掉落是否碎有点像薛定谔的鸡蛋只要是没有下落就有多种可能，因此在求解的时候让我觉得只和它占得层数有关，因此可以考虑DP，使用DP进行计算。分析DP方程。</p>
 <p>$dp[K][N]$表示K个鸡蛋在N层楼所需要的最小移动次数，那么在x层进行一次下落有两种情况。</p>
 <ul>
 <li><p>$鸡蛋碎了那么还剩下K-1个鸡蛋，x楼层以上一定会碎因此可以得到方程dp[K][N] &#x3D; dp[K-1][x-1]+1$</p>
@@ -447,7 +589,6 @@
 <p>$dp[K][N] &#x3D; 1+$ $min_{1 \leq x\leq N}(dp[K-1][x-1],dp[K][N-x])$</p>
 <p>这样来看时间复杂度是$O(K<em>N</em>N)$会TLE</p>
 <p>因此对其进行优化，根据单调性可以考虑使用二分查找</p>
-<p><img src="C:\Users\82490\AppData\Roaming\Typora\typora-user-images\1593765070849.png" alt="1593765070849"></p>
 <ul>
 <li>方法一：动态规划+二分查找($O(K<em>N</em>logN)$,$O(K*N)$)</li>
 </ul>
@@ -468,10 +609,12 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://example.com/2023/12/20/887.%E9%B8%A1%E8%9B%8B%E6%8E%89%E8%90%BD/" data-id="clqd5b13h0017kmn60kdo9n8e" data-title="" class="article-share-link"><span class="fa fa-share">Share</span></a>
+      <a data-url="http://example.com/2023/12/20/887.%E9%B8%A1%E8%9B%8B%E6%8E%89%E8%90%BD/" data-id="clqd5b13h0017kmn60kdo9n8e" data-title="鸡蛋掉落" class="article-share-link"><span class="fa fa-share">Share</span></a>
       
       
       
+  <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/c/" rel="tag">c++</a></li></ul>
+
     </footer>
   </div>
   
@@ -486,13 +629,27 @@
   <time class="dt-published" datetime="2023-12-20T02:19:02.547Z" itemprop="datePublished">2023-12-20</time>
 </a>
     
+  <div class="article-category">
+    <a class="article-category-link" href="/categories/leetcode/">leetcode</a>
+  </div>
+
   </div>
   <div class="article-inner">
     
     
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="p-name article-title" href="/2023/12/20/930.%E5%92%8C%E7%9B%B8%E5%90%8C%E7%9A%84%E4%BA%8C%E5%85%83%E5%AD%90%E6%95%B0%E7%BB%84/">和相同的二元子数组</a>
+    </h1>
+  
+
+      </header>
+    
     <div class="e-content article-entry" itemprop="articleBody">
       
-        <h3 id="题目描述"><a href="#题目描述" class="headerlink" title="题目描述"></a>题目描述</h3><p>给你一个二元数组 <code>nums</code> ，和一个整数 <code>goal</code> ，请你统计并返回有多少个和为 <code>goal</code> 的 <strong>非空</strong> 子数组。</p>
+        <h2 id="和相同的二元子数组"><a href="#和相同的二元子数组" class="headerlink" title="和相同的二元子数组"></a>和相同的二元子数组</h2><h3 id="题目描述"><a href="#题目描述" class="headerlink" title="题目描述"></a>题目描述</h3><p>给你一个二元数组 <code>nums</code> ，和一个整数 <code>goal</code> ，请你统计并返回有多少个和为 <code>goal</code> 的 <strong>非空</strong> 子数组。</p>
 <p><strong>子数组</strong> 是数组的一段连续部分。</p>
 <p><strong>示例1：</strong></p>
 <figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">输入：nums = [<span class="number">1</span>,<span class="number">0</span>,<span class="number">1</span>,<span class="number">0</span>,<span class="number">1</span>], goal = <span class="number">2</span></span><br><span class="line">输出：<span class="number">4</span></span><br><span class="line">解释：</span><br><span class="line">如下面黑体所示，有 <span class="number">4</span> 个满足题目要求的子数组：</span><br><span class="line">[<span class="number">1</span>,<span class="number">0</span>,<span class="number">1</span>,<span class="number">0</span>,<span class="number">1</span>]</span><br><span class="line">[<span class="number">1</span>,<span class="number">0</span>,<span class="number">1</span>,<span class="number">0</span>,<span class="number">1</span>]</span><br><span class="line">[<span class="number">1</span>,<span class="number">0</span>,<span class="number">1</span>,<span class="number">0</span>,<span class="number">1</span>]</span><br><span class="line">[<span class="number">1</span>,<span class="number">0</span>,<span class="number">1</span>,<span class="number">0</span>,<span class="number">1</span>]</span><br></pre></td></tr></table></figure>
@@ -522,10 +679,12 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://example.com/2023/12/20/930.%E5%92%8C%E7%9B%B8%E5%90%8C%E7%9A%84%E4%BA%8C%E5%85%83%E5%AD%90%E6%95%B0%E7%BB%84/" data-id="clqd5b13i0018kmn60xhkg78c" data-title="" class="article-share-link"><span class="fa fa-share">Share</span></a>
+      <a data-url="http://example.com/2023/12/20/930.%E5%92%8C%E7%9B%B8%E5%90%8C%E7%9A%84%E4%BA%8C%E5%85%83%E5%AD%90%E6%95%B0%E7%BB%84/" data-id="clqd5b13i0018kmn60xhkg78c" data-title="和相同的二元子数组" class="article-share-link"><span class="fa fa-share">Share</span></a>
       
       
       
+  <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/c/" rel="tag">c++</a></li></ul>
+
     </footer>
   </div>
   
@@ -546,12 +705,33 @@
           <aside id="sidebar">
   
     
+  <div class="widget-wrap">
+    <h3 class="widget-title">Categories</h3>
+    <div class="widget">
+      <ul class="category-list"><li class="category-list-item"><a class="category-list-link" href="/categories/leetcode/">leetcode</a></li></ul>
+    </div>
+  </div>
+
 
   
     
+  <div class="widget-wrap">
+    <h3 class="widget-title">Tags</h3>
+    <div class="widget">
+      <ul class="tag-list" itemprop="keywords"><li class="tag-list-item"><a class="tag-list-link" href="/tags/c/" rel="tag">c++</a></li></ul>
+    </div>
+  </div>
+
 
   
     
+  <div class="widget-wrap">
+    <h3 class="widget-title">Tag Cloud</h3>
+    <div class="widget tagcloud">
+      <a href="/tags/c/" style="font-size: 10px;">c++</a>
+    </div>
+  </div>
+
   
     
   <div class="widget-wrap">
@@ -570,23 +750,23 @@
       <ul>
         
           <li>
-            <a href="/2023/12/20/%E5%89%91%E6%8C%87offer%2062.%E7%BA%A6%E7%91%9F%E5%A4%AB%E7%8E%AF%E9%97%AE%E9%A2%98/">(no title)</a>
+            <a href="/2023/12/20/%E5%89%91%E6%8C%87offer%2062.%E7%BA%A6%E7%91%9F%E5%A4%AB%E7%8E%AF%E9%97%AE%E9%A2%98/">约瑟夫环问题</a>
           </li>
         
           <li>
-            <a href="/2023/12/20/%E5%8C%85%E5%90%ABmin%E5%87%BD%E6%95%B0%E7%9A%84%E6%A0%88/">(no title)</a>
+            <a href="/2023/12/20/%E5%8C%85%E5%90%ABmin%E5%87%BD%E6%95%B0%E7%9A%84%E6%A0%88/">包含min函数的栈</a>
           </li>
         
           <li>
-            <a href="/2023/12/20/%E5%89%91%E6%8C%87%20Offer%2052.%20%E4%B8%A4%E4%B8%AA%E9%93%BE%E8%A1%A8%E7%9A%84%E7%AC%AC%E4%B8%80%E4%B8%AA%E5%85%AC%E5%85%B1%E8%8A%82%E7%82%B9/">(no title)</a>
+            <a href="/2023/12/20/%E5%89%91%E6%8C%87%20Offer%2052.%20%E4%B8%A4%E4%B8%AA%E9%93%BE%E8%A1%A8%E7%9A%84%E7%AC%AC%E4%B8%80%E4%B8%AA%E5%85%AC%E5%85%B1%E8%8A%82%E7%82%B9/">两个链表的第一个公共节点</a>
           </li>
         
           <li>
-            <a href="/2023/12/20/%E6%89%93%E5%AE%B6%E5%8A%AB%E8%88%8DIII/">(no title)</a>
+            <a href="/2023/12/20/%E6%89%93%E5%AE%B6%E5%8A%AB%E8%88%8DIII/">打家劫舍 III</a>
           </li>
         
           <li>
-            <a href="/2023/12/20/%E9%9D%A2%E8%AF%95%E9%A2%9817.10.%E4%B8%BB%E8%A6%81%E5%85%83%E7%B4%A0/">(no title)</a>
+            <a href="/2023/12/20/%E9%9D%A2%E8%AF%95%E9%A2%9817.10.%E4%B8%BB%E8%A6%81%E5%85%83%E7%B4%A0/">主要元素</a>
           </li>
         
       </ul>

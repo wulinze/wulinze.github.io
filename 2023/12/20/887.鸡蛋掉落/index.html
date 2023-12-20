@@ -4,21 +4,20 @@
   <meta charset="utf-8">
   
   
-  <title>Wu&#39;s Blog</title>
+  <title>鸡蛋掉落 | Wu&#39;s Blog</title>
   <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-  <meta name="description" content="鸡蛋掉落这道题说实话有点不合理，不过可能这就是数学吧，有的时候比较抽象，这道题还是比较难的，说实话感觉看完题解也够呛能够完全记住。简单的理一下思路。这道题有一个很大的bug就是鸡蛋掉落是否碎有点像薛定谔的鸡蛋只要是没有下落就有多种可能，因此在求解的时候让我觉得只和它占得层数有关，因此可以考虑DP，使用DP进行计算。分析DP方程。 $dp[K][N]$表示K个鸡蛋在N层楼所需要的最小移动次数，那么在">
+  <meta name="description" content="鸡蛋掉落题目描述这道题说实话有点不合理，不过可能这就是数学吧，有的时候比较抽象，这道题还是比较难的，说实话感觉看完题解也够呛能够完全记住。简单的理一下思路。这道题有一个很大的bug就是鸡蛋掉落是否碎有点像薛定谔的鸡蛋只要是没有下落就有多种可能，因此在求解的时候让我觉得只和它占得层数有关，因此可以考虑DP，使用DP进行计算。分析DP方程。 $dp[K][N]$表示K个鸡蛋在N层楼所需要的最小移动次数">
 <meta property="og:type" content="article">
-<meta property="og:title" content="Wu&#39;s Blog">
+<meta property="og:title" content="鸡蛋掉落">
 <meta property="og:url" content="http://example.com/2023/12/20/887.%E9%B8%A1%E8%9B%8B%E6%8E%89%E8%90%BD/index.html">
 <meta property="og:site_name" content="Wu&#39;s Blog">
-<meta property="og:description" content="鸡蛋掉落这道题说实话有点不合理，不过可能这就是数学吧，有的时候比较抽象，这道题还是比较难的，说实话感觉看完题解也够呛能够完全记住。简单的理一下思路。这道题有一个很大的bug就是鸡蛋掉落是否碎有点像薛定谔的鸡蛋只要是没有下落就有多种可能，因此在求解的时候让我觉得只和它占得层数有关，因此可以考虑DP，使用DP进行计算。分析DP方程。 $dp[K][N]$表示K个鸡蛋在N层楼所需要的最小移动次数，那么在">
+<meta property="og:description" content="鸡蛋掉落题目描述这道题说实话有点不合理，不过可能这就是数学吧，有的时候比较抽象，这道题还是比较难的，说实话感觉看完题解也够呛能够完全记住。简单的理一下思路。这道题有一个很大的bug就是鸡蛋掉落是否碎有点像薛定谔的鸡蛋只要是没有下落就有多种可能，因此在求解的时候让我觉得只和它占得层数有关，因此可以考虑DP，使用DP进行计算。分析DP方程。 $dp[K][N]$表示K个鸡蛋在N层楼所需要的最小移动次数">
 <meta property="og:locale" content="en_US">
-<meta property="og:image" content="c:\Users\82490\AppData\Roaming\Typora\typora-user-images\1593765070849.png">
 <meta property="article:published_time" content="2023-12-20T02:19:02.547Z">
-<meta property="article:modified_time" content="2023-12-20T02:19:05.152Z">
+<meta property="article:modified_time" content="2023-12-20T02:55:17.534Z">
 <meta property="article:author" content="wulinze">
+<meta property="article:tag" content="c++">
 <meta name="twitter:card" content="summary">
-<meta name="twitter:image" content="c:\Users\82490\AppData\Roaming\Typora\typora-user-images\1593765070849.png">
   
     <link rel="alternate" href="/atom.xml" title="Wu's Blog" type="application/atom+xml">
   
@@ -83,13 +82,27 @@
   <time class="dt-published" datetime="2023-12-20T02:19:02.547Z" itemprop="datePublished">2023-12-20</time>
 </a>
     
+  <div class="article-category">
+    <a class="article-category-link" href="/categories/leetcode/">leetcode</a>
+  </div>
+
   </div>
   <div class="article-inner">
     
     
+      <header class="article-header">
+        
+  
+    <h1 class="p-name article-title" itemprop="headline name">
+      鸡蛋掉落
+    </h1>
+  
+
+      </header>
+    
     <div class="e-content article-entry" itemprop="articleBody">
       
-        <h3 id="鸡蛋掉落"><a href="#鸡蛋掉落" class="headerlink" title="鸡蛋掉落"></a>鸡蛋掉落</h3><p>这道题说实话有点不合理，不过可能这就是数学吧，有的时候比较抽象，这道题还是比较难的，说实话感觉看完题解也够呛能够完全记住。简单的理一下思路。这道题有一个很大的bug就是鸡蛋掉落是否碎有点像薛定谔的鸡蛋只要是没有下落就有多种可能，因此在求解的时候让我觉得只和它占得层数有关，因此可以考虑DP，使用DP进行计算。分析DP方程。</p>
+        <h2 id="鸡蛋掉落"><a href="#鸡蛋掉落" class="headerlink" title="鸡蛋掉落"></a>鸡蛋掉落</h2><h3 id="题目描述"><a href="#题目描述" class="headerlink" title="题目描述"></a>题目描述</h3><p>这道题说实话有点不合理，不过可能这就是数学吧，有的时候比较抽象，这道题还是比较难的，说实话感觉看完题解也够呛能够完全记住。简单的理一下思路。这道题有一个很大的bug就是鸡蛋掉落是否碎有点像薛定谔的鸡蛋只要是没有下落就有多种可能，因此在求解的时候让我觉得只和它占得层数有关，因此可以考虑DP，使用DP进行计算。分析DP方程。</p>
 <p>$dp[K][N]$表示K个鸡蛋在N层楼所需要的最小移动次数，那么在x层进行一次下落有两种情况。</p>
 <ul>
 <li><p>$鸡蛋碎了那么还剩下K-1个鸡蛋，x楼层以上一定会碎因此可以得到方程dp[K][N] &#x3D; dp[K-1][x-1]+1$</p>
@@ -101,7 +114,6 @@
 <p>$dp[K][N] &#x3D; 1+$ $min_{1 \leq x\leq N}(dp[K-1][x-1],dp[K][N-x])$</p>
 <p>这样来看时间复杂度是$O(K<em>N</em>N)$会TLE</p>
 <p>因此对其进行优化，根据单调性可以考虑使用二分查找</p>
-<p><img src="C:\Users\82490\AppData\Roaming\Typora\typora-user-images\1593765070849.png" alt="1593765070849"></p>
 <ul>
 <li>方法一：动态规划+二分查找($O(K<em>N</em>logN)$,$O(K*N)$)</li>
 </ul>
@@ -122,10 +134,12 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://example.com/2023/12/20/887.%E9%B8%A1%E8%9B%8B%E6%8E%89%E8%90%BD/" data-id="clqd5b13h0017kmn60kdo9n8e" data-title="" class="article-share-link"><span class="fa fa-share">Share</span></a>
+      <a data-url="http://example.com/2023/12/20/887.%E9%B8%A1%E8%9B%8B%E6%8E%89%E8%90%BD/" data-id="clqd5b13h0017kmn60kdo9n8e" data-title="鸡蛋掉落" class="article-share-link"><span class="fa fa-share">Share</span></a>
       
       
       
+  <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/c/" rel="tag">c++</a></li></ul>
+
     </footer>
   </div>
   
@@ -136,7 +150,7 @@
       <strong class="article-nav-caption">Newer</strong>
       <div class="article-nav-title">
         
-          (no title)
+          盈利计划
         
       </div>
     </a>
@@ -144,7 +158,7 @@
   
     <a href="/2023/12/20/930.%E5%92%8C%E7%9B%B8%E5%90%8C%E7%9A%84%E4%BA%8C%E5%85%83%E5%AD%90%E6%95%B0%E7%BB%84/" id="article-nav-older" class="article-nav-link-wrap">
       <strong class="article-nav-caption">Older</strong>
-      <div class="article-nav-title"></div>
+      <div class="article-nav-title">和相同的二元子数组</div>
     </a>
   
 </nav>
@@ -158,12 +172,33 @@
           <aside id="sidebar">
   
     
+  <div class="widget-wrap">
+    <h3 class="widget-title">Categories</h3>
+    <div class="widget">
+      <ul class="category-list"><li class="category-list-item"><a class="category-list-link" href="/categories/leetcode/">leetcode</a></li></ul>
+    </div>
+  </div>
+
 
   
     
+  <div class="widget-wrap">
+    <h3 class="widget-title">Tags</h3>
+    <div class="widget">
+      <ul class="tag-list" itemprop="keywords"><li class="tag-list-item"><a class="tag-list-link" href="/tags/c/" rel="tag">c++</a></li></ul>
+    </div>
+  </div>
+
 
   
     
+  <div class="widget-wrap">
+    <h3 class="widget-title">Tag Cloud</h3>
+    <div class="widget tagcloud">
+      <a href="/tags/c/" style="font-size: 10px;">c++</a>
+    </div>
+  </div>
+
   
     
   <div class="widget-wrap">
@@ -182,23 +217,23 @@
       <ul>
         
           <li>
-            <a href="/2023/12/20/%E5%89%91%E6%8C%87offer%2062.%E7%BA%A6%E7%91%9F%E5%A4%AB%E7%8E%AF%E9%97%AE%E9%A2%98/">(no title)</a>
+            <a href="/2023/12/20/%E5%89%91%E6%8C%87offer%2062.%E7%BA%A6%E7%91%9F%E5%A4%AB%E7%8E%AF%E9%97%AE%E9%A2%98/">约瑟夫环问题</a>
           </li>
         
           <li>
-            <a href="/2023/12/20/%E5%8C%85%E5%90%ABmin%E5%87%BD%E6%95%B0%E7%9A%84%E6%A0%88/">(no title)</a>
+            <a href="/2023/12/20/%E5%8C%85%E5%90%ABmin%E5%87%BD%E6%95%B0%E7%9A%84%E6%A0%88/">包含min函数的栈</a>
           </li>
         
           <li>
-            <a href="/2023/12/20/%E5%89%91%E6%8C%87%20Offer%2052.%20%E4%B8%A4%E4%B8%AA%E9%93%BE%E8%A1%A8%E7%9A%84%E7%AC%AC%E4%B8%80%E4%B8%AA%E5%85%AC%E5%85%B1%E8%8A%82%E7%82%B9/">(no title)</a>
+            <a href="/2023/12/20/%E5%89%91%E6%8C%87%20Offer%2052.%20%E4%B8%A4%E4%B8%AA%E9%93%BE%E8%A1%A8%E7%9A%84%E7%AC%AC%E4%B8%80%E4%B8%AA%E5%85%AC%E5%85%B1%E8%8A%82%E7%82%B9/">两个链表的第一个公共节点</a>
           </li>
         
           <li>
-            <a href="/2023/12/20/%E6%89%93%E5%AE%B6%E5%8A%AB%E8%88%8DIII/">(no title)</a>
+            <a href="/2023/12/20/%E6%89%93%E5%AE%B6%E5%8A%AB%E8%88%8DIII/">打家劫舍 III</a>
           </li>
         
           <li>
-            <a href="/2023/12/20/%E9%9D%A2%E8%AF%95%E9%A2%9817.10.%E4%B8%BB%E8%A6%81%E5%85%83%E7%B4%A0/">(no title)</a>
+            <a href="/2023/12/20/%E9%9D%A2%E8%AF%95%E9%A2%9817.10.%E4%B8%BB%E8%A6%81%E5%85%83%E7%B4%A0/">主要元素</a>
           </li>
         
       </ul>
