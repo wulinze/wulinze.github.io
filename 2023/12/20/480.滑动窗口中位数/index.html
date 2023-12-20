@@ -1,0 +1,236 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  
+  
+  <title>Wu&#39;s Blog</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+  <meta name="description" content="题目描述中位数是有序序列最中间的那个数。如果序列的长度是偶数，则没有最中间的数；此时中位数是最中间的两个数的平均数。 例如：  [2,3,4]，中位数是 3 [2,3]，中位数是 (2 + 3) &#x2F; 2 &#x3D; 2.5  给你一个数组 nums，有一个长度为 k 的窗口从最左端滑动到最右端。窗口中有 k 个数，每次窗口向右移动 1 位。你的任务是找出每次窗口移动后得到的新窗口中元素">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Wu&#39;s Blog">
+<meta property="og:url" content="http://example.com/2023/12/20/480.%E6%BB%91%E5%8A%A8%E7%AA%97%E5%8F%A3%E4%B8%AD%E4%BD%8D%E6%95%B0/index.html">
+<meta property="og:site_name" content="Wu&#39;s Blog">
+<meta property="og:description" content="题目描述中位数是有序序列最中间的那个数。如果序列的长度是偶数，则没有最中间的数；此时中位数是最中间的两个数的平均数。 例如：  [2,3,4]，中位数是 3 [2,3]，中位数是 (2 + 3) &#x2F; 2 &#x3D; 2.5  给你一个数组 nums，有一个长度为 k 的窗口从最左端滑动到最右端。窗口中有 k 个数，每次窗口向右移动 1 位。你的任务是找出每次窗口移动后得到的新窗口中元素">
+<meta property="og:locale" content="en_US">
+<meta property="article:published_time" content="2023-12-20T02:19:02.546Z">
+<meta property="article:modified_time" content="2023-12-20T02:19:05.151Z">
+<meta property="article:author" content="wulinze">
+<meta name="twitter:card" content="summary">
+  
+    <link rel="alternate" href="/atom.xml" title="Wu's Blog" type="application/atom+xml">
+  
+  
+    <link rel="shortcut icon" href="/favicon.png">
+  
+  
+  
+<link rel="stylesheet" href="/css/style.css">
+
+  
+    
+<link rel="stylesheet" href="/fancybox/jquery.fancybox.min.css">
+
+  
+  
+<meta name="generator" content="Hexo 7.0.0"></head>
+
+<body>
+  <div id="container">
+    <div id="wrap">
+      <header id="header">
+  <div id="banner"></div>
+  <div id="header-outer" class="outer">
+    <div id="header-title" class="inner">
+      <h1 id="logo-wrap">
+        <a href="/" id="logo">Wu&#39;s Blog</a>
+      </h1>
+      
+        <h2 id="subtitle-wrap">
+          <a href="/" id="subtitle">Welcome</a>
+        </h2>
+      
+    </div>
+    <div id="header-inner" class="inner">
+      <nav id="main-nav">
+        <a id="main-nav-toggle" class="nav-icon"><span class="fa fa-bars"></span></a>
+        
+          <a class="main-nav-link" href="/">Home</a>
+        
+          <a class="main-nav-link" href="/archives">Archives</a>
+        
+      </nav>
+      <nav id="sub-nav">
+        
+        
+          <a class="nav-icon" href="/atom.xml" title="RSS Feed"><span class="fa fa-rss"></span></a>
+        
+        <a class="nav-icon nav-search-btn" title="Search"><span class="fa fa-search"></span></a>
+      </nav>
+      <div id="search-form-wrap">
+        <form action="//google.com/search" method="get" accept-charset="UTF-8" class="search-form"><input type="search" name="q" class="search-form-input" placeholder="Search"><button type="submit" class="search-form-submit">&#xF002;</button><input type="hidden" name="sitesearch" value="http://example.com"></form>
+      </div>
+    </div>
+  </div>
+</header>
+
+      <div class="outer">
+        <section id="main"><article id="post-480.滑动窗口中位数" class="h-entry article article-type-post" itemprop="blogPost" itemscope itemtype="https://schema.org/BlogPosting">
+  <div class="article-meta">
+    <a href="/2023/12/20/480.%E6%BB%91%E5%8A%A8%E7%AA%97%E5%8F%A3%E4%B8%AD%E4%BD%8D%E6%95%B0/" class="article-date">
+  <time class="dt-published" datetime="2023-12-20T02:19:02.546Z" itemprop="datePublished">2023-12-20</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+    <div class="e-content article-entry" itemprop="articleBody">
+      
+        <h3 id="题目描述"><a href="#题目描述" class="headerlink" title="题目描述"></a>题目描述</h3><p>中位数是有序序列最中间的那个数。如果序列的长度是偶数，则没有最中间的数；此时中位数是最中间的两个数的平均数。</p>
+<p>例如：</p>
+<ul>
+<li>[2,3,4]，中位数是 3</li>
+<li>[2,3]，中位数是 (2 + 3) &#x2F; 2 &#x3D; 2.5</li>
+</ul>
+<p>给你一个数组 nums，有一个长度为 k 的窗口从最左端滑动到最右端。窗口中有 k 个数，每次窗口向右移动 1 位。你的任务是找出每次窗口移动后得到的新窗口中元素的中位数，并输出由它们组成的数组。</p>
+<p><strong>示例：</strong></p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">窗口位置                      中位数</span><br><span class="line">---------------               -----</span><br><span class="line">[1  3  -1] -3  5  3  6  7       1</span><br><span class="line"> 1 [3  -1  -3] 5  3  6  7      -1</span><br><span class="line"> 1  3 [-1  -3  5] 3  6  7      -1</span><br><span class="line"> 1  3  -1 [-3  5  3] 6  7       3</span><br><span class="line"> 1  3  -1  -3 [5  3  6] 7       5</span><br><span class="line"> 1  3  -1  -3  5 [3  6  7]      6</span><br></pre></td></tr></table></figure>
+
+<p> 因此，返回该滑动窗口的中位数数组 <code>[1,-1,-1,3,5,6]</code></p>
+<h3 id="题目分析"><a href="#题目分析" class="headerlink" title="题目分析"></a>题目分析</h3><p>选取每一个子串的中位数，窗口大小为k如果枚举所有的窗口在进行求解中位数过于复杂，枚举字串需要O(n)求解中位数需要O(nlogn)（和排序复杂度一致）,但是注意到每次移动一位，重复进行了多次求解。采用双优先队列+延迟删除</p>
+<p><strong>双优先队列+延迟删除</strong></p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br><span class="line">92</span><br><span class="line">93</span><br><span class="line">94</span><br><span class="line">95</span><br><span class="line">96</span><br><span class="line">97</span><br><span class="line">98</span><br><span class="line">99</span><br><span class="line">100</span><br><span class="line">101</span><br><span class="line">102</span><br><span class="line">103</span><br><span class="line">104</span><br><span class="line">105</span><br><span class="line">106</span><br><span class="line">107</span><br><span class="line">108</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">class</span> <span class="title class_">DualHeap</span> &#123;</span><br><span class="line"><span class="keyword">private</span>:</span><br><span class="line">    <span class="comment">// 大根堆，维护较小的一半元素</span></span><br><span class="line">    priority_queue&lt;<span class="type">int</span>&gt; small;</span><br><span class="line">    <span class="comment">// 小根堆，维护较大的一半元素</span></span><br><span class="line">    priority_queue&lt;<span class="type">int</span>, vector&lt;<span class="type">int</span>&gt;, greater&lt;<span class="type">int</span>&gt;&gt; large;</span><br><span class="line">    <span class="comment">// 哈希表，记录「延迟删除」的元素，key 为元素，value 为需要删除的次数</span></span><br><span class="line">    unordered_map&lt;<span class="type">int</span>, <span class="type">int</span>&gt; delayed;</span><br><span class="line"></span><br><span class="line">    <span class="type">int</span> k;</span><br><span class="line">    <span class="comment">// small 和 large 当前包含的元素个数，需要扣除被「延迟删除」的元素</span></span><br><span class="line">    <span class="type">int</span> smallSize, largeSize;</span><br><span class="line"></span><br><span class="line"><span class="keyword">public</span>:</span><br><span class="line">    <span class="built_in">DualHeap</span>(<span class="type">int</span> _k): <span class="built_in">k</span>(_k), <span class="built_in">smallSize</span>(<span class="number">0</span>), <span class="built_in">largeSize</span>(<span class="number">0</span>) &#123;&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">private</span>:</span><br><span class="line">    <span class="comment">// 不断地弹出 heap 的堆顶元素，并且更新哈希表</span></span><br><span class="line">    <span class="function"><span class="keyword">template</span>&lt;<span class="keyword">typename</span> T&gt;</span></span><br><span class="line"><span class="function">    <span class="type">void</span> <span class="title">prune</span><span class="params">(T&amp; heap)</span> </span>&#123;</span><br><span class="line">        <span class="keyword">while</span> (!heap.<span class="built_in">empty</span>()) &#123;</span><br><span class="line">            <span class="type">int</span> num = heap.<span class="built_in">top</span>();</span><br><span class="line">            <span class="keyword">if</span> (delayed.<span class="built_in">count</span>(num)) &#123;</span><br><span class="line">                --delayed[num];</span><br><span class="line">                <span class="keyword">if</span> (!delayed[num]) &#123;</span><br><span class="line">                    delayed.<span class="built_in">erase</span>(num);</span><br><span class="line">                &#125;</span><br><span class="line">                heap.<span class="built_in">pop</span>();</span><br><span class="line">            &#125;</span><br><span class="line">            <span class="keyword">else</span> &#123;</span><br><span class="line">                <span class="keyword">break</span>;</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">// 调整 small 和 large 中的元素个数，使得二者的元素个数满足要求</span></span><br><span class="line">    <span class="function"><span class="type">void</span> <span class="title">makeBalance</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        <span class="keyword">if</span> (smallSize &gt; largeSize + <span class="number">1</span>) &#123;</span><br><span class="line">            <span class="comment">// small 比 large 元素多 2 个</span></span><br><span class="line">            large.<span class="built_in">push</span>(small.<span class="built_in">top</span>());</span><br><span class="line">            small.<span class="built_in">pop</span>();</span><br><span class="line">            --smallSize;</span><br><span class="line">            ++largeSize;</span><br><span class="line">            <span class="comment">// small 堆顶元素被移除，需要进行 prune</span></span><br><span class="line">            <span class="built_in">prune</span>(small);</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">else</span> <span class="keyword">if</span> (smallSize &lt; largeSize) &#123;</span><br><span class="line">            <span class="comment">// large 比 small 元素多 1 个</span></span><br><span class="line">            small.<span class="built_in">push</span>(large.<span class="built_in">top</span>());</span><br><span class="line">            large.<span class="built_in">pop</span>();</span><br><span class="line">            ++smallSize;</span><br><span class="line">            --largeSize;</span><br><span class="line">            <span class="comment">// large 堆顶元素被移除，需要进行 prune</span></span><br><span class="line">            <span class="built_in">prune</span>(large);</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">public</span>:</span><br><span class="line">    <span class="function"><span class="type">void</span> <span class="title">insert</span><span class="params">(<span class="type">int</span> num)</span> </span>&#123;</span><br><span class="line">        <span class="keyword">if</span> (small.<span class="built_in">empty</span>() || num &lt;= small.<span class="built_in">top</span>()) &#123;</span><br><span class="line">            small.<span class="built_in">push</span>(num);</span><br><span class="line">            ++smallSize;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">else</span> &#123;</span><br><span class="line">            large.<span class="built_in">push</span>(num);</span><br><span class="line">            ++largeSize;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="built_in">makeBalance</span>();</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="type">void</span> <span class="title">erase</span><span class="params">(<span class="type">int</span> num)</span> </span>&#123;</span><br><span class="line">        ++delayed[num];</span><br><span class="line">        <span class="keyword">if</span> (num &lt;= small.<span class="built_in">top</span>()) &#123;</span><br><span class="line">            --smallSize;</span><br><span class="line">            <span class="keyword">if</span> (num == small.<span class="built_in">top</span>()) &#123;</span><br><span class="line">                <span class="built_in">prune</span>(small);</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">else</span> &#123;</span><br><span class="line">            --largeSize;</span><br><span class="line">            <span class="keyword">if</span> (num == large.<span class="built_in">top</span>()) &#123;</span><br><span class="line">                <span class="built_in">prune</span>(large);</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="built_in">makeBalance</span>();</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="type">double</span> <span class="title">getMedian</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        <span class="keyword">return</span> k &amp; <span class="number">1</span> ? small.<span class="built_in">top</span>() : ((<span class="type">double</span>)small.<span class="built_in">top</span>() + large.<span class="built_in">top</span>()) / <span class="number">2</span>;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;;</span><br><span class="line"></span><br><span class="line"><span class="keyword">class</span> <span class="title class_">Solution</span> &#123;</span><br><span class="line"><span class="keyword">public</span>:</span><br><span class="line">    <span class="function">vector&lt;<span class="type">double</span>&gt; <span class="title">medianSlidingWindow</span><span class="params">(vector&lt;<span class="type">int</span>&gt;&amp; nums, <span class="type">int</span> k)</span> </span>&#123;</span><br><span class="line">        <span class="function">DualHeap <span class="title">dh</span><span class="params">(k)</span></span>;</span><br><span class="line">        <span class="keyword">for</span> (<span class="type">int</span> i = <span class="number">0</span>; i &lt; k; ++i) &#123;</span><br><span class="line">            dh.<span class="built_in">insert</span>(nums[i]);</span><br><span class="line">        &#125;</span><br><span class="line">        vector&lt;<span class="type">double</span>&gt; ans = &#123;dh.<span class="built_in">getMedian</span>()&#125;;</span><br><span class="line">        <span class="keyword">for</span> (<span class="type">int</span> i = k; i &lt; nums.<span class="built_in">size</span>(); ++i) &#123;</span><br><span class="line">            dh.<span class="built_in">insert</span>(nums[i]);</span><br><span class="line">            dh.<span class="built_in">erase</span>(nums[i - k]);</span><br><span class="line">            ans.<span class="built_in">push_back</span>(dh.<span class="built_in">getMedian</span>());</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">return</span> ans;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://example.com/2023/12/20/480.%E6%BB%91%E5%8A%A8%E7%AA%97%E5%8F%A3%E4%B8%AD%E4%BD%8D%E6%95%B0/" data-id="clqd5b13b000xkmn6a9215jjc" data-title="" class="article-share-link"><span class="fa fa-share">Share</span></a>
+      
+      
+      
+    </footer>
+  </div>
+  
+    
+<nav id="article-nav">
+  
+    <a href="/2023/12/20/474.%E4%B8%80%E5%92%8C%E9%9B%B6/" id="article-nav-newer" class="article-nav-link-wrap">
+      <strong class="article-nav-caption">Newer</strong>
+      <div class="article-nav-title">
+        
+          (no title)
+        
+      </div>
+    </a>
+  
+  
+    <a href="/2023/12/20/5.%20%E6%9C%80%E9%95%BF%E5%9B%9E%E6%96%87%E5%AD%90%E4%B8%B2/" id="article-nav-older" class="article-nav-link-wrap">
+      <strong class="article-nav-caption">Older</strong>
+      <div class="article-nav-title"></div>
+    </a>
+  
+</nav>
+
+  
+</article>
+
+
+</section>
+        
+          <aside id="sidebar">
+  
+    
+
+  
+    
+
+  
+    
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Archives</h3>
+    <div class="widget">
+      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2023/12/">December 2023</a></li></ul>
+    </div>
+  </div>
+
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Recent Posts</h3>
+    <div class="widget">
+      <ul>
+        
+          <li>
+            <a href="/2023/12/20/%E5%89%91%E6%8C%87offer%2062.%E7%BA%A6%E7%91%9F%E5%A4%AB%E7%8E%AF%E9%97%AE%E9%A2%98/">(no title)</a>
+          </li>
+        
+          <li>
+            <a href="/2023/12/20/%E5%8C%85%E5%90%ABmin%E5%87%BD%E6%95%B0%E7%9A%84%E6%A0%88/">(no title)</a>
+          </li>
+        
+          <li>
+            <a href="/2023/12/20/%E5%89%91%E6%8C%87%20Offer%2052.%20%E4%B8%A4%E4%B8%AA%E9%93%BE%E8%A1%A8%E7%9A%84%E7%AC%AC%E4%B8%80%E4%B8%AA%E5%85%AC%E5%85%B1%E8%8A%82%E7%82%B9/">(no title)</a>
+          </li>
+        
+          <li>
+            <a href="/2023/12/20/%E6%89%93%E5%AE%B6%E5%8A%AB%E8%88%8DIII/">(no title)</a>
+          </li>
+        
+          <li>
+            <a href="/2023/12/20/%E9%9D%A2%E8%AF%95%E9%A2%9817.10.%E4%B8%BB%E8%A6%81%E5%85%83%E7%B4%A0/">(no title)</a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+
+  
+</aside>
+        
+      </div>
+      <footer id="footer">
+  
+  <div class="outer">
+    <div id="footer-info" class="inner">
+      
+      &copy; 2023 wulinze<br>
+      Powered by <a href="https://hexo.io/" target="_blank">Hexo</a>
+    </div>
+  </div>
+</footer>
+
+    </div>
+    <nav id="mobile-nav">
+  
+    <a href="/" class="mobile-nav-link">Home</a>
+  
+    <a href="/archives" class="mobile-nav-link">Archives</a>
+  
+</nav>
+    
+
+
+<script src="/js/jquery-3.6.4.min.js"></script>
+
+
+
+  
+<script src="/fancybox/jquery.fancybox.min.js"></script>
+
+
+
+
+<script src="/js/script.js"></script>
+
+
+
+
+
+  </div>
+</body>
+</html>

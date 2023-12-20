@@ -1,0 +1,238 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  
+  
+  <title>Wu&#39;s Blog</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+  <meta name="description" content="题目要求给你一个未排序的整数数组，请你找出其中没有出现的最小的正整数。 要求： 你的算法的时间复杂度应为O(n)，并且只能使用常数级别的额外空间。 方法一：自哈希将正整数哈希至对应位，$我们将所有在 [1, N][1,N] 范围内的数放入哈希表$，也可以得到最终的答案。而给定的数组恰好长度为 N $把不在 [1, N][1,N] 范围内的数修改成任意一个大于 N的数$（例如 N+1）。这样一来，数">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Wu&#39;s Blog">
+<meta property="og:url" content="http://example.com/2023/12/20/41.%E7%BC%BA%E5%A4%B1%E7%9A%84%E7%AC%AC%E4%B8%80%E4%B8%AA%E6%AD%A3%E6%95%B0/index.html">
+<meta property="og:site_name" content="Wu&#39;s Blog">
+<meta property="og:description" content="题目要求给你一个未排序的整数数组，请你找出其中没有出现的最小的正整数。 要求： 你的算法的时间复杂度应为O(n)，并且只能使用常数级别的额外空间。 方法一：自哈希将正整数哈希至对应位，$我们将所有在 [1, N][1,N] 范围内的数放入哈希表$，也可以得到最终的答案。而给定的数组恰好长度为 N $把不在 [1, N][1,N] 范围内的数修改成任意一个大于 N的数$（例如 N+1）。这样一来，数">
+<meta property="og:locale" content="en_US">
+<meta property="og:image" content="c:\Users\82490\AppData\Roaming\Typora\typora-user-images\1593226196323.png">
+<meta property="article:published_time" content="2023-12-20T02:19:02.545Z">
+<meta property="article:modified_time" content="2023-12-20T02:19:05.150Z">
+<meta property="article:author" content="wulinze">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="c:\Users\82490\AppData\Roaming\Typora\typora-user-images\1593226196323.png">
+  
+    <link rel="alternate" href="/atom.xml" title="Wu's Blog" type="application/atom+xml">
+  
+  
+    <link rel="shortcut icon" href="/favicon.png">
+  
+  
+  
+<link rel="stylesheet" href="/css/style.css">
+
+  
+    
+<link rel="stylesheet" href="/fancybox/jquery.fancybox.min.css">
+
+  
+  
+<meta name="generator" content="Hexo 7.0.0"></head>
+
+<body>
+  <div id="container">
+    <div id="wrap">
+      <header id="header">
+  <div id="banner"></div>
+  <div id="header-outer" class="outer">
+    <div id="header-title" class="inner">
+      <h1 id="logo-wrap">
+        <a href="/" id="logo">Wu&#39;s Blog</a>
+      </h1>
+      
+        <h2 id="subtitle-wrap">
+          <a href="/" id="subtitle">Welcome</a>
+        </h2>
+      
+    </div>
+    <div id="header-inner" class="inner">
+      <nav id="main-nav">
+        <a id="main-nav-toggle" class="nav-icon"><span class="fa fa-bars"></span></a>
+        
+          <a class="main-nav-link" href="/">Home</a>
+        
+          <a class="main-nav-link" href="/archives">Archives</a>
+        
+      </nav>
+      <nav id="sub-nav">
+        
+        
+          <a class="nav-icon" href="/atom.xml" title="RSS Feed"><span class="fa fa-rss"></span></a>
+        
+        <a class="nav-icon nav-search-btn" title="Search"><span class="fa fa-search"></span></a>
+      </nav>
+      <div id="search-form-wrap">
+        <form action="//google.com/search" method="get" accept-charset="UTF-8" class="search-form"><input type="search" name="q" class="search-form-input" placeholder="Search"><button type="submit" class="search-form-submit">&#xF002;</button><input type="hidden" name="sitesearch" value="http://example.com"></form>
+      </div>
+    </div>
+  </div>
+</header>
+
+      <div class="outer">
+        <section id="main"><article id="post-41.缺失的第一个正数" class="h-entry article article-type-post" itemprop="blogPost" itemscope itemtype="https://schema.org/BlogPosting">
+  <div class="article-meta">
+    <a href="/2023/12/20/41.%E7%BC%BA%E5%A4%B1%E7%9A%84%E7%AC%AC%E4%B8%80%E4%B8%AA%E6%AD%A3%E6%95%B0/" class="article-date">
+  <time class="dt-published" datetime="2023-12-20T02:19:02.545Z" itemprop="datePublished">2023-12-20</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+    <div class="e-content article-entry" itemprop="articleBody">
+      
+        <h3 id="题目要求"><a href="#题目要求" class="headerlink" title="题目要求"></a>题目要求</h3><p>给你一个未排序的整数数组，请你找出其中没有出现的最小的正整数。</p>
+<p><strong>要求：</strong></p>
+<p>你的算法的时间复杂度应为O(<em>n</em>)，并且只能使用常数级别的额外空间。</p>
+<h3 id="方法一：自哈希"><a href="#方法一：自哈希" class="headerlink" title="方法一：自哈希"></a>方法一：自哈希</h3><p>将正整数哈希至对应位，$我们将所有在 [1, N][1,N] 范围内的数放入哈希表$，也可以得到最终的答案。而给定的数组恰好长度为 <strong>N</strong></p>
+<p>$把不在 [1, N][1,N] 范围内的数修改成任意一个大于 N的数$（例如 N+1）。这样一来，数组中的所有数就都是正数了，因此我们就可以将「标记」表示为「负号」。算法的流程如下：</p>
+<p><img src="C:\Users\82490\AppData\Roaming\Typora\typora-user-images\1593226196323.png" alt="1593226196323"></p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">class</span> <span class="title class_">Solution</span> &#123;</span><br><span class="line"><span class="keyword">public</span>:</span><br><span class="line">    <span class="function"><span class="type">int</span> <span class="title">firstMissingPositive</span><span class="params">(vector&lt;<span class="type">int</span>&gt;&amp; nums)</span> </span>&#123;</span><br><span class="line">        <span class="keyword">if</span>(nums.<span class="built_in">empty</span>())<span class="keyword">return</span> <span class="number">1</span>;</span><br><span class="line">        <span class="type">int</span> N=nums.<span class="built_in">size</span>();</span><br><span class="line">        <span class="keyword">for</span>(<span class="keyword">auto</span>&amp; num : nums)&#123;</span><br><span class="line">            <span class="keyword">if</span>(num &lt;= <span class="number">0</span>)num = N+<span class="number">1</span>;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">for</span>(<span class="type">const</span> <span class="keyword">auto</span>&amp; num : nums)&#123;</span><br><span class="line">            <span class="type">int</span> _num = <span class="built_in">abs</span>(num);</span><br><span class="line">            <span class="keyword">if</span>(_num &lt;= N)&#123;</span><br><span class="line">                <span class="keyword">if</span>(nums[_num<span class="number">-1</span>] &gt; <span class="number">0</span>)nums[_num<span class="number">-1</span>] = -nums[_num<span class="number">-1</span>];</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="type">int</span> res=<span class="number">0</span>;</span><br><span class="line">        <span class="keyword">for</span>(; res&lt;N; res++)&#123;</span><br><span class="line">            <span class="keyword">if</span>(nums[res] &gt; <span class="number">0</span>)&#123;</span><br><span class="line">                <span class="keyword">return</span> res+<span class="number">1</span>;</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">return</span> N+<span class="number">1</span>;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+
+
+
+<h3 id="方法二：置换"><a href="#方法二：置换" class="headerlink" title="方法二：置换"></a>方法二：置换</h3><p>可以对数组进行一次遍历，对于遍历到的数 $x &#x3D; \textit{nums}[i]$，如果 $x \in [1, N]$，我们就知道 $x$应当出现在数组中的 $x - 1$ 的位置，因此交换$ \textit{nums}[i]和 \textit{nums}[x - 1]$，这样 $x$ 就出现在了正确的位置。在完成交换后，新的 $\textit{nums}[i]$ 可能还在$ [1, N] $的范围内，我们需要继续进行交换操作，直到$ x \notin [1, N] $</p>
+<p>注意到上面的方法可能会陷入死循环。如果 $\textit{nums}[i]$ 恰好与 $\textit{nums}[x - 1]$ 相等，那么就会无限交换下去。此时我们有$ \textit{nums}[i] &#x3D; x &#x3D; \textit{nums}[x - 1]$，说明 $x$ 已经出现在了正确的位置。因此我们可以跳出循环，开始遍历下一个数。</p>
+<p>由于每次的交换操作都会使得某一个数交换到正确的位置，因此交换的次数最多为 $N$，整个方法的时间复杂度为 $O(N)$。</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">class</span> <span class="title class_">Solution</span> &#123;</span><br><span class="line"><span class="keyword">public</span>:</span><br><span class="line"><span class="function"><span class="type">int</span> <span class="title">firstMissingPositive</span><span class="params">(vector&lt;<span class="type">int</span>&gt;&amp; nums)</span> </span>&#123;</span><br><span class="line">        <span class="type">int</span> n = nums.<span class="built_in">size</span>();</span><br><span class="line">        <span class="keyword">for</span> (<span class="type">int</span> i = <span class="number">0</span>; i &lt; n; ++i) &#123;</span><br><span class="line">            <span class="keyword">while</span> (nums[i] &gt; <span class="number">0</span> &amp;&amp; nums[i] &lt;= n &amp;&amp; </span><br><span class="line">                   nums[nums[i] - <span class="number">1</span>] != nums[i]) &#123;</span><br><span class="line">                <span class="built_in">swap</span>(nums[nums[i] - <span class="number">1</span>], nums[i]);</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">for</span> (<span class="type">int</span> i = <span class="number">0</span>; i &lt; n; ++i) &#123;</span><br><span class="line">            <span class="keyword">if</span> (nums[i] != i + <span class="number">1</span>) &#123;</span><br><span class="line">                <span class="keyword">return</span> i + <span class="number">1</span>;</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">return</span> n + <span class="number">1</span>;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://example.com/2023/12/20/41.%E7%BC%BA%E5%A4%B1%E7%9A%84%E7%AC%AC%E4%B8%80%E4%B8%AA%E6%AD%A3%E6%95%B0/" data-id="clqd5b136000qkmn62iu35rs6" data-title="" class="article-share-link"><span class="fa fa-share">Share</span></a>
+      
+      
+      
+    </footer>
+  </div>
+  
+    
+<nav id="article-nav">
+  
+    <a href="/2023/12/20/400.%E7%AC%ACN%E4%BD%8D%E6%95%B0%E5%AD%97/" id="article-nav-newer" class="article-nav-link-wrap">
+      <strong class="article-nav-caption">Newer</strong>
+      <div class="article-nav-title">
+        
+          (no title)
+        
+      </div>
+    </a>
+  
+  
+    <a href="/2023/12/20/1049.%20%E6%9C%80%E5%90%8E%E4%B8%80%E5%9D%97%E7%9F%B3%E5%A4%B4%E7%9A%84%E9%87%8D%E9%87%8F%20II/" id="article-nav-older" class="article-nav-link-wrap">
+      <strong class="article-nav-caption">Older</strong>
+      <div class="article-nav-title"></div>
+    </a>
+  
+</nav>
+
+  
+</article>
+
+
+</section>
+        
+          <aside id="sidebar">
+  
+    
+
+  
+    
+
+  
+    
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Archives</h3>
+    <div class="widget">
+      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2023/12/">December 2023</a></li></ul>
+    </div>
+  </div>
+
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Recent Posts</h3>
+    <div class="widget">
+      <ul>
+        
+          <li>
+            <a href="/2023/12/20/%E5%89%91%E6%8C%87offer%2062.%E7%BA%A6%E7%91%9F%E5%A4%AB%E7%8E%AF%E9%97%AE%E9%A2%98/">(no title)</a>
+          </li>
+        
+          <li>
+            <a href="/2023/12/20/%E5%8C%85%E5%90%ABmin%E5%87%BD%E6%95%B0%E7%9A%84%E6%A0%88/">(no title)</a>
+          </li>
+        
+          <li>
+            <a href="/2023/12/20/%E5%89%91%E6%8C%87%20Offer%2052.%20%E4%B8%A4%E4%B8%AA%E9%93%BE%E8%A1%A8%E7%9A%84%E7%AC%AC%E4%B8%80%E4%B8%AA%E5%85%AC%E5%85%B1%E8%8A%82%E7%82%B9/">(no title)</a>
+          </li>
+        
+          <li>
+            <a href="/2023/12/20/%E6%89%93%E5%AE%B6%E5%8A%AB%E8%88%8DIII/">(no title)</a>
+          </li>
+        
+          <li>
+            <a href="/2023/12/20/%E9%9D%A2%E8%AF%95%E9%A2%9817.10.%E4%B8%BB%E8%A6%81%E5%85%83%E7%B4%A0/">(no title)</a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+
+  
+</aside>
+        
+      </div>
+      <footer id="footer">
+  
+  <div class="outer">
+    <div id="footer-info" class="inner">
+      
+      &copy; 2023 wulinze<br>
+      Powered by <a href="https://hexo.io/" target="_blank">Hexo</a>
+    </div>
+  </div>
+</footer>
+
+    </div>
+    <nav id="mobile-nav">
+  
+    <a href="/" class="mobile-nav-link">Home</a>
+  
+    <a href="/archives" class="mobile-nav-link">Archives</a>
+  
+</nav>
+    
+
+
+<script src="/js/jquery-3.6.4.min.js"></script>
+
+
+
+  
+<script src="/fancybox/jquery.fancybox.min.js"></script>
+
+
+
+
+<script src="/js/script.js"></script>
+
+
+
+
+
+  </div>
+</body>
+</html>
