@@ -6,15 +6,15 @@
   
   <title>经典LCA问题 | Wu&#39;s Blog</title>
   <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-  <meta name="description" content="经典LCA问题 **方法一:**递归 根据祖先节点性质进行递归，LCA需要满足的几种情况是  分别在不同的子树上一个在LCA的左子树另一个在LCA的右子树 在同一个子树下  **第一种情况下需要满足条件:**lchild &amp;&amp; rchild 第二种情况下当在同一个子树下就说明其中一个是另一个的祖先节点满足条件:(root-val&#x3D;&#x3D;p-&gt;val || ro">
+  <meta name="description" content="**方法一:**递归 根据祖先节点性质进行递归，LCA需要满足的几种情况是  分别在不同的子树上一个在LCA的左子树另一个在LCA的右子树 在同一个子树下  **第一种情况下需要满足条件:**lchild &amp;&amp; rchild 第二种情况下当在同一个子树下就说明其中一个是另一个的祖先节点满足条件:(root-val&#x3D;&#x3D;p-&gt;val || root-&gt;">
 <meta property="og:type" content="article">
 <meta property="og:title" content="经典LCA问题">
 <meta property="og:url" content="http://example.com/2023/12/20/236.%20%E4%BA%8C%E5%8F%89%E6%A0%91%E7%9A%84%E6%9C%80%E8%BF%91%E5%85%AC%E5%85%B1%E7%A5%96%E5%85%88/index.html">
 <meta property="og:site_name" content="Wu&#39;s Blog">
-<meta property="og:description" content="经典LCA问题 **方法一:**递归 根据祖先节点性质进行递归，LCA需要满足的几种情况是  分别在不同的子树上一个在LCA的左子树另一个在LCA的右子树 在同一个子树下  **第一种情况下需要满足条件:**lchild &amp;&amp; rchild 第二种情况下当在同一个子树下就说明其中一个是另一个的祖先节点满足条件:(root-val&#x3D;&#x3D;p-&gt;val || ro">
+<meta property="og:description" content="**方法一:**递归 根据祖先节点性质进行递归，LCA需要满足的几种情况是  分别在不同的子树上一个在LCA的左子树另一个在LCA的右子树 在同一个子树下  **第一种情况下需要满足条件:**lchild &amp;&amp; rchild 第二种情况下当在同一个子树下就说明其中一个是另一个的祖先节点满足条件:(root-val&#x3D;&#x3D;p-&gt;val || root-&gt;">
 <meta property="og:locale" content="en_US">
 <meta property="article:published_time" content="2023-12-20T02:19:02.545Z">
-<meta property="article:modified_time" content="2023-12-20T02:51:11.653Z">
+<meta property="article:modified_time" content="2023-12-20T03:06:11.113Z">
 <meta property="article:author" content="wulinze">
 <meta property="article:tag" content="c++">
 <meta name="twitter:card" content="summary">
@@ -102,7 +102,7 @@
     
     <div class="e-content article-entry" itemprop="articleBody">
       
-        <h2 id="经典LCA问题"><a href="#经典LCA问题" class="headerlink" title="经典LCA问题"></a>经典LCA问题</h2><ul>
+        <ul>
 <li><p>**方法一:**递归</p>
 <p>根据祖先节点性质进行递归，LCA需要满足的几种情况是</p>
 <ol>

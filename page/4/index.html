@@ -101,7 +101,7 @@
     
     <div class="e-content article-entry" itemprop="articleBody">
       
-        <h2 id="网络空闲的时刻"><a href="#网络空闲的时刻" class="headerlink" title="网络空闲的时刻"></a>网络空闲的时刻</h2><h3 id="题目描述"><a href="#题目描述" class="headerlink" title="题目描述"></a>题目描述</h3><p>给你一个有 n 个服务器的计算机网络，服务器编号为 0 到 n - 1 。同时给你一个二维整数数组 edges ，其中 edges[i] &#x3D; [ui, vi] 表示服务器 ui 和 vi 之间有一条信息线路，在 一秒 内它们之间可以传输 任意 数目的信息。再给你一个长度为 n 且下标从 0 开始的整数数组 patience 。</p>
+        <h3 id="题目描述"><a href="#题目描述" class="headerlink" title="题目描述"></a>题目描述</h3><p>给你一个有 n 个服务器的计算机网络，服务器编号为 0 到 n - 1 。同时给你一个二维整数数组 edges ，其中 edges[i] &#x3D; [ui, vi] 表示服务器 ui 和 vi 之间有一条信息线路，在 一秒 内它们之间可以传输 任意 数目的信息。再给你一个长度为 n 且下标从 0 开始的整数数组 patience 。</p>
 <p>题目保证所有服务器都是 相通 的，也就是说一个信息从任意服务器出发，都可以通过这些信息线路直接或间接地到达任何其他服务器。</p>
 <p>编号为 0 的服务器是 主 服务器，其他服务器为 数据 服务器。每个数据服务器都要向主服务器发送信息，并等待回复。信息在服务器之间按 最优 线路传输，也就是说每个信息都会以 最少时间 到达主服务器。主服务器会处理 所有 新到达的信息并 立即 按照每条信息来时的路线 反方向 发送回复信息。</p>
 <p>在 0 秒的开始，所有数据服务器都会发送各自需要处理的信息。从第 1 秒开始，每 一秒最 开始 时，每个数据服务器都会检查它是否收到了主服务器的回复信息（包括新发出信息的回复信息）：</p>
@@ -180,7 +180,7 @@
     
     <div class="e-content article-entry" itemprop="articleBody">
       
-        <h2 id="天际线问题"><a href="#天际线问题" class="headerlink" title="天际线问题"></a>天际线问题</h2><h3 id="题目描述"><a href="#题目描述" class="headerlink" title="题目描述"></a>题目描述</h3><p>城市的天际线是从远处观看该城市中所有建筑物形成的轮廓的外部轮廓。给你所有建筑物的位置和高度，请返回由这些建筑物形成的 天际线 。</p>
+        <h3 id="题目描述"><a href="#题目描述" class="headerlink" title="题目描述"></a>题目描述</h3><p>城市的天际线是从远处观看该城市中所有建筑物形成的轮廓的外部轮廓。给你所有建筑物的位置和高度，请返回由这些建筑物形成的 天际线 。</p>
 <p>每个建筑物的几何信息由数组 buildings 表示，其中三元组 buildings[i] &#x3D; [lefti, righti, heighti] 表示：</p>
 <ul>
 <li>lefti 是第 i 座建筑物左边缘的 x 坐标。</li>
@@ -250,7 +250,7 @@
     
     <div class="e-content article-entry" itemprop="articleBody">
       
-        <h2 id="经典LCA问题"><a href="#经典LCA问题" class="headerlink" title="经典LCA问题"></a>经典LCA问题</h2><ul>
+        <ul>
 <li><p>**方法一:**递归</p>
 <p>根据祖先节点性质进行递归，LCA需要满足的几种情况是</p>
 <ol>
@@ -311,7 +311,7 @@
     
     <div class="e-content article-entry" itemprop="articleBody">
       
-        <h2 id="H指数"><a href="#H指数" class="headerlink" title="H指数"></a>H指数</h2><h3 id="题目描述"><a href="#题目描述" class="headerlink" title="题目描述"></a>题目描述</h3><p>给定一位研究者论文被引用次数的数组（被引用次数是非负整数）。编写一个方法，计算出研究者的 h 指数。</p>
+        <h3 id="题目描述"><a href="#题目描述" class="headerlink" title="题目描述"></a>题目描述</h3><p>给定一位研究者论文被引用次数的数组（被引用次数是非负整数）。编写一个方法，计算出研究者的 h 指数。</p>
 <p>h 指数的定义：h 代表“高引用次数”（high citations），一名科研人员的 h 指数是指他（她）的 （N 篇论文中）总共有 h 篇论文分别被引用了至少 h 次。且其余的 N - h 篇论文每篇被引用次数 不超过 h 次。</p>
 <p>例如：某人的 h 指数是 20，这表示他已发表的论文中，每篇被引用了至少 20 次的论文总共有 20 篇。</p>
 <p><strong>示例：</strong></p>
@@ -369,7 +369,7 @@
     
     <div class="e-content article-entry" itemprop="articleBody">
       
-        <h2 id="H指数-II"><a href="#H指数-II" class="headerlink" title="H指数 II"></a>H指数 II</h2><h3 id="题目描述"><a href="#题目描述" class="headerlink" title="题目描述"></a>题目描述</h3><p>给定一位研究者论文被引用次数的数组（被引用次数是非负整数），数组已经按照 升序排列 。编写一个方法，计算出研究者的 h 指数。</p>
+        <h3 id="题目描述"><a href="#题目描述" class="headerlink" title="题目描述"></a>题目描述</h3><p>给定一位研究者论文被引用次数的数组（被引用次数是非负整数），数组已经按照 升序排列 。编写一个方法，计算出研究者的 h 指数。</p>
 <p>h 指数的定义: “h 代表“高引用次数”（high citations），一名科研人员的 h 指数是指他（她）的 （N 篇论文中）总共有 h 篇论文分别被引用了至少 h 次。（其余的 N - h 篇论文每篇被引用次数不多于 h 次。）”</p>
 <p><strong>示例：</strong></p>
 <figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">输入: citations = [0,1,3,5,6]</span><br><span class="line">输出: 3 </span><br><span class="line">解释: 给定数组表示研究者总共有 5 篇论文，每篇论文相应的被引用了 0, 1, 3, 5, 6 次。由于研究者有 3 篇论文每篇至少被引用了 3 次，其余两篇论文每篇被引用不多于 3 次，所以她的 h 指数是 3。</span><br></pre></td></tr></table></figure>
@@ -428,7 +428,7 @@
     
     <div class="e-content article-entry" itemprop="articleBody">
       
-        <h2 id="寻找重复数"><a href="#寻找重复数" class="headerlink" title="寻找重复数"></a>寻找重复数</h2><p>之前有异或求解的，不过这道题不太一样。</p>
+        <p>之前有异或求解的，不过这道题不太一样。</p>
 <p>问题描述：给定一个包含 n + 1 个整数的数组 nums，其数字都在 1 到 n 之间（包括 1 和 n），可知至少存在一个重复的整数。假设只有一个重复的整数，找出这个重复的数。</p>
 <ul>
 <li>方法一：单调性求解(二分查找)(O(nlogn))</li>
@@ -495,7 +495,7 @@
     
     <div class="e-content article-entry" itemprop="articleBody">
       
-        <h2 id="两数相除"><a href="#两数相除" class="headerlink" title="两数相除"></a>两数相除</h2><h4 id="题目描述"><a href="#题目描述" class="headerlink" title="题目描述"></a>题目描述</h4><p>给定两个整数，被除数 dividend 和除数 divisor。将两数相除，要求不使用乘法、除法和 mod 运算符。</p>
+        <h4 id="题目描述"><a href="#题目描述" class="headerlink" title="题目描述"></a>题目描述</h4><p>给定两个整数，被除数 dividend 和除数 divisor。将两数相除，要求不使用乘法、除法和 mod 运算符。</p>
 <p>返回被除数 dividend 除以除数 divisor 得到的商。</p>
 <p>整数除法的结果应当截去（truncate）其小数部分，例如：truncate(8.345) &#x3D; 8 以及 truncate(-2.7335) &#x3D; -2</p>
 <p><strong>示例 1:</strong></p>
@@ -557,7 +557,7 @@
     
     <div class="e-content article-entry" itemprop="articleBody">
       
-        <h2 id="删除无效的括号"><a href="#删除无效的括号" class="headerlink" title="删除无效的括号"></a>删除无效的括号</h2><p>给你一个由若干括号和字母组成的字符串 <code>s</code> ，删除最小数量的无效括号，使得输入的字符串有效。</p>
+        <p>给你一个由若干括号和字母组成的字符串 <code>s</code> ，删除最小数量的无效括号，使得输入的字符串有效。</p>
 <p>返回所有可能的结果。答案可以按 <strong>任意顺序</strong> 返回。</p>
 <p><strong>示例 1：</strong></p>
 <figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">输入：s = &quot;()())()&quot;</span><br><span class="line">输出：[&quot;(())()&quot;,&quot;()()()&quot;]</span><br></pre></td></tr></table></figure>
@@ -625,7 +625,7 @@
     
     <div class="e-content article-entry" itemprop="articleBody">
       
-        <h2 id="最长有效括号"><a href="#最长有效括号" class="headerlink" title="最长有效括号"></a>最长有效括号</h2><p>主要目的是选择子串匹配最长的有效括号。</p>
+        <p>主要目的是选择子串匹配最长的有效括号。</p>
 <ul>
 <li>方法一：DP</li>
 </ul>
@@ -687,7 +687,7 @@
     
     <div class="e-content article-entry" itemprop="articleBody">
       
-        <h2 id="验证二叉树的前序序列化"><a href="#验证二叉树的前序序列化" class="headerlink" title="验证二叉树的前序序列化"></a>验证二叉树的前序序列化</h2><h3 id="题目描述"><a href="#题目描述" class="headerlink" title="题目描述"></a>题目描述</h3><p>序列化二叉树的一种方法是使用前序遍历。当我们遇到一个非空节点时，我们可以记录下这个节点的值。如果它是一个空节点，我们可以使用一个标记值记录，例如 <code>#</code>。</p>
+        <h3 id="题目描述"><a href="#题目描述" class="headerlink" title="题目描述"></a>题目描述</h3><p>序列化二叉树的一种方法是使用前序遍历。当我们遇到一个非空节点时，我们可以记录下这个节点的值。如果它是一个空节点，我们可以使用一个标记值记录，例如 <code>#</code>。</p>
 <figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"> 	 _9_</span><br><span class="line">    /   \</span><br><span class="line">   3     2</span><br><span class="line">  / \   / \</span><br><span class="line"> 4   1  #  6</span><br><span class="line">/ \ / \   / \</span><br><span class="line"># # # #   # #</span><br></pre></td></tr></table></figure>
 
 <p>例如，上面的二叉树可以被序列化为字符串 “9,3,4,#,#,1,#,#,2,#,6,#,#”，其中 # 代表一个空节点。</p>
