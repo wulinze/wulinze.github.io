@@ -1,21 +1,552 @@
-extends base
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
 
-block title
-    title= page.title + ' | ' + config.title
 
-block content
-    include _partial/common.pug
-    .l-post.l-post-art
-        article.p-art
-            +post-header(page)
-            .p-content
-                != page.content
-            if theme.copyright
-                +post-copyright(page)
-        +post-footer(page)
-        include _partial/post-toc.pug
 
-    section.p-ext
-        include _partial/post-jump.pug
-        if page.comments
-            include _partial/comments.pug
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+<meta http-equiv="X-UA-Compatible" content="ie=edge">
+
+  <meta name="author" content="wulinze">
+
+
+  <meta name="subtitle" content="Welcome">
+
+
+  <meta name="description" content="Self Learn Record">
+
+
+
+<title>g1gc | Wu&#39;s Blog</title>
+
+
+
+<link rel="icon" href="/favicon.png">
+
+
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/nprogress/nprogress.css">
+
+
+
+<script src="/lib/jquery.min.js"></script>
+
+
+<script src="/lib/iconify-icon.min.js"></script>
+
+
+<script src="https://cdn.tailwindcss.com?plugins=typography"></script>
+<script>
+  tailwind.config = {
+    darkMode: "class",
+  };
+</script>
+
+
+<script src="/lib/nprogress/nprogress.js"></script>
+
+<script>
+  $(document).ready(() => {
+    NProgress.configure({
+      showSpinner: false,
+    });
+    NProgress.start();
+    $("#nprogress .bar").css({
+      background: "#de7441",
+    });
+    $("#nprogress .peg").css({
+      "box-shadow": "0 0 2px #de7441, 0 0 4px #de7441",
+    });
+    $("#nprogress .spinner-icon").css({
+      "border-top-color": "#de7441",
+      "border-left-color": "#de7441",
+    });
+    setTimeout(function () {
+      NProgress.done();
+      $(".fade").removeClass("out");
+    }, 800);
+  });
+</script>
+
+<script>
+  (function () {
+    const prefersDark =
+      window.matchMedia &&
+      window.matchMedia("(prefers-color-scheme: dark)").matches;
+    const setting = localStorage.getItem("hexo-color-scheme") || "auto";
+    if (setting === "dark" || (prefersDark && setting !== "light"))
+      document.documentElement.classList.toggle("dark", true);
+    let isDark = document.documentElement.classList.contains("dark");
+  })();
+
+  $(document).ready(function () {
+    // init icon
+    const prefersDark =
+      window.matchMedia &&
+      window.matchMedia("(prefers-color-scheme: dark)").matches;
+    const isDark = document.documentElement.classList.contains("dark");
+    $("#theme-icon").attr("icon", isDark ? "ri:moon-line" : "ri:sun-line");
+
+    function toggleGiscusTheme() {
+      const isDark = document.documentElement.classList.contains("dark");
+      const giscusFrame = document.querySelector("iframe.giscus-frame");
+      if (giscusFrame) {
+        giscusFrame.contentWindow.postMessage(
+          {
+            giscus: {
+              setConfig: {
+                theme: isDark ? "dark" : "light",
+              },
+            },
+          },
+          "https://giscus.app"
+        );
+      }
+    }
+
+
+    // toggle dark mode
+    function toggleDark() {
+      let isDark = document.documentElement.classList.contains("dark");
+      const setting = localStorage.getItem("hexo-color-scheme") || "auto";
+      isDark = !isDark;
+      document.documentElement.classList.toggle("dark", isDark);
+      $("#theme-icon").attr("icon", isDark ? "ri:moon-line" : "ri:sun-line");
+      if (prefersDark === isDark) {
+        localStorage.setItem("hexo-color-scheme", "auto");
+      } else {
+        localStorage.setItem("hexo-color-scheme", isDark ? "dark" : "light");
+      }
+      toggleGiscusTheme();
+    }
+    $("#toggle-dark").click(toggleDark);
+
+    // listen dark mode change
+    window
+      .matchMedia("(prefers-color-scheme: dark)")
+      .addEventListener("change", (e) => {
+        const setting = localStorage.getItem("hexo-color-scheme") || "auto";
+        if (setting === "auto") {
+          document.documentElement.classList.toggle("dark", e.matches);
+          $("#theme-icon").attr(
+            "icon",
+            e.matches ? "ri:moon-line" : "ri:sun-line"
+          );
+          toggleGiscusTheme();
+        }
+      });
+  });
+</script>
+
+
+
+
+<meta name="generator" content="Hexo 7.0.0"></head>
+<body class="font-sans bg-white dark:bg-zinc-900 text-gray-700 dark:text-gray-200 relative">
+  <header class="fixed w-full px-5 py-1 z-10 backdrop-blur-xl backdrop-saturate-150 border-b border-black/5">
+  <div class="max-auto">
+    <nav class="flex items-center text-base">
+      <a href="/" class="group">
+        <h2 class="font-medium tracking-tighterp text-l p-2">
+          <img class="w-5 mr-2 inline-block transition-transform group-hover:rotate-[30deg]" id="logo" src="/images/logo.svg" alt="Wu's Blog" />
+          Wu&#39;s Blog
+        </h2>
+      </a>
+      <div id="header-title" class="opacity-0 md:ml-2 md:mt-[0.1rem] text-xs font-medium whitespace-nowrap overflow-hidden overflow-ellipsis">
+        g1gc
+      </div>
+      <div class="flex-1"></div>
+      <div class="flex items-center gap-3">
+        
+          <a class="hidden sm:flex" href="/archives">Posts</a>
+        
+        
+          
+            <a class="w-5 h-5 hidden sm:flex" title="Github" target="_blank" rel="noopener" href="https://github.com/wulinze">
+              <iconify-icon width="20" icon="ri:github-line"></iconify-icon>
+            </a>
+          
+            <a class="w-5 h-5 hidden sm:flex" title="ZhiHu" target="_blank" rel="noopener" href="https://www.zhihu.com/people/wu-lin-ze-1">
+              <iconify-icon width="20" icon="ri:zhihu-line"></iconify-icon>
+            </a>
+          
+        
+        <a class="w-5 h-5 hidden sm:flex" title="ZhiHu" href="rss2.xml">
+          <iconify-icon width="20" icon="ri:rss-line"></iconify-icon>
+        </a>
+        <a class="w-5 h-5" title="toggle theme" id="toggle-dark">
+          <iconify-icon width="20" icon="" id="theme-icon"></iconify-icon>
+        </a>
+      </div>
+      <div class="flex items-center justify-center gap-3 ml-3 sm:hidden">
+        <span class="w-5 h-5" aria-hidden="true" role="img" id="open-menu">
+          <iconify-icon width="20" icon="carbon:menu" ></iconify-icon>
+        </span>
+        <span class="w-5 h-5 hidden" aria-hidden="true" role="img" id="close-menu">
+          <iconify-icon  width="20" icon="carbon:close" ></iconify-icon>
+        </span>
+      </div>
+    </nav>
+  </div>
+</header>
+<div id="menu-panel" class="h-0 overflow-hidden sm:hidden fixed left-0 right-0 top-12 bottom-0 z-10">
+  <div id="menu-content" class="relative z-20 bg-white/80 px-6 sm:px-8 py-2 backdrop-blur-xl -translate-y-full transition-transform duration-300">
+    <ul class="nav flex flex-col sm:flex-row text-sm font-medium">
+      
+        <li class="nav-portfolio sm:mx-2 border-b sm:border-0 border-black/5 last:border-0 hover:text-main">
+          <a href="/archives" class="flex h-12 sm:h-auto items-center">Posts</a>
+        </li>
+      
+    </ul>
+  </div>
+  <div class="mask bg-black/20 absolute inset-0"></div>
+</div>
+
+  <main class="pt-14">
+    <!-- css -->
+
+<link rel="stylesheet" href="/lib/fancybox/fancybox.min.css">
+
+
+<link rel="stylesheet" href="/lib/tocbot/tocbot.min.css">
+
+<!-- toc -->
+
+  <!-- tocbot -->
+<nav class="post-toc toc text-sm w-48 relative top-32 right-0 opacity-70 hidden lg:block" style="position: fixed !important;"></nav>
+
+
+<section class="px-6 max-w-prose mx-auto md:px-0">
+  <!-- header -->
+  <header class="overflow-hidden pt-6 pb-6 md:pt-12">
+    <div class="pt-4 md:pt-6">
+      <h1 id="article-title" class="text-[2rem] font-bold leading-snug mb-4 md:mb-6 md:text-[2.6rem]">
+        g1gc
+      </h1>
+      <div>
+        <section class="flex items-center gap-3 text-sm">
+          <span class="flex items-center gap-1">
+            <iconify-icon width="18" icon="carbon-calendar" ></iconify-icon>
+            <time>2023-12-25</time>
+          </span>
+          <span class="text-gray-400">·</span>
+          <span class="flex items-center gap-1">
+            <iconify-icon width="18" icon="ic:round-access-alarm" ></iconify-icon>
+            <span>9 min</span>
+          </span>
+          <span class="text-gray-400">·</span>
+          <span class="flex items-center gap-1">
+            <iconify-icon width="18" icon="icon-park-outline:font-search" ></iconify-icon>
+            <span>2.6k words</span>
+          </span>
+          
+            <span class="text-gray-400">·</span>
+            <span class="flex items-center gap-1">
+              <iconify-icon width="16" icon="icon-park-outline:box" class="mr-2"></iconify-icon>
+              <a class="article-category-link" href="/categories/jvm/">jvm</a>
+            </span>
+          
+        </section>
+      </div>
+    </div>
+  </header>
+  <!-- content -->
+  <article class="post-content prose m-auto slide-enter-content dark:prose-invert">
+    <h1 id="G1-GC算法"><a href="#G1-GC算法" class="headerlink" title="G1 GC算法"></a>G1 GC算法</h1><p>G1GC的本质是一个标记复制算法。根据《深入理解Java虚拟机：JVM高级特性与最佳实践（第3版）周志明》中介绍的垃圾回收算法为例，基本的垃圾回收算法可能包括标记清除，标记复制，标记整理算法，其中G1GC属于标记复制算法</p>
+<h2 id="内存模型"><a href="#内存模型" class="headerlink" title="内存模型"></a>内存模型</h2><h3 id="分代划分"><a href="#分代划分" class="headerlink" title="分代划分"></a><strong>分代划分</strong></h3><ul>
+<li><p><strong>青年代</strong><br>青年代表示刚刚分配内存的区域，首先Java应用线程在分配的时候会优先在青年代进行分配，G1算法只有在不断Young gc的过程中慢慢的填满老年代。在达到IHOP的设定值的时候才会触发MixedGC</p>
+<ul>
+<li>Eden<br>  初始分配在Eden区，在出发young GC的时候会将存活对象晋升到Survivor中的一个分区</li>
+<li>Survivor<br>  等分为两个部分，简称1和2，Survivor1区存放Young GC中Eden区存活的数据，Survivor2存放YoungGC中Survivor1中存活的数据，通过设置JVM参数-XX:MaxTenuringThreshold可以调整比例。-XX:MaxTenuringThreshold代表晋升年龄最大阈值，默认15。在新生代中对象存活次数(经过YGC的次数)后仍然存活，就会晋升到老年代。每经过一次YGC，年龄加1，当survivor区的对象年龄达到TenuringThreshold时，表示该对象是长存活对象，就会直接晋升到老年代。</li>
+</ul>
+<p>  整个年轻代内存会在初始空间 -XX:G1NewSizePercent（默认整堆5%）与最大空间 -XX:G1MaxNewSizePercent（默认60%）之间动态变化，且由参数目标暂停时间 -XX:MaxGCPauseMillis（默认200ms）、需要扩缩容的大小以及分区的已记忆集合（RSet）计算得到。当然，G1 依然可以设置固定的年轻代大小（参数 -XX:NewRatio、-Xmn），但同时暂停目标将失去意义。</p>
+<ul>
+<li>Eden和Survivor占比<br>  默认情况下Eden:Survivor1:Survivor2 为 8:1:1的比例<ul>
+<li><p>-XX:TargetSurvivorRatio</p>
+<p>  设定survivor区的目标使用率。默认50，即survivor区对象目标使用率为50%。参数代表着动态调整tenuringThreshold的值，如果survivior区中存活率过大则会减少晋升阈值，反之则会增加。</p>
+<p>  JVM会将每个对象的年龄信息、各个年龄段对象的总大小记录在“age table”表中。基于“age table”、survivor区大小、survivor区目标使用率（-XX:TargetSurvivorRatio）、晋升年龄阈值（-XX:MaxTenuringThreshold），JVM会动态的计算tenuring threshold的值。一旦对象年龄达到了tenuring threshold就会晋升到老年代。</p>
+<p>  为什么要动态的计算tenuring threshold的值呢？假设有很多年龄还未达到TenuringThreshold的对象依旧停留在survivor区，这样不利于新对象从eden晋升到survivor。因此设置survivor区的目标使用率，当使用率达到时重新调整TenuringThreshold值，让对象尽早的去old区。</p>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+<li><p><strong>老年代</strong></p>
+</li>
+</ul>
+<p>老年代负责存放长期存活的对象，老年代的对象是经历过多次G1gc之后仍然存活的对象。</p>
+<h3 id="整体内存和GC内存分配"><a href="#整体内存和GC内存分配" class="headerlink" title="整体内存和GC内存分配"></a><strong>整体内存和GC内存分配</strong></h3><ul>
+<li>分区 Region<br>G1 采用了分区（Region）的思路，将整个堆空间分成若干个大小相等的内存区域，每次分配对象空间将逐段地使用内存。因此，在堆的使用上，G1 并不要求对象的存储一定是物理上连续的，只要逻辑上连续即可；每个分区也不会确定地为某个代服务，可以按需在年轻代和老年代之间切换。启动时可以通过参数 -XX:G1HeapRegionSize&#x3D;n 可指定分区大小（1MB~32MB，且必须是2的幂），默认将整堆划分为2048个分区。</li>
+<li>卡片 Card<br>在每个分区内部又被分成了若干个大小为512 Byte 卡片（Card），标识堆内存最小可用粒度所有分区的卡片将会记录在全局卡片表（Global Card Table）中，分配的对象会占用物理上连续的若干个卡片，当查找对分区内对象的引用时便可通过记录卡片来查找该引用对象（见 RSet）。每次对内存的回收，都是对指定分区的卡片进行处理。</li>
+<li>堆 Heap<br>G1 同样可以通过 -Xms&#x2F;-Xmx 来指定堆空间大小。当发生年轻代收集或混合收集时，通过计算 GC 与应用的耗费时间比，自动调整堆空间大小。如果 GC 频率太高，则通过增加堆尺寸，来减少 GC 频率，相应地 GC 占用的时间也随之降低；目标参数 -XX:GCTimeRatio 即为 GC 与应用的耗费时间比，G1 默认为 9，而 CMS 默认为 99，因为 CMS 的设计原则是耗费在 GC 上的时间尽可能的少。另外，当空间不足，如对象空间分配或转移失败时，G1 会首先尝试增加堆空间，如果扩容失败，则发起担保的 Full GC。Full GC 后，堆尺寸计算结果也会调整堆空间。</li>
+</ul>
+<h2 id="垃圾回收类别"><a href="#垃圾回收类别" class="headerlink" title="垃圾回收类别"></a><strong>垃圾回收类别</strong></h2><ul>
+<li><p>Young GC<br>年轻代的回收算法，Eden区进行扫描，是一个STW的过程，在YoungGC中存活的对象分为如下两种情况。如果数据在Eden区那么存活对象会将其放在Survivor1区，如果Survivor1区中存活的对象晋升到Survivor2区，根据Teuring判断是否需要晋升到老年代</p>
+<ul>
+<li><strong>TLAB(Thread Local Allocation Buffer)</strong>:线程本地缓存，TLAB分配在Eden区上，对于每一个本地想成有单独的TLAB，每一个TLAB不会过大。TLAB为了解决线程分配的冲突问题，对于每一个Java应用线程内存可以单独分配，不需要对于堆进行冲突访问。因为堆区是一块Java应用线程共享的内存空间，而且是一个同步访问的过程。因此开启TLAB优化可以大幅加快分配速度。可以了解逃逸分析相关问题，类似于栈上分配。需要注意的是TLAB空间有限，对于本地线程有单独的Buffer进行分配，只有在初始的分配阶段是独占的，在后续使用的过程中也可以进行跨线程的访问。Buffer空间有限每个线程对应一个Buffer空间，如果对象过大无法在TLAB上面进行分配那么则需要在堆空间进行分配。</li>
+<li><strong>PLAB(Promote Local Allocation Buffer)</strong>:对于进程对象的分配区域，主要存在survivor区。其目的也是为了解决共享堆的分配冲突问题，PLAB负责的是晋升过程的加速分配，因此主要存在于survivior区。</li>
+</ul>
+</li>
+<li><p>MixedGC</p>
+<p>  本质是对于Cset中的数据进行回收，功能上类似于YoungGC只不过Cset中存在需要Old区的数据。Cset会不断的启发式的加入需要回收的数据。</p>
+</li>
+<li><p>FullGC</p>
+</li>
+</ul>
+<h2 id="垃圾回收阶段"><a href="#垃圾回收阶段" class="headerlink" title="垃圾回收阶段"></a>垃圾回收阶段</h2><ul>
+<li><p><strong>Young GC</strong></p>
+<ol>
+<li><p>将eden区和survivor区所有Region添加到CSet中准备回收。注：CSet是一个存放待回收Region的数据结构。</p>
+</li>
+<li><p>标记阶段</p>
+<p> 从GC Roots开始标记直接引用的新生代对象。基于RSet标记跨代引用的新生代对象。</p>
+</li>
+<li><p>复制阶段：将标记活跃的对象复制到其他Region中。</p>
+</li>
+</ol>
+</li>
+<li><p><strong>并发标记周期</strong></p>
+<ul>
+<li><p>初始标记</p>
+<p>  这个过程需要进入Stop the World的，仅仅只是标记一下GC Roots直接能引用的对象，这个过程速度是很快的。先停止系统程序的运行，然后对各个线程栈内存中的局部变量代表的GC Roots，以及方法区中的类静态变量代表的GC Roots，进行扫描，标记出来他们直接引用的那些对象</p>
+<p>  GC Root中数据为活跃数据可能包括</p>
+<ol>
+<li>JavaStack中的引用的对象。</li>
+<li>方法区中静态引用指向的对象。</li>
+<li>方法区中常量引用指向的对象。</li>
+<li>Native方法中JNI引用的对象。</li>
+</ol>
+</li>
+<li><p>并发标记</p>
+<p>  这个阶段会允许系统程序的运行，同时进行GC Roots追踪，从GC Roots开始追踪所有的存活对象，并对这个过程对象的变化做记录，比如哪些对象失去了引用，哪些对象是新建的。这个阶段也是很耗时的，要追踪全部存活的对象，但跟系统并发运行，影响不大。</p>
+</li>
+<li><p>重新标记</p>
+<p>  这个阶段会进入Stop the World，系统程序是禁止运行的，但是会根据并发标记阶段记录的那些对象修改，最终标记一下有哪些存活对象，有哪些是垃圾对象。</p>
+</li>
+<li><p>清除</p>
+<p>  计算存活对象数量：在并发标记阶段，垃圾收集器会遍历对象图并标记存活对象。这个过程可以帮助G1GC了解每个区域的存活对象数量。<br>  计算回收收益：根据每个区域的存活对象数量，G1GC会计算回收收益，即回收某个区域可以释放多少空间。<br>  选择回收集合：在计算完回收收益后，G1GC会根据预设的暂停时间目标（例如通过-XX:MaxGCPauseMillis参数设置）来选择哪些区域应该被包含在回收集合中。这个过程中，G1GC会优先选择回收收益较高的区域。</p>
+<p>  这个阶段G1允许多次执行混合回收，也就是说先停止系统工作，执行回收，恢复系统运行，再停止系统运行，再回收，再恢复…这么一个流程。每次回收的间隔是由G1自己控制的，回收执行次数可以通过参数-XX:G1MixedGCCountTarget来设置，这个参数默认回收次数是8次，同时有一个参数-XX:G1HeapWastePercent，默认值是整个堆大小5%，就是说当前回收集合内即将空出来的区域大于整个堆的5%，就会立即停止混合回收了。正常默认回收次数是8次，但是可能到了4次，发现空闲Region大于整个堆的5%，就不会再进行后续回收了。</p>
+</li>
+</ul>
+</li>
+<li><p><strong>Mixed GC</strong></p>
+<p>  MixedGC的本质和YoungGC没有区别，都是对于Cset中的数据进行垃圾回收，但是不同的点在于Old区中的数据同样会加入到Cset中进行回收。</p>
+</li>
+</ul>
+<p>参考：<a target="_blank" rel="noopener" href="http://www.linkedkeeper.com/1511.html">http://www.linkedkeeper.com/1511.html</a></p>
+
+  </article>
+  <!-- tag -->
+  <div class="mt-12 pt-6 border-t border-gray-200">
+    
+      
+        <span class="bg-gray-100 dark:bg-gray-700 px-2 py-1 m-1 text-sm rounded-md transition-colors hover:bg-gray-200">
+          <a href="/tags/gc/">gc</a>
+        </span>
+      
+    
+  </div>
+  <!-- prev and next -->
+  <div class="flex justify-between mt-12 pt-6 border-t border-gray-200">
+    <div>
+      
+        <a href="/2023/12/20/oom-oome/" class="text-sm text-gray-400 hover:text-gray-500 flex justify-center">
+          <iconify-icon width="20" icon="ri:arrow-left-s-line" data-inline="false"></iconify-icon>
+          oom oome
+        </a>
+      
+    </div>
+    <div>
+      
+        <a href="/2023/12/20/jvm-tune-param/" class="text-sm text-gray-400 hover:text-gray-500 flex justify-center">
+          jvm tune param
+          <iconify-icon width="20" icon="ri:arrow-right-s-line" data-inline="false"></iconify-icon>
+        </a>
+      
+    </div>
+  </div>
+  <!-- comment -->
+  <div class="article-comments mt-12">
+    
+
+  </div>
+</section>
+<!-- js inspect -->
+
+<script src="/lib/clipboard.min.js"></script>
+
+
+<script async src="https://cdn.jsdelivr.net/npm/mathjax@2/MathJax.js?config=TeX-MML-AM_CHTML"></script>
+<script type="text/x-mathjax-config">
+  MathJax.Hub.Config({
+    "HTML-CSS": {
+        preferredFont: "TeX",
+        availableFonts: ["STIX","TeX"],
+        linebreaks: { automatic:true },
+        EqnChunk: (MathJax.Hub.Browser.isMobile ? 10 : 50)
+    },
+    tex2jax: {
+        inlineMath: [ ["$", "$"], ["\\(","\\)"] ],
+        processEscapes: true,
+        ignoreClass: "tex2jax_ignore|dno",
+        skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+    },
+    TeX: {
+        equationNumbers: { autoNumber: "AMS" },
+        noUndefined: { attributes: { mathcolor: "red", mathbackground: "#FFEEEE", mathsize: "90%" } },
+        Macros: { href: "{}" }
+    },
+    messageStyle: "none"
+  });
+</script>
+<script type="text/x-mathjax-config">
+  MathJax.Hub.Queue(function() {
+      var all = MathJax.Hub.getAllJax(), i;
+      for (i=0; i < all.length; i += 1) {
+          all[i].SourceElement().parentNode.className += ' has-jax';
+      }
+  });
+</script>
+
+
+
+<script src="https://cdn.jsdelivr.net/npm/mermaid/dist/mermaid.min.js"></script>
+<script>
+  $(document).ready(() => {
+    const maraidConfig = {
+      theme: "default",
+      logLevel: 3,
+      flowchart: { curve: "linear" },
+      gantt: { axisFormat: "%m/%d/%Y" },
+      sequence: { actorMargin: 50 },
+    };
+    mermaid.initialize(maraidConfig);
+  });
+</script>
+
+
+
+<script src="/lib/fancybox/fancybox.umd.min.js"></script>
+
+<script>
+  $(document).ready(() => {
+    $('.post-content').each(function(i){
+      $(this).find('img').each(function(){
+        if ($(this).parent().hasClass('fancybox') || $(this).parent().is('a')) return;
+        var alt = this.alt;
+        if (alt) $(this).after('<span class="fancybox-alt">' + alt + '</span>');
+        $(this).wrap('<a class="fancybox-img" href="' + this.src + '" data-fancybox=\"gallery\" data-caption="' + alt + '"></a>')
+      });
+      $(this).find('.fancybox').each(function(){
+        $(this).attr('rel', 'article' + i);
+      });
+    });
+
+    Fancybox.bind('[data-fancybox="gallery"]', {
+        // options
+    })
+  })
+</script>
+
+<!-- tocbot begin -->
+
+<script src="/lib/tocbot/tocbot.min.js"></script>
+
+<script>
+  $(document).ready(() => {
+      tocbot.init({
+        // Where to render the table of contents.
+        tocSelector: '.post-toc',
+        // Where to grab the headings to build the table of contents.
+        contentSelector: '.post-content',
+        // Which headings to grab inside of the contentSelector element.
+        headingSelector: 'h1, h2, h3',
+        // For headings inside relative or absolute positioned containers within content.
+        hasInnerContainers: true,
+    });
+  })
+</script>
+<!-- tocbot end -->
+
+
+  </main>
+  <footer class="flex flex-col h-40 items-center justify-center text-gray-400 text-sm">
+  <!-- busuanzi -->
+  
+<script async src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+<!-- Busuanzi Analytics -->
+<div class="flex items-center gap-2">
+  <span>Visitors</span>
+  <span id="busuanzi_value_site_uv"></span>
+  <span>Page Views</span>
+  <span id="busuanzi_value_site_pv"></span>
+</div>
+<!-- End Busuanzi Analytics -->
+
+
+  <!-- copyright -->
+  <div class="flex items-center gap-2">
+    <a target="_blank" href="https://creativecommons.org/licenses/by-nc-sa/4.0/" style="color: inherit;">CC BY-NC-SA 4.0</a>
+    <span>© 2022</span>
+    <iconify-icon width="18" icon="emojione-monotone:maple-leaf" ></iconify-icon>
+    <a href="https://github.com/xbmlz" target="_blank" rel="noopener noreferrer">xbmlz</a>
+  </div>
+  <!-- powered by -->
+  <div class="flex items-center gap-2">
+    <span>Powered by</span>
+    <a href="https://hexo.io/" target="_blank" rel="noopener noreferrer">Hexo</a>
+    <span>&</span>
+    <a href="https://github.com/xbmlz/hexo-theme-maple" target="_blank" rel="noopener noreferrer">Maple</a>
+  </div>
+
+</footer>
+
+  <div class="back-to-top box-border fixed right-6 z-1024 -bottom-20 rounded py-1 px-1 bg-slate-900 opacity-60 text-white cursor-pointer text-center dark:bg-slate-600">
+    <span class="flex justify-center items-center text-sm">
+      <iconify-icon width="18" icon="ion:arrow-up-c" id="go-top"></iconify-icon>
+      <span id="scrollpercent"><span>0</span> %</span>
+    </span>
+  </div>
+  
+<script src="/js/main.js"></script>
+
+
+  <script>
+    $(document).ready(function () {
+      const mapleCount = "10";
+      const speed = "0.5";
+      const mapleEl = document.getElementById("maple");
+      const maples = Array.from({ length: mapleCount }).map(() => {
+        const maple = document.createElement("div");
+        const scale = Math.random() * 0.5 + 0.5;
+        const offset = Math.random() * 2 - 1;
+        const x = Math.random() * mapleEl.clientWidth;
+        const y = -Math.random() * mapleEl.clientHeight;
+        const duration = 10 / speed;
+        const delay = -duration;
+        maple.className = "maple";
+        maple.style.width = `${24 * scale}px`;
+        maple.style.height = `${24 * scale}px`;
+        maple.style.left = `${x}px`;
+        maple.style.top = `${y}px`;
+        maple.style.setProperty("--maple-fall-offset", offset);
+        maple.style.setProperty("--maple-fall-height", `${Math.abs(y) + mapleEl.clientHeight}px`);
+        maple.style.animation = `fall ${duration}s linear infinite`;
+        maple.style.animationDelay = `${delay}s`;
+        mapleEl.appendChild(maple)
+        return maple
+      })
+    });
+  </script>
+  
+
+
+  <div class="fixed top-0 bottom-0 left-0 right-0 pointer-events-none print:hidden" id="maple"></div>
+</body>
+
+</html>
