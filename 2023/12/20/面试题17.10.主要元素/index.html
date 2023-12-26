@@ -232,7 +232,7 @@
         <section class="flex items-center gap-3 text-sm">
           <span class="flex items-center gap-1">
             <iconify-icon width="18" icon="carbon-calendar" ></iconify-icon>
-            <time>2023-12-20</time>
+            <time>2023-12-26</time>
           </span>
           <span class="text-gray-400">·</span>
           <span class="flex items-center gap-1">
@@ -257,7 +257,7 @@
   </header>
   <!-- content -->
   <article class="post-content prose m-auto slide-enter-content dark:prose-invert">
-    <h3 id="题目分析"><a href="#题目分析" class="headerlink" title="题目分析"></a>题目分析</h3><p>数组中占比超过一半的元素称之为主要元素。给你一个 整数 数组，找出其中的主要元素。若没有，返回 -1 。请设计时间复杂度为 O(N) 、空间复杂度为 O(1) 的解决方案。</p>
+    <h3 id="题目描述"><a href="#题目描述" class="headerlink" title="题目描述"></a>题目描述</h3><p>数组中占比超过一半的元素称之为主要元素。给你一个 整数 数组，找出其中的主要元素。若没有，返回 -1 。请设计时间复杂度为 O(N) 、空间复杂度为 O(1) 的解决方案。</p>
 <p><strong>示例1：</strong></p>
 <figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">输入：[1,2,5,9,5,9,5,5,5]</span><br><span class="line">输出：5</span><br></pre></td></tr></table></figure>
 
@@ -267,7 +267,7 @@
 <p><strong>示例3：</strong></p>
 <figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">输入：[2,2,1,1,1,2,2]</span><br><span class="line">输出：2</span><br></pre></td></tr></table></figure>
 
-<h3 id="题目分析-1"><a href="#题目分析-1" class="headerlink" title="题目分析"></a>题目分析</h3><p>如果使用哈希表进行记录则十分简单，只需要一次线性的遍历即可以实现，但是题目要求空间复杂度为*O(1)*考虑使用相应的投票算法</p>
+<h3 id="题目分析"><a href="#题目分析" class="headerlink" title="题目分析"></a>题目分析</h3><p>如果使用哈希表进行记录则十分简单，只需要一次线性的遍历即可以实现，但是题目要求空间复杂度为*O(1)*考虑使用相应的投票算法</p>
 <p>投票算法大致流程如下：</p>
 <ol>
 <li>首先选取一个候选元素candidate初始为无主要元素的时候的返回值，目的是在数组为空的时候返回正确的结果。另外选择一个元素count代表candidate元素出现的次数。</li>
