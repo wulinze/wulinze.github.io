@@ -232,7 +232,7 @@
         <section class="flex items-center gap-3 text-sm">
           <span class="flex items-center gap-1">
             <iconify-icon width="18" icon="carbon-calendar" ></iconify-icon>
-            <time>2023-12-22</time>
+            <time>2023-12-27</time>
           </span>
           <span class="text-gray-400">·</span>
           <span class="flex items-center gap-1">
@@ -242,7 +242,7 @@
           <span class="text-gray-400">·</span>
           <span class="flex items-center gap-1">
             <iconify-icon width="18" icon="icon-park-outline:font-search" ></iconify-icon>
-            <span>14 words</span>
+            <span>98 words</span>
           </span>
           
             <span class="text-gray-400">·</span>
@@ -257,7 +257,61 @@
   </header>
   <!-- content -->
   <article class="post-content prose m-auto slide-enter-content dark:prose-invert">
-    <h2 id="调优参数"><a href="#调优参数" class="headerlink" title="调优参数"></a>调优参数</h2><h3 id="gc-参数"><a href="#gc-参数" class="headerlink" title="gc 参数"></a>gc 参数</h3><h3 id="内存参数"><a href="#内存参数" class="headerlink" title="内存参数"></a>内存参数</h3><h3 id="graalVm参数"><a href="#graalVm参数" class="headerlink" title="graalVm参数"></a>graalVm参数</h3><h3 id=""><a href="#" class="headerlink" title=""></a></h3>
+    <h2 id="调优参数"><a href="#调优参数" class="headerlink" title="调优参数"></a>调优参数</h2><h3 id="gc-参数"><a href="#gc-参数" class="headerlink" title="gc 参数"></a>gc 参数</h3><ul>
+<li>-XX:GCTimeRatio</li>
+<li>-XX:G1HeapRegionSize</li>
+<li>-XX:InitiatingHeapOccupancyPercent</li>
+<li>-XX:G1MixedGCCountTarget</li>
+<li>-XX:G1HeapWastePercent</li>
+<li>-XX:G1OldCSetRegionThresholdPercent</li>
+<li>-XX:ConcGCThreads</li>
+<li>-XX:G1MaxNewSizePercent</li>
+<li>-XX:+G1UseAdaptiveIHOP</li>
+<li>-XX:G1MixedGCLiveThresholdPercent</li>
+<li>-XX:NewRatio</li>
+<li>-XX:SurvivorRatio</li>
+<li>-XX:MaxTenuringThreshold</li>
+<li>-XX:ParallelGCThreads</li>
+<li>-XX:G1HeapResizePolicy</li>
+<li>-XX:PLABWeight</li>
+</ul>
+<h3 id="内存参数"><a href="#内存参数" class="headerlink" title="内存参数"></a>内存参数</h3><ul>
+<li>-XX:MallocExtConf&#x3D;tcache:true,dirty_decay_ms:10000,muzzy_decay_ms:10000,narenas:10</li>
+<li>-XX:-PreserveFramePointer</li>
+</ul>
+<h3 id="预取参数"><a href="#预取参数" class="headerlink" title="预取参数"></a>预取参数</h3><ul>
+<li>-XX:+AlwaysPreTouch </li>
+<li>-XX:PrefetchCopyIntervalInBytes</li>
+<li>-XX:PrefetchScanIntervalInBytes</li>
+<li>-XX:PrefetchFieldsAhead</li>
+</ul>
+<h3 id="JIT参数"><a href="#JIT参数" class="headerlink" title="JIT参数"></a>JIT参数</h3><ul>
+<li><p>-XX:+EnableJVMCI</p>
+</li>
+<li><p>-XX:+UseJVMCICompiler</p>
+</li>
+<li><p>-Dgraal.TrivialInliningSize</p>
+</li>
+<li><p>-Dgraal.MaximumInliningSize</p>
+</li>
+<li><p>-Dgraal.SmallCompiledLowLevelGraphSize</p>
+</li>
+<li><p>-XX:MaxTrivialSize</p>
+</li>
+<li><p>-XX:MaxInlineSize</p>
+</li>
+<li><p>-XX:InlineSmallCode</p>
+</li>
+</ul>
+<h3 id="THP"><a href="#THP" class="headerlink" title="THP"></a>THP</h3><ul>
+<li>-XX:+UseCodeAreaLargePages</li>
+<li>-XX:+UseLargePages </li>
+<li>-XX:+UseTransparentHugePages</li>
+</ul>
+<h3 id="协程"><a href="#协程" class="headerlink" title="协程"></a>协程</h3><ul>
+<li>-XX:+UseWisp2</li>
+</ul>
+
   </article>
   <!-- tag -->
   <div class="mt-12 pt-6 border-t border-gray-200">
