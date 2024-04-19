@@ -1,0 +1,566 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+
+
+
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+<meta http-equiv="X-UA-Compatible" content="ie=edge">
+
+  <meta name="author" content="wulinze">
+
+
+  <meta name="subtitle" content="Welcome">
+
+
+  <meta name="description" content="Self Learn Record">
+
+
+
+<title>jvm-multi-tenant | Wu&#39;s Blog</title>
+
+
+
+<link rel="icon" href="/favicon.png">
+
+
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/nprogress/nprogress.css">
+
+
+
+<script src="/lib/jquery.min.js"></script>
+
+
+<script src="/lib/iconify-icon.min.js"></script>
+
+
+<script src="https://cdn.tailwindcss.com?plugins=typography"></script>
+<script>
+  tailwind.config = {
+    darkMode: "class",
+  };
+</script>
+
+
+<script src="/lib/nprogress/nprogress.js"></script>
+
+<script>
+  $(document).ready(() => {
+    NProgress.configure({
+      showSpinner: false,
+    });
+    NProgress.start();
+    $("#nprogress .bar").css({
+      background: "#de7441",
+    });
+    $("#nprogress .peg").css({
+      "box-shadow": "0 0 2px #de7441, 0 0 4px #de7441",
+    });
+    $("#nprogress .spinner-icon").css({
+      "border-top-color": "#de7441",
+      "border-left-color": "#de7441",
+    });
+    setTimeout(function () {
+      NProgress.done();
+      $(".fade").removeClass("out");
+    }, 800);
+  });
+</script>
+
+<script>
+  (function () {
+    const prefersDark =
+      window.matchMedia &&
+      window.matchMedia("(prefers-color-scheme: dark)").matches;
+    const setting = localStorage.getItem("hexo-color-scheme") || "auto";
+    if (setting === "dark" || (prefersDark && setting !== "light"))
+      document.documentElement.classList.toggle("dark", true);
+    let isDark = document.documentElement.classList.contains("dark");
+  })();
+
+  $(document).ready(function () {
+    // init icon
+    const prefersDark =
+      window.matchMedia &&
+      window.matchMedia("(prefers-color-scheme: dark)").matches;
+    const isDark = document.documentElement.classList.contains("dark");
+    $("#theme-icon").attr("icon", isDark ? "ri:moon-line" : "ri:sun-line");
+
+    function toggleGiscusTheme() {
+      const isDark = document.documentElement.classList.contains("dark");
+      const giscusFrame = document.querySelector("iframe.giscus-frame");
+      if (giscusFrame) {
+        giscusFrame.contentWindow.postMessage(
+          {
+            giscus: {
+              setConfig: {
+                theme: isDark ? "dark" : "light",
+              },
+            },
+          },
+          "https://giscus.app"
+        );
+      }
+    }
+
+
+    // toggle dark mode
+    function toggleDark() {
+      let isDark = document.documentElement.classList.contains("dark");
+      const setting = localStorage.getItem("hexo-color-scheme") || "auto";
+      isDark = !isDark;
+      document.documentElement.classList.toggle("dark", isDark);
+      $("#theme-icon").attr("icon", isDark ? "ri:moon-line" : "ri:sun-line");
+      if (prefersDark === isDark) {
+        localStorage.setItem("hexo-color-scheme", "auto");
+      } else {
+        localStorage.setItem("hexo-color-scheme", isDark ? "dark" : "light");
+      }
+      toggleGiscusTheme();
+    }
+    $("#toggle-dark").click(toggleDark);
+
+    // listen dark mode change
+    window
+      .matchMedia("(prefers-color-scheme: dark)")
+      .addEventListener("change", (e) => {
+        const setting = localStorage.getItem("hexo-color-scheme") || "auto";
+        if (setting === "auto") {
+          document.documentElement.classList.toggle("dark", e.matches);
+          $("#theme-icon").attr(
+            "icon",
+            e.matches ? "ri:moon-line" : "ri:sun-line"
+          );
+          toggleGiscusTheme();
+        }
+      });
+  });
+</script>
+
+
+
+
+<meta name="generator" content="Hexo 7.0.0"></head>
+<body class="font-sans bg-white dark:bg-zinc-900 text-gray-700 dark:text-gray-200 relative">
+  <header class="fixed w-full px-5 py-1 z-10 backdrop-blur-xl backdrop-saturate-150 border-b border-black/5">
+  <div class="max-auto">
+    <nav class="flex items-center text-base">
+      <a href="/" class="group">
+        <h2 class="font-medium tracking-tighterp text-l p-2">
+          <img class="w-5 mr-2 inline-block transition-transform group-hover:rotate-[30deg]" id="logo" src="/images/logo.svg" alt="Wu's Blog" />
+          Wu&#39;s Blog
+        </h2>
+      </a>
+      <div id="header-title" class="opacity-0 md:ml-2 md:mt-[0.1rem] text-xs font-medium whitespace-nowrap overflow-hidden overflow-ellipsis">
+        jvm-multi-tenant
+      </div>
+      <div class="flex-1"></div>
+      <div class="flex items-center gap-3">
+        
+          <a class="hidden sm:flex" href="/archives">Posts</a>
+        
+        
+          
+            <a class="w-5 h-5 hidden sm:flex" title="Github" target="_blank" rel="noopener" href="https://github.com/wulinze">
+              <iconify-icon width="20" icon="ri:github-line"></iconify-icon>
+            </a>
+          
+            <a class="w-5 h-5 hidden sm:flex" title="ZhiHu" target="_blank" rel="noopener" href="https://www.zhihu.com/people/wu-lin-ze-1">
+              <iconify-icon width="20" icon="ri:zhihu-line"></iconify-icon>
+            </a>
+          
+        
+        <a class="w-5 h-5 hidden sm:flex" title="ZhiHu" href="rss2.xml">
+          <iconify-icon width="20" icon="ri:rss-line"></iconify-icon>
+        </a>
+        <a class="w-5 h-5" title="toggle theme" id="toggle-dark">
+          <iconify-icon width="20" icon="" id="theme-icon"></iconify-icon>
+        </a>
+      </div>
+      <div class="flex items-center justify-center gap-3 ml-3 sm:hidden">
+        <span class="w-5 h-5" aria-hidden="true" role="img" id="open-menu">
+          <iconify-icon width="20" icon="carbon:menu" ></iconify-icon>
+        </span>
+        <span class="w-5 h-5 hidden" aria-hidden="true" role="img" id="close-menu">
+          <iconify-icon  width="20" icon="carbon:close" ></iconify-icon>
+        </span>
+      </div>
+    </nav>
+  </div>
+</header>
+<div id="menu-panel" class="h-0 overflow-hidden sm:hidden fixed left-0 right-0 top-12 bottom-0 z-10">
+  <div id="menu-content" class="relative z-20 bg-white/80 px-6 sm:px-8 py-2 backdrop-blur-xl -translate-y-full transition-transform duration-300">
+    <ul class="nav flex flex-col sm:flex-row text-sm font-medium">
+      
+        <li class="nav-portfolio sm:mx-2 border-b sm:border-0 border-black/5 last:border-0 hover:text-main">
+          <a href="/archives" class="flex h-12 sm:h-auto items-center">Posts</a>
+        </li>
+      
+    </ul>
+  </div>
+  <div class="mask bg-black/20 absolute inset-0"></div>
+</div>
+
+  <main class="pt-14">
+    <!-- css -->
+
+<link rel="stylesheet" href="/lib/fancybox/fancybox.min.css">
+
+
+<link rel="stylesheet" href="/lib/tocbot/tocbot.min.css">
+
+<!-- toc -->
+
+  <!-- tocbot -->
+<nav class="post-toc toc text-sm w-48 relative top-32 right-0 opacity-70 hidden lg:block" style="position: fixed !important;"></nav>
+
+
+<section class="px-6 max-w-prose mx-auto md:px-0">
+  <!-- header -->
+  <header class="overflow-hidden pt-6 pb-6 md:pt-12">
+    <div class="pt-4 md:pt-6">
+      <h1 id="article-title" class="text-[2rem] font-bold leading-snug mb-4 md:mb-6 md:text-[2.6rem]">
+        jvm-multi-tenant
+      </h1>
+      <div>
+        <section class="flex items-center gap-3 text-sm">
+          <span class="flex items-center gap-1">
+            <iconify-icon width="18" icon="carbon-calendar" ></iconify-icon>
+            <time>2024-04-19</time>
+          </span>
+          <span class="text-gray-400">·</span>
+          <span class="flex items-center gap-1">
+            <iconify-icon width="18" icon="ic:round-access-alarm" ></iconify-icon>
+            <span>6 min</span>
+          </span>
+          <span class="text-gray-400">·</span>
+          <span class="flex items-center gap-1">
+            <iconify-icon width="18" icon="icon-park-outline:font-search" ></iconify-icon>
+            <span>1.4k words</span>
+          </span>
+          
+        </section>
+      </div>
+    </div>
+  </header>
+  <!-- content -->
+  <article class="post-content prose m-auto slide-enter-content dark:prose-invert">
+    <h2 id="JVM-Tenant介绍"><a href="#JVM-Tenant介绍" class="headerlink" title="JVM Tenant介绍"></a>JVM Tenant介绍</h2><h3 id="Tenant-特性"><a href="#Tenant-特性" class="headerlink" title="Tenant 特性"></a>Tenant 特性</h3><ol>
+<li>环境隔离<ul>
+<li>在tomcat上运行多个jar启动应用程序，同时运行在一个jvm上面，但是独自有各自的环境</li>
+</ul>
+</li>
+<li>资源限制<ul>
+<li>通过cgroup设置限制cpu的使用<ul>
+<li>cpu.cfs_period_us和cpu.cfs_quota_us</li>
+<li>cpuset.cpus</li>
+<li>cpu.shares</li>
+</ul>
+</li>
+</ul>
+</li>
+</ol>
+<h3 id="Cgroup-介绍"><a href="#Cgroup-介绍" class="headerlink" title="Cgroup 介绍"></a>Cgroup 介绍</h3><figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta prompt_">#</span><span class="language-bash">subsys_name    hierarchy       num_cgroups     enabled</span></span><br><span class="line">cpuset  9       97      1</span><br><span class="line">cpu     3       139     1</span><br><span class="line">cpuacct 3       139     1</span><br><span class="line">memory  8       61      1</span><br><span class="line">devices 6       61      1</span><br><span class="line">freezer 2       4       1</span><br><span class="line">net_cls 5       4       1</span><br><span class="line">blkio   10      61      1</span><br><span class="line">perf_event      7       4       1</span><br><span class="line">hugetlb 4       4       1</span><br><span class="line">pids    11      61      1</span><br><span class="line">net_prio        5       4       1</span><br></pre></td></tr></table></figure>
+<ol>
+<li>子系统</li>
+</ol>
+<ul>
+<li>cpu:用来限制cgroup的CPU使用率。</li>
+<li>memory:统计和限制cgroup的内存的使用率，包括process memory, kernel memory, 和swap。</li>
+<li>cpuset:绑定cgroup到指定CPUs和NUMA节点。</li>
+<li>blkio:限制cgroup访问块设备的IO速度。</li>
+<li>devices:限制cgroup创建(mknod)和访问设备的权限。</li>
+<li>hugtlb:限制cgroup的huge pages的使用量。</li>
+<li>net_cls:将一个cgroup中进程创建的所有网络包加上一个classid标记，用于tc和iptables。 只对发出去的网络包生效，对收到的网络包不起作用。</li>
+<li>net_prio:针对每个网络接口设置cgroup的访问优先级。</li>
+<li>perf_event:对cgroup进行性能监控。</li>
+<li>pid:限制一个cgroup及其子孙cgroup中的总进程数。</li>
+</ul>
+<ol start="2">
+<li>Cgroup VFS</li>
+</ol>
+<ul>
+<li><p>cgroup相关的所有操作都是基于内核中的cgroup virtual filesystem，如果使用cgroup直接挂载这个文件系统就可以了。一般情况下都是挂载到&#x2F;sys&#x2F;fs&#x2F;cgroup目录下，也可以挂载到其它任何目录。特别注意的是在使用 systemd 系统的操作系统中，&#x2F;sys&#x2F;fs&#x2F;cgroup 目录都是由 systemd 在系统启动的过程中挂载的，并且挂载为只读的类型。</p>
+  <figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line">tmpfs on /sys/fs/cgroup type tmpfs (rw,seclabel,mode=755)</span><br><span class="line">cgroup on /sys/fs/cgroup/systemd type cgroup (rw,nosuid,nodev,noexec,relatime,seclabel,xattr,release_agent=/usr/lib/systemd/systemd-cgroups-agent,name=systemd)</span><br><span class="line">cgroup on /sys/fs/cgroup/freezer type cgroup (rw,nosuid,nodev,noexec,relatime,seclabel,freezer)</span><br><span class="line">cgroup on /sys/fs/cgroup/cpu,cpuacct type cgroup (rw,nosuid,nodev,noexec,relatime,seclabel,cpuacct,cpu)</span><br><span class="line">cgroup on /sys/fs/cgroup/hugetlb type cgroup (rw,nosuid,nodev,noexec,relatime,seclabel,hugetlb)</span><br><span class="line">cgroup on /sys/fs/cgroup/net_cls,net_prio type cgroup (rw,nosuid,nodev,noexec,relatime,seclabel,net_prio,net_cls)</span><br><span class="line">cgroup on /sys/fs/cgroup/devices type cgroup (rw,nosuid,nodev,noexec,relatime,seclabel,devices)</span><br><span class="line">cgroup on /sys/fs/cgroup/perf_event type cgroup (rw,nosuid,nodev,noexec,relatime,seclabel,perf_event)</span><br><span class="line">cgroup on /sys/fs/cgroup/memory type cgroup (rw,nosuid,nodev,noexec,relatime,seclabel,memory)</span><br><span class="line">cgroup on /sys/fs/cgroup/cpuset type cgroup (rw,nosuid,nodev,noexec,relatime,seclabel,cpuset)</span><br><span class="line">cgroup on /sys/fs/cgroup/blkio type cgroup (rw,nosuid,nodev,noexec,relatime,seclabel,blkio)</span><br><span class="line">cgroup on /sys/fs/cgroup/pids type cgroup (rw,nosuid,nodev,noexec,relatime,seclabel,pids)</span><br></pre></td></tr></table></figure>
+<p>  &#x2F;sys&#x2F;fs&#x2F;cgroup&#x2F;cpu,cpuacct: 这是文件系统的挂载路径，指示了文件系统在系统中的位置。在这个例子中，挂载了两个控制组。</p>
+<p>  cgroup&#x2F;tmpfs: 这是文件系统的选项，指定了一些文件系统的行为。</p>
+<p>  rw: 表示文件系统以可读写的方式挂载，允许对文件进行读取和写入操作。<br>  nosuid: 禁止在该文件系统中执行 setuid 和 setgid 位的可执行文件。<br>  nodev: 禁止在该文件系统中创建设备文件。<br>  noexec: 禁止在该文件系统中执行可执行文件。<br>  relatime: 使用相对时间戳记录文件的访问时间，而非精确时间戳。<br>  seclabel: 启用安全标签，用于访问控制和安全策略。<br>  cpuacct: 指示该文件系统是用于 CPU 账户控制组的，用于跟踪和记录 CPU 使用情况。<br>  cpu: 指示该文件系统是用于 CPU 控制组的，用于限制和管理 CPU 资源分配。</p>
+<p>  tmpfs on &#x2F;sys&#x2F;fs&#x2F;cgroup type tmpfs说明 &#x2F;sys&#x2F;fs&#x2F;cgroup 目录下的文件都是存在于内存中的临时文件。</p>
+<p>  cgroup on &#x2F;sys&#x2F;fs&#x2F;cgroup&#x2F;systemd type cgroup 用于 systemd 系统对 cgroups 的支持。</p>
+</li>
+</ul>
+<ol start="3">
+<li>层级关系<br><img src="/images/cgroup.png"></li>
+</ol>
+<ul>
+<li>关联规则<ul>
+<li>单个层级可以关联多个子系统<br>  <img src="/images/rule1.png"></li>
+<li>挂载后子系统不能更改关联<br>  <img src="/images/rule2.png"></li>
+<li>task可以关联多个cgroup，单层级只能关联一个<br>  <img src="/images/rule3.png"></li>
+<li>子进程自动继承父进程的cgroup关系。子进程也可以根据实际使用需要移动到其他cgroup中。<br>  <img src="/images/rule4.png"></li>
+</ul>
+</li>
+</ul>
+<h3 id="JVM多租户运行并绑定Cgroup"><a href="#JVM多租户运行并绑定Cgroup" class="headerlink" title="JVM多租户运行并绑定Cgroup"></a>JVM多租户运行并绑定Cgroup</h3><ul>
+<li>JVM启动参数说明<table>
+<thead>
+<tr>
+<th>JVM选项</th>
+<th>说明</th>
+<th>是否必须</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>-XX:+MultiTenant</td>
+<td>是否开启多租户</td>
+<td>是</td>
+</tr>
+<tr>
+<td>-XX:+TenantCpuThrottling</td>
+<td>是否开启CPU特性</td>
+<td>否</td>
+</tr>
+<tr>
+<td>-XX:+TenantCpuAccounting</td>
+<td>是否开启CPU特性</td>
+<td>否</td>
+</tr>
+<tr>
+<td>-XX:+TenantConfirmCgroup</td>
+<td>是否绑定指定Cgroup需要-D参数指定Cgroup</td>
+<td>否</td>
+</tr>
+<tr>
+<td>-Dcom.alibaba.tenant.jgroup.confirmGroup</td>
+<td>指定JVM进程运行Cgroup层级</td>
+<td>否</td>
+</tr>
+</tbody></table>
+</li>
+<li>多租户环境隔离<br>TenantContainer负责租户的运行环境管理，包括租户id的分配和环境变量的设置，TenantContainer通过TenantConfiguration进行设置，TenantConfiguration包含对应的系统资源(CPU)设置(对应哈希表进行维护)，通过Cgroup对于TenantConfiguration的设置进行限制。TenantContainer对应一个具体的TenantResourceContainer，TenantResourceContainer负责对于进程运行时的具体资源信息进行管理包括Cgroup的创建删除(具体实现由JGroup调用JNI实现)，租户的运行情况等信息。<br><img src="/images/tenant.webp"><br>简单说TenantContainer负责维护租户的隔离信息，TenantResourceContainer负责维护租户的运行信息。</li>
+</ul>
+<h3 id="多租户运行示例"><a href="#多租户运行示例" class="headerlink" title="多租户运行示例"></a>多租户运行示例</h3><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line"><span class="type">TenantConfiguration</span> <span class="variable">config</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">TenantConfiguration</span>().limitCpuShares(<span class="number">1024</span>);</span><br><span class="line">        <span class="type">TenantContainer</span> <span class="variable">parent</span> <span class="operator">=</span> TenantContainer.create(config);</span><br><span class="line">        assertNull(getParent(parent));</span><br><span class="line">        System.out.println(<span class="string">&quot;P1&quot;</span>);</span><br><span class="line">        TenantContainer children[] = <span class="keyword">new</span> <span class="title class_">TenantContainer</span>[<span class="number">1</span>];</span><br><span class="line">        <span class="keyword">try</span> &#123;</span><br><span class="line">            parent.run(()-&gt;&#123;</span><br><span class="line">                children[<span class="number">0</span>] = TenantContainer.create(config);</span><br><span class="line">            &#125;);</span><br><span class="line">        &#125; <span class="keyword">catch</span> (TenantException e) &#123;</span><br><span class="line">            e.printStackTrace();</span><br><span class="line">            fail();</span><br><span class="line">        &#125;</span><br><span class="line">        children[<span class="number">0</span>].destroy();</span><br><span class="line">        <span class="comment">// assertNull(getParent(children[0]));</span></span><br><span class="line">        parent.destroy();</span><br></pre></td></tr></table></figure>
+<h3 id="实现细节"><a href="#实现细节" class="headerlink" title="实现细节"></a>实现细节</h3><h4 id="hotspot-c"><a href="#hotspot-c" class="headerlink" title="hotspot c++"></a>hotspot c++</h4><ul>
+<li>JNI<ol>
+<li>NativeDispatcher.c:负责线程和租户的绑定以及租户获取对应内存的分配</li>
+<li>TenantGlobals.c:负责多租户开关的启动以及信息的传递</li>
+<li>jgroup.c:Cgroup的创建管理发现</li>
+</ol>
+</li>
+<li>HotSpot<ol>
+<li>thread.cc:绑定租户对象</li>
+<li>tenantEnv.cc:获取-XX参数配置并通过位运算返回结果</li>
+</ol>
+</li>
+</ul>
+<h4 id="jdk-java"><a href="#jdk-java" class="headerlink" title="jdk java"></a>jdk java</h4><p>添加必要的API</p>
+<p>参考： </p>
+<p><a target="_blank" rel="noopener" href="https://www.testerfans.com/archives/linux-cgroups-learn-more">https://www.testerfans.com/archives/linux-cgroups-learn-more</a></p>
+<p><a target="_blank" rel="noopener" href="https://xie.infoq.cn/article/15fff320eb944d33475165790">https://xie.infoq.cn/article/15fff320eb944d33475165790</a></p>
+<p><a target="_blank" rel="noopener" href="https://www.cnblogs.com/sparkdev/p/8448237.html">https://www.cnblogs.com/sparkdev/p/8448237.html</a></p>
+
+  </article>
+  <!-- tag -->
+  <div class="mt-12 pt-6 border-t border-gray-200">
+    
+  </div>
+  <!-- prev and next -->
+  <div class="flex justify-between mt-12 pt-6 border-t border-gray-200">
+    <div>
+      
+    </div>
+    <div>
+      
+        <a href="/2024/01/26/cpp-%E5%B9%B6%E5%8F%91%E4%B8%80%E8%87%B4%E6%80%A7/" class="text-sm text-gray-400 hover:text-gray-500 flex justify-center">
+          cpp-并发一致性
+          <iconify-icon width="20" icon="ri:arrow-right-s-line" data-inline="false"></iconify-icon>
+        </a>
+      
+    </div>
+  </div>
+  <!-- comment -->
+  <div class="article-comments mt-12">
+    
+
+  </div>
+</section>
+<!-- js inspect -->
+
+<script src="/lib/clipboard.min.js"></script>
+
+
+<script async src="https://cdn.jsdelivr.net/npm/mathjax@2/MathJax.js?config=TeX-MML-AM_CHTML"></script>
+<script type="text/x-mathjax-config">
+  MathJax.Hub.Config({
+    "HTML-CSS": {
+        preferredFont: "TeX",
+        availableFonts: ["STIX","TeX"],
+        linebreaks: { automatic:true },
+        EqnChunk: (MathJax.Hub.Browser.isMobile ? 10 : 50)
+    },
+    tex2jax: {
+        inlineMath: [ ["$", "$"], ["\\(","\\)"] ],
+        processEscapes: true,
+        ignoreClass: "tex2jax_ignore|dno",
+        skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+    },
+    TeX: {
+        equationNumbers: { autoNumber: "AMS" },
+        noUndefined: { attributes: { mathcolor: "red", mathbackground: "#FFEEEE", mathsize: "90%" } },
+        Macros: { href: "{}" }
+    },
+    messageStyle: "none"
+  });
+</script>
+<script type="text/x-mathjax-config">
+  MathJax.Hub.Queue(function() {
+      var all = MathJax.Hub.getAllJax(), i;
+      for (i=0; i < all.length; i += 1) {
+          all[i].SourceElement().parentNode.className += ' has-jax';
+      }
+  });
+</script>
+
+
+
+<script src="https://cdn.jsdelivr.net/npm/mermaid/dist/mermaid.min.js"></script>
+<script>
+  $(document).ready(() => {
+    const maraidConfig = {
+      theme: "default",
+      logLevel: 3,
+      flowchart: { curve: "linear" },
+      gantt: { axisFormat: "%m/%d/%Y" },
+      sequence: { actorMargin: 50 },
+    };
+    mermaid.initialize(maraidConfig);
+  });
+</script>
+
+
+
+<script src="/lib/fancybox/fancybox.umd.min.js"></script>
+
+<script>
+  $(document).ready(() => {
+    $('.post-content').each(function(i){
+      $(this).find('img').each(function(){
+        if ($(this).parent().hasClass('fancybox') || $(this).parent().is('a')) return;
+        var alt = this.alt;
+        if (alt) $(this).after('<span class="fancybox-alt">' + alt + '</span>');
+        $(this).wrap('<a class="fancybox-img" href="' + this.src + '" data-fancybox=\"gallery\" data-caption="' + alt + '"></a>')
+      });
+      $(this).find('.fancybox').each(function(){
+        $(this).attr('rel', 'article' + i);
+      });
+    });
+
+    Fancybox.bind('[data-fancybox="gallery"]', {
+        // options
+    })
+  })
+</script>
+
+<!-- tocbot begin -->
+
+<script src="/lib/tocbot/tocbot.min.js"></script>
+
+<script>
+  $(document).ready(() => {
+      tocbot.init({
+        // Where to render the table of contents.
+        tocSelector: '.post-toc',
+        // Where to grab the headings to build the table of contents.
+        contentSelector: '.post-content',
+        // Which headings to grab inside of the contentSelector element.
+        headingSelector: 'h1, h2, h3',
+        // For headings inside relative or absolute positioned containers within content.
+        hasInnerContainers: true,
+    });
+  })
+</script>
+<!-- tocbot end -->
+
+
+  </main>
+  <footer class="flex flex-col h-40 items-center justify-center text-gray-400 text-sm">
+  <!-- busuanzi -->
+  
+<script async src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+<!-- Busuanzi Analytics -->
+<div class="flex items-center gap-2">
+  <span>Visitors</span>
+  <span id="busuanzi_value_site_uv"></span>
+  <span>Page Views</span>
+  <span id="busuanzi_value_site_pv"></span>
+</div>
+<!-- End Busuanzi Analytics -->
+
+
+  <!-- copyright -->
+  <div class="flex items-center gap-2">
+    <a target="_blank" href="https://creativecommons.org/licenses/by-nc-sa/4.0/" style="color: inherit;">CC BY-NC-SA 4.0</a>
+    <span>© 2022</span>
+    <iconify-icon width="18" icon="emojione-monotone:maple-leaf" ></iconify-icon>
+    <a href="https://github.com/xbmlz" target="_blank" rel="noopener noreferrer">xbmlz</a>
+  </div>
+  <!-- powered by -->
+  <div class="flex items-center gap-2">
+    <span>Powered by</span>
+    <a href="https://hexo.io/" target="_blank" rel="noopener noreferrer">Hexo</a>
+    <span>&</span>
+    <a href="https://github.com/xbmlz/hexo-theme-maple" target="_blank" rel="noopener noreferrer">Maple</a>
+  </div>
+
+</footer>
+
+  <div class="back-to-top box-border fixed right-6 z-1024 -bottom-20 rounded py-1 px-1 bg-slate-900 opacity-60 text-white cursor-pointer text-center dark:bg-slate-600">
+    <span class="flex justify-center items-center text-sm">
+      <iconify-icon width="18" icon="ion:arrow-up-c" id="go-top"></iconify-icon>
+      <span id="scrollpercent"><span>0</span> %</span>
+    </span>
+  </div>
+  
+<script src="/js/main.js"></script>
+
+
+  <script>
+    $(document).ready(function () {
+      const mapleCount = "10";
+      const speed = "0.5";
+      const mapleEl = document.getElementById("maple");
+      const maples = Array.from({ length: mapleCount }).map(() => {
+        const maple = document.createElement("div");
+        const scale = Math.random() * 0.5 + 0.5;
+        const offset = Math.random() * 2 - 1;
+        const x = Math.random() * mapleEl.clientWidth;
+        const y = -Math.random() * mapleEl.clientHeight;
+        const duration = 10 / speed;
+        const delay = -duration;
+        maple.className = "maple";
+        maple.style.width = `${24 * scale}px`;
+        maple.style.height = `${24 * scale}px`;
+        maple.style.left = `${x}px`;
+        maple.style.top = `${y}px`;
+        maple.style.setProperty("--maple-fall-offset", offset);
+        maple.style.setProperty("--maple-fall-height", `${Math.abs(y) + mapleEl.clientHeight}px`);
+        maple.style.animation = `fall ${duration}s linear infinite`;
+        maple.style.animationDelay = `${delay}s`;
+        mapleEl.appendChild(maple)
+        return maple
+      })
+    });
+  </script>
+  
+
+
+  <div class="fixed top-0 bottom-0 left-0 right-0 pointer-events-none print:hidden" id="maple"></div>
+</body>
+
+</html>
