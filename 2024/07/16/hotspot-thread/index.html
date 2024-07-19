@@ -19,7 +19,7 @@
 
 
 
-<title>Hello World | Wu&#39;s Blog</title>
+<title>hotspot-thread | Wu&#39;s Blog</title>
 
 
 
@@ -158,7 +158,7 @@
         </h2>
       </a>
       <div id="header-title" class="opacity-0 md:ml-2 md:mt-[0.1rem] text-xs font-medium whitespace-nowrap overflow-hidden overflow-ellipsis">
-        Hello World
+        hotspot-thread
       </div>
       <div class="flex-1"></div>
       <div class="flex items-center gap-3">
@@ -226,13 +226,13 @@
   <header class="overflow-hidden pt-6 pb-6 md:pt-12">
     <div class="pt-4 md:pt-6">
       <h1 id="article-title" class="text-[2rem] font-bold leading-snug mb-4 md:mb-6 md:text-[2.6rem]">
-        Hello World
+        hotspot-thread
       </h1>
       <div>
         <section class="flex items-center gap-3 text-sm">
           <span class="flex items-center gap-1">
             <iconify-icon width="18" icon="carbon-calendar" ></iconify-icon>
-            <time>2023-12-20</time>
+            <time>2024-07-18</time>
           </span>
           <span class="text-gray-400">·</span>
           <span class="flex items-center gap-1">
@@ -242,7 +242,7 @@
           <span class="text-gray-400">·</span>
           <span class="flex items-center gap-1">
             <iconify-icon width="18" icon="icon-park-outline:font-search" ></iconify-icon>
-            <span>75 words</span>
+            <span>318 words</span>
           </span>
           
         </section>
@@ -251,19 +251,17 @@
   </header>
   <!-- content -->
   <article class="post-content prose m-auto slide-enter-content dark:prose-invert">
-    <p>Welcome to <a target="_blank" rel="noopener" href="https://hexo.io/">Hexo</a>! This is your very first post. Check <a target="_blank" rel="noopener" href="https://hexo.io/docs/">documentation</a> for more info. If you get any problems when using Hexo, you can find the answer in <a target="_blank" rel="noopener" href="https://hexo.io/docs/troubleshooting.html">troubleshooting</a> or you can ask me on <a target="_blank" rel="noopener" href="https://github.com/hexojs/hexo/issues">GitHub</a>.</p>
-<h2 id="Quick-Start"><a href="#Quick-Start" class="headerlink" title="Quick Start"></a>Quick Start</h2><h3 id="Create-a-new-post"><a href="#Create-a-new-post" class="headerlink" title="Create a new post"></a>Create a new post</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ hexo new <span class="string">&quot;My New Post&quot;</span></span><br></pre></td></tr></table></figure>
-
-<p>More info: <a target="_blank" rel="noopener" href="https://hexo.io/docs/writing.html">Writing</a></p>
-<h3 id="Run-server"><a href="#Run-server" class="headerlink" title="Run server"></a>Run server</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ hexo server</span><br></pre></td></tr></table></figure>
-
-<p>More info: <a target="_blank" rel="noopener" href="https://hexo.io/docs/server.html">Server</a></p>
-<h3 id="Generate-static-files"><a href="#Generate-static-files" class="headerlink" title="Generate static files"></a>Generate static files</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ hexo generate</span><br></pre></td></tr></table></figure>
-
-<p>More info: <a target="_blank" rel="noopener" href="https://hexo.io/docs/generating.html">Generating</a></p>
-<h3 id="Deploy-to-remote-sites"><a href="#Deploy-to-remote-sites" class="headerlink" title="Deploy to remote sites"></a>Deploy to remote sites</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ hexo deploy</span><br></pre></td></tr></table></figure>
-
-<p>More info: <a target="_blank" rel="noopener" href="https://hexo.io/docs/one-command-deployment.html">Deployment</a></p>
+    <h1 id="HotSpot-中的Thread"><a href="#HotSpot-中的Thread" class="headerlink" title="HotSpot 中的Thread"></a>HotSpot 中的Thread</h1><h2 id="Java中的Thread的执行逻辑"><a href="#Java中的Thread的执行逻辑" class="headerlink" title="Java中的Thread的执行逻辑"></a>Java中的Thread的执行逻辑</h2><p>Java中的Thread代表JVM中运行的线程，实际在运行过程中会绑定到linux中的pthread，Java在创建Thread的时候并不会直接通过pthread_create创建线程，只有在调用.start()方法的时候才会创建线程，并且通过调用JNI的方式绑定到具体的run()逻辑。</p>
+<h2 id="HotSpot中的Thread逻辑图"><a href="#HotSpot中的Thread逻辑图" class="headerlink" title="HotSpot中的Thread逻辑图"></a>HotSpot中的Thread逻辑图</h2><p>在HotSpot中Thread分为多级，具体的继承关系和层级结构<br><img src="/image.png" alt="alt text"><br>其中NamedThread包括VMThread和GCThread等</p>
+<p>JavaThread一般申请为java的应用线程，在java启动一个Thread的时候会调用pthread_create初始化其中的OSThread</p>
+<p>Hotspot JVM 主要的后台线程包括：</p>
+<ul>
+<li>VM thread: 这个线程专门用于处理那些需要等待JVM满足safe-point条件的操作。safe-point代表现在没有修改heap的操作发生。这种类型的操作包括：”stop-the-world”类型的GC，thread stack dump，线程挂起，或撤销对象偏向锁(biased locking revocation)</li>
+<li>Periodic task thread: 用于处理周期性事件（如：中断）的线程</li>
+<li>GC threads: JVM中，用于支持不同阶段的GC操作的线程</li>
+<li>Compiler threads: 用于在运行时，将字节码编译为本地代码的线程</li>
+<li>Signal dispatcher thread: 接受发送给JVM处理的信号，并调用对应的JVM方法</li>
+</ul>
 
   </article>
   <!-- tag -->
@@ -274,13 +272,13 @@
   <div class="flex justify-between mt-12 pt-6 border-t border-gray-200">
     <div>
       
-        <a href="/2023/12/20/1004.%E6%9C%80%E5%A4%A7%E8%BF%9E%E7%BB%AD1%E7%9A%84%E4%B8%AA%E6%95%B0III/" class="text-sm text-gray-400 hover:text-gray-500 flex justify-center">
-          <iconify-icon width="20" icon="ri:arrow-left-s-line" data-inline="false"></iconify-icon>
-          最大连续1的个数 III
-        </a>
-      
     </div>
     <div>
+      
+        <a href="/2024/07/05/CRaC/" class="text-sm text-gray-400 hover:text-gray-500 flex justify-center">
+          CRaC
+          <iconify-icon width="20" icon="ri:arrow-right-s-line" data-inline="false"></iconify-icon>
+        </a>
       
     </div>
   </div>
