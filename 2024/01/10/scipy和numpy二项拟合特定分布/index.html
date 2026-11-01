@@ -1,0 +1,356 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width">
+<meta name="theme-color" content="#222"><meta name="generator" content="Hexo 8.1.2">
+
+  <link rel="mask-icon" href="/images/avatar.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+
+<link rel="stylesheet" href="/assets/fontawesome/css/all.min.css">
+
+<script class="next-config" data-name="main" type="application/json">{"hostname":"wulinze.github.io","root":"/","images":"/images","scheme":"Mist","darkmode":false,"version":"8.29.1","exturl":false,"sidebar":{"position":"right","width_expanded":300,"width_dual_column":240,"display":"post","padding":18,"offset":12},"hljswrap":true,"codeblock":{"theme":{"light":"github","dark":"github-dark"},"prism":{"light":"prism","dark":"prism-dark"},"copy_button":{"enable":true,"style":"flat"},"fold":{"enable":false,"height":500},"language":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"mediumzoom":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"stickytabs":false,"motion":{"enable":false,"async":false,"duration":200,"transition":{"menu_item":"fadeInDown","post_block":"fadeIn","post_header":"fadeInDown","post_body":"fadeInDown","coll_header":"fadeInLeft","sidebar":"fadeInUp"}},"i18n":{"placeholder":"搜索...","empty":"没有找到任何搜索结果：${query}","hits_time":"找到 ${hits} 个搜索结果（用时 ${time} 毫秒）","hits":"找到 ${hits} 个搜索结果"},"path":"/search.xml","localsearch":{"enable":true,"top_n_per_article":2,"unescape":true,"preload":false}}</script><script src="/js/config.js" defer></script>
+
+    <meta name="description" content="记录双峰数据的拟合思路、SciPy 自定义分布与反函数求解示例。">
+<meta property="og:type" content="article">
+<meta property="og:title" content="使用 NumPy 与 SciPy 拟合自定义分布">
+<meta property="og:url" content="https://wulinze.github.io/2024/01/10/scipy%E5%92%8Cnumpy%E4%BA%8C%E9%A1%B9%E6%8B%9F%E5%90%88%E7%89%B9%E5%AE%9A%E5%88%86%E5%B8%83/">
+<meta property="og:site_name" content="Wu&#39;s Blog">
+<meta property="og:description" content="记录双峰数据的拟合思路、SciPy 自定义分布与反函数求解示例。">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2024-01-10T00:40:37.000Z">
+<meta property="article:modified_time" content="2024-01-10T00:40:37.000Z">
+<meta property="article:author" content="wulinze">
+<meta property="article:tag" content="NumPy">
+<meta property="article:tag" content="Python">
+<meta property="article:tag" content="SciPy">
+<meta property="article:tag" content="数值计算">
+<meta name="twitter:card" content="summary">
+
+
+<link rel="canonical" href="https://wulinze.github.io/2024/01/10/scipy%E5%92%8Cnumpy%E4%BA%8C%E9%A1%B9%E6%8B%9F%E5%90%88%E7%89%B9%E5%AE%9A%E5%88%86%E5%B8%83/">
+
+
+<script class="next-config" data-name="page" type="application/json">{"sidebar":"","isHome":false,"isPost":true,"lang":"zh-CN","comments":true,"permalink":"https://wulinze.github.io/2024/01/10/scipy%E5%92%8Cnumpy%E4%BA%8C%E9%A1%B9%E6%8B%9F%E5%90%88%E7%89%B9%E5%AE%9A%E5%88%86%E5%B8%83/","path":"/2024/01/10/scipy和numpy二项拟合特定分布/","title":"使用 NumPy 与 SciPy 拟合自定义分布"}</script>
+
+<script class="next-config" data-name="calendar" type="application/json">""</script>
+<title>使用 NumPy 与 SciPy 拟合自定义分布 | Wu's Blog</title>
+  
+
+
+
+
+
+
+
+
+  
+<script src="/js/utils.js" defer></script><script src="/js/sidebar.js" defer></script><script src="/js/next-boot.js" defer></script>
+
+  <script src="/assets/local-search/search.js" defer></script>
+<script src="/js/third-party/search/local-search.js" defer></script>
+
+
+
+
+
+
+
+  
+
+
+
+
+  
+
+  <script class="next-config" data-name="enableMath" type="application/json">true</script><link rel="stylesheet" href="/assets/katex/katex.min.css">
+
+
+<link rel="icon" type="image/svg+xml" href="/images/avatar.svg">
+
+  <noscript>
+    <link rel="stylesheet" href="/css/noscript.css">
+  </noscript>
+<link rel="alternate" href="/atom.xml" title="Wu's Blog" type="application/atom+xml">
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="headband"></div>
+
+  <main class="main">
+    <div class="column">
+      <header class="header" itemscope itemtype="http://schema.org/WPHeader"><div class="site-brand-container">
+  <div class="site-nav-search popup-trigger" aria-label="搜索" role="button">
+      <i class="fa fa-search fa-fw fa-lg"></i>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <i class="logo-line"></i>
+      <p class="site-title">Wu's Blog</p>
+      <i class="logo-line"></i>
+    </a>
+      <p class="site-subtitle" itemprop="description">技术分享 · 思考与实践</p>
+  </div>
+
+  <div class="site-nav-toggle" aria-label="切换导航栏" role="button">
+      <i class="fa fa-ellipsis fa-fw fa-lg"></i>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  <ul class="main-menu menu"><li class="menu-item menu-item-home"><a href="/" rel="section">首页</a></li><li class="menu-item menu-item-categories"><a href="/categories/" rel="section">分类</a></li><li class="menu-item menu-item-tags"><a href="/tags/" rel="section">标签</a></li><li class="menu-item menu-item-archives"><a href="/archives/" rel="section">归档</a></li><li class="menu-item menu-item-about"><a href="/about/" rel="section">关于</a></li>
+      <li class="menu-item menu-item-search">
+        <a role="button" class="popup-trigger">搜索
+        </a>
+      </li>
+  </ul>
+</nav>
+
+
+
+  
+  <template id="search-popup-template"><div class="search-pop-overlay">
+    <div class="popup search-popup">
+      <div class="search-header">
+        <span class="search-icon">
+          <i class="fa fa-search"></i>
+        </span>
+        <div class="search-input-container">
+          <input autocomplete="off" autocapitalize="off" maxlength="80"
+                placeholder="搜索..." spellcheck="false"
+                type="search" class="search-input">
+        </div>
+        <span class="popup-btn-close" role="button">
+          <i class="fa fa-times-circle"></i>
+        </span>
+      </div>
+      <div class="search-result-container">
+        <div class="search-result-icon">
+          <i class="fa fa-spinner fa-pulse fa-5x"></i>
+        </div>
+      </div>
+    </div>
+  </div></template>
+
+
+</header>
+        
+  
+  <aside class="sidebar">
+
+    <div class="sidebar-inner sidebar-nav-active sidebar-toc-active">
+      <ul class="sidebar-nav">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <div class="sidebar-panel-container">
+        <!--noindex-->
+        <div class="post-toc-wrap sidebar-panel">
+            <div class="post-toc animated"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E9%80%9A%E8%BF%87%E6%B3%B0%E5%8B%92%E5%B1%95%E5%BC%80%E7%9A%84%E6%96%B9%E5%BC%8F%E6%8B%9F%E5%90%88%E7%89%B9%E5%AE%9A%E5%88%86%E5%B8%83"><span class="nav-text">通过泰勒展开的方式拟合特定分布</span></a></li></ol></div>
+        </div>
+        <!--/noindex-->
+
+        <div class="site-overview-wrap sidebar-panel">
+          <div class="site-author animated" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="wulinze"
+      src="/images/avatar.svg">
+  <p class="site-author-name" itemprop="name">wulinze</p>
+  <div class="site-description" itemprop="description">记录 JVM、C++、算法与系统工程中的问题、探索和实践。</div>
+</div>
+<div class="site-state-wrap animated">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+        <a href="/archives/">
+          <span class="site-state-item-count">71</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+          <a href="/categories/">
+        <span class="site-state-item-count">5</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+          <a href="/tags/">
+        <span class="site-state-item-count">64</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author animated">
+      <span class="links-of-author-item">
+        <a href="https://github.com/wulinze" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;wulinze" rel="noopener me" target="_blank"><i class="fab fa-github fa-fw"></i>GitHub</a>
+      </span>
+  </div>
+
+        </div>
+      </div>
+    </div>
+
+    
+  </aside>
+
+
+    </div>
+
+    <div class="main-inner post posts-expand">
+
+
+  
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://wulinze.github.io/2024/01/10/scipy%E5%92%8Cnumpy%E4%BA%8C%E9%A1%B9%E6%8B%9F%E5%90%88%E7%89%B9%E5%AE%9A%E5%88%86%E5%B8%83/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.svg">
+      <meta itemprop="name" content="wulinze">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Wu's Blog">
+      <meta itemprop="description" content="记录 JVM、C++、算法与系统工程中的问题、探索和实践。">
+    </span>
+
+    <span hidden itemprop="post" itemscope itemtype="http://schema.org/CreativeWork">
+      <meta itemprop="name" content="使用 NumPy 与 SciPy 拟合自定义分布 | Wu's Blog">
+      <meta itemprop="description" content="记录双峰数据的拟合思路、SciPy 自定义分布与反函数求解示例。">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          使用 NumPy 与 SciPy 拟合自定义分布
+        </h1>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">发表于</span>
+
+      <time title="创建时间：2024-01-10 08:40" itemprop="dateCreated datePublished" datetime="2024-01-10T08:40:37+08:00">2024-01-10</time>
+    </span>
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-folder"></i>
+      </span>
+      <span class="post-meta-item-text">分类于</span>
+        <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+          <a href="/categories/mathematics/" itemprop="url" rel="index"><span itemprop="name">数学与计算</span></a>
+        </span>
+    </span>
+
+  
+</div>
+
+            <div class="post-description">记录双峰数据的拟合思路、SciPy 自定义分布与反函数求解示例。</div>
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody"><h2 id="通过泰勒展开的方式拟合特定分布" tabindex="-1">通过泰勒展开的方式拟合特定分布</h2>
+<ul>
+<li>起因
+线上采集了一组数据，但是数据分布情况不是标准正态分布，而且是一个双峰数据，考虑通过最小二乘法的方式对于分布进行拟合。主要使用工具numpy和scipy</li>
+</ul>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">from</span> scipy.stats <span class="keyword">import</span> rv_continuous</span><br><span class="line"><span class="keyword">import</span> scipy.stats <span class="keyword">as</span> st</span><br><span class="line"><span class="keyword">import</span> matplotlib.pyplot <span class="keyword">as</span> plt</span><br><span class="line"><span class="keyword">import</span> seaborn <span class="keyword">as</span> sns</span><br><span class="line"><span class="keyword">import</span> numpy <span class="keyword">as</span> np</span><br><span class="line"><span class="keyword">import</span> pandas <span class="keyword">as</span> pd</span><br><span class="line"><span class="keyword">import</span> numpy.polynomial.polynomial <span class="keyword">as</span> poly</span><br><span class="line"><span class="keyword">import</span> os</span><br><span class="line"><span class="keyword">import</span> math</span><br><span class="line"><span class="keyword">import</span> glob</span><br><span class="line"><span class="keyword">from</span> scipy <span class="keyword">import</span> integrate</span><br><span class="line"><span class="keyword">from</span> scipy.integrate <span class="keyword">import</span> quad</span><br><span class="line"><span class="keyword">from</span> scipy <span class="keyword">import</span> optimize</span><br><span class="line"><span class="keyword">import</span> copy</span><br><span class="line"></span><br><span class="line"><span class="keyword">class</span> <span class="title class_">MyDistribution</span>(<span class="title class_ inherited__">rv_continuous</span>):</span><br><span class="line">    <span class="keyword">def</span> <span class="title function_">__init__</span>(<span class="params">self, data, bins_num=<span class="literal">None</span></span>):</span><br><span class="line">        <span class="built_in">super</span>(MyDistribution, <span class="variable language_">self</span>).__init__()</span><br><span class="line">        data_min = np.<span class="built_in">min</span>(data)</span><br><span class="line">        data_max = np.<span class="built_in">max</span>(data)</span><br><span class="line">        <span class="variable language_">self</span>._data_min = data_min</span><br><span class="line">        <span class="variable language_">self</span>._data_max = data_max</span><br><span class="line">        <span class="keyword">if</span> bins_num <span class="keyword">is</span> <span class="literal">None</span>:</span><br><span class="line">            bins_num = <span class="built_in">max</span>(<span class="built_in">len</span>(data) // <span class="number">10</span>, (data_max - data_min) // <span class="number">10</span>)</span><br><span class="line"></span><br><span class="line">        p, bins = np.histogram(data, bins=bins_num, <span class="built_in">range</span>=(data_min, data_max))</span><br><span class="line">        p = <span class="variable language_">self</span>.norm(p)</span><br><span class="line"></span><br><span class="line">        <span class="variable language_">self</span>._z1 = poly.polyfit(bins[: -<span class="number">1</span>], p, <span class="number">30</span>)</span><br><span class="line">        <span class="variable language_">self</span>._p1 = poly.Polynomial(<span class="variable language_">self</span>._z1)</span><br><span class="line"></span><br><span class="line">        <span class="comment"># f = lambda x: (self._p1(x) if self._p1(x) &gt; 0 else 0)</span></span><br><span class="line">        f = <span class="keyword">lambda</span> x: (<span class="number">0</span> <span class="keyword">if</span> (x &lt; data_min <span class="keyword">or</span> x &gt; data_max) <span class="keyword">else</span> (<span class="variable language_">self</span>._p1(x) <span class="keyword">if</span> <span class="variable language_">self</span>._p1(x) &gt; <span class="number">0</span> <span class="keyword">else</span> <span class="number">0</span>))</span><br><span class="line"></span><br><span class="line">        k, _ = integrate.quad(f, data_min, data_max)</span><br><span class="line">        <span class="variable language_">self</span>._f = <span class="keyword">lambda</span> x: (f(x)/k)</span><br><span class="line"></span><br><span class="line">        ax = plt.subplot()</span><br><span class="line">        xlist = np.linspace(data_min-<span class="number">1</span>, data_max+<span class="number">1</span>, num=bins_num, endpoint=<span class="literal">True</span>)</span><br><span class="line">        pdflist = <span class="built_in">list</span>()</span><br><span class="line">        <span class="keyword">for</span> x <span class="keyword">in</span> xlist:</span><br><span class="line">            pdflist.append(<span class="variable language_">self</span>.pdf(x))</span><br><span class="line">            <span class="comment"># pdflist.append(f(x))</span></span><br><span class="line"></span><br><span class="line">        ax.plot(xlist, pdflist, color=<span class="string">&#x27;royalblue&#x27;</span>)</span><br><span class="line">        ax.hist(bins[: -<span class="number">1</span>], bins=<span class="built_in">len</span>(bins[: -<span class="number">1</span>]), weights=p)</span><br><span class="line">        </span><br><span class="line"></span><br><span class="line">    <span class="keyword">def</span> <span class="title function_">cdf_inverse</span>(<span class="params">self, x</span>):</span><br><span class="line">        <span class="keyword">def</span> <span class="title function_">function</span>(<span class="params">y</span>):</span><br><span class="line">            <span class="keyword">return</span> <span class="variable language_">self</span>._cdf(y) - x</span><br><span class="line"></span><br><span class="line">        result = optimize.root(function, x0=<span class="variable language_">self</span>._data_min)</span><br><span class="line">        inverse = result.x[<span class="number">0</span>]</span><br><span class="line">        <span class="keyword">return</span> inverse</span><br><span class="line"></span><br><span class="line">    <span class="keyword">def</span> <span class="title function_">norm</span>(<span class="params">self, x</span>):</span><br><span class="line">        ans = []</span><br><span class="line">        x_sum = np.<span class="built_in">sum</span>(x)</span><br><span class="line">        <span class="keyword">for</span> i <span class="keyword">in</span> <span class="built_in">range</span>(<span class="built_in">len</span>(x)):</span><br><span class="line">            ans.append(x[i]/x_sum)</span><br><span class="line">        </span><br><span class="line">        <span class="keyword">return</span> ans</span><br><span class="line"></span><br><span class="line">    <span class="keyword">def</span> <span class="title function_">_rvs</span>(<span class="params">self, *args, **kwargs</span>):</span><br><span class="line">        size = kwargs.get(<span class="string">&#x27;size&#x27;</span>, <span class="number">1</span>)</span><br><span class="line">        <span class="keyword">if</span> <span class="built_in">len</span>(size) == <span class="number">0</span>:</span><br><span class="line">            size = <span class="number">1</span></span><br><span class="line">        <span class="keyword">else</span>:</span><br><span class="line">            size = size[<span class="number">0</span>]</span><br><span class="line">        random_samples = np.empty(size)</span><br><span class="line">        <span class="keyword">for</span> i <span class="keyword">in</span> <span class="built_in">range</span>(size): </span><br><span class="line">            u = np.random.uniform()</span><br><span class="line">            random_samples[i] = <span class="variable language_">self</span>.cdf_inverse(u)</span><br><span class="line">        <span class="keyword">return</span> random_samples</span><br><span class="line"></span><br><span class="line">    <span class="keyword">def</span> <span class="title function_">_pdf</span>(<span class="params">self, x</span>):</span><br><span class="line">        <span class="keyword">return</span> <span class="variable language_">self</span>._f(x)</span><br><span class="line"></span><br><span class="line">    <span class="keyword">def</span> <span class="title function_">_cdf</span>(<span class="params">self, x</span>):</span><br><span class="line">        <span class="keyword">if</span> x &lt; <span class="variable language_">self</span>._data_min:</span><br><span class="line">            <span class="keyword">return</span> <span class="number">0</span></span><br><span class="line">        <span class="keyword">elif</span> x &gt; <span class="variable language_">self</span>._data_max:</span><br><span class="line">            <span class="keyword">return</span> <span class="number">1</span></span><br><span class="line">        cdf, _ = quad(<span class="variable language_">self</span>._pdf, <span class="variable language_">self</span>._data_min, x)</span><br><span class="line"></span><br><span class="line">        <span class="keyword">return</span> cdf</span><br></pre></td></tr></table></figure>
+<p>简单说一下代码，scipy内部提供了对于连续分布的基本信息的类rv_continuous，还有用于离散变量的rv_discrete。具体使用方式可以看官方文档，英文看不懂就去github找中文的。里面提供了一些基本的以_开头的函数，通过重载函数可以实现自定义分布，pdf为概率密度函数，cdf为累积分布函数。_rvs负责采样的逻辑。需要自己实现一个求逆函数(反函数)的操作。</p>
+<ul>
+<li>函数求逆函数(反函数)
+函数求反函数就是初始认为函数f(x)=y找到一个g(y)=x的函数g，通过scipy中optimize.root可以直接求出。</li>
+</ul>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">def</span> <span class="title function_">cdf_inverse</span>(<span class="params">self, x</span>):</span><br><span class="line">        <span class="keyword">def</span> <span class="title function_">function</span>(<span class="params">y</span>):</span><br><span class="line">            <span class="keyword">return</span> <span class="variable language_">self</span>._cdf(y) - x</span><br><span class="line"></span><br><span class="line">        result = optimize.root(function, x0=<span class="variable language_">self</span>._data_min)</span><br><span class="line">        inverse = result.x[<span class="number">0</span>]</span><br><span class="line">        <span class="keyword">return</span> inverse</span><br></pre></td></tr></table></figure>
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/Python/" rel="tag"># Python</a>
+              <a href="/tags/NumPy/" rel="tag"># NumPy</a>
+              <a href="/tags/SciPy/" rel="tag"># SciPy</a>
+              <a href="/tags/%E6%95%B0%E5%80%BC%E8%AE%A1%E7%AE%97/" rel="tag"># 数值计算</a>
+          </div>
+
+        
+
+          <div class="post-nav">
+            <div class="post-nav-item">
+                <a href="/2023/12/22/Pareto-Front/" rel="prev" title="Pareto Front：帕累托前沿（待补充）">
+                  <i class="fa fa-angle-left"></i> Pareto Front：帕累托前沿（待补充）
+                </a>
+            </div>
+            <div class="post-nav-item">
+                <a href="/2024/01/19/hotspot-%E5%86%85%E5%AD%98%E5%B8%83%E5%B1%80%E5%92%8C%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90/" rel="next" title="HotSpot 内存布局与源码分析">
+                  HotSpot 内存布局与源码分析 <i class="fa fa-angle-right"></i>
+                </a>
+            </div>
+          </div>
+    </footer>
+  </article>
+</div>
+
+
+
+
+
+
+</div>
+  </main>
+
+  <footer class="footer">
+    <div class="footer-inner">
+
+  <div class="copyright">
+    &copy; 2023 – 
+    <span itemprop="copyrightYear">2026</span>
+    <span class="with-love">
+      <i class="fa fa-code"></i>
+    </span>
+    <span class="author" itemprop="copyrightHolder">wulinze</span>
+  </div>
+  <div class="powered-by">由 <a href="https://hexo.io/" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.js.org/mist/" rel="noopener" target="_blank">NexT.Mist</a> 强力驱动
+  </div>
+
+    </div>
+  </footer>
+
+  
+  <div class="toggle sidebar-toggle" role="button">
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+  </div>
+  <div class="back-to-top" role="button" aria-label="返回顶部">
+    <i class="fa fa-arrow-up fa-lg"></i>
+    <span>0%</span>
+  </div>
+
+<noscript>
+  <div class="noscript-warning">Theme NexT works best with JavaScript enabled</div>
+</noscript>
+
+</body>
+</html>

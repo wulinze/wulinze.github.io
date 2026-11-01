@@ -1,0 +1,369 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width">
+<meta name="theme-color" content="#222"><meta name="generator" content="Hexo 8.1.2">
+
+  <link rel="mask-icon" href="/images/avatar.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+
+<link rel="stylesheet" href="/assets/fontawesome/css/all.min.css">
+
+<script class="next-config" data-name="main" type="application/json">{"hostname":"wulinze.github.io","root":"/","images":"/images","scheme":"Mist","darkmode":false,"version":"8.29.1","exturl":false,"sidebar":{"position":"right","width_expanded":300,"width_dual_column":240,"display":"post","padding":18,"offset":12},"hljswrap":true,"codeblock":{"theme":{"light":"github","dark":"github-dark"},"prism":{"light":"prism","dark":"prism-dark"},"copy_button":{"enable":true,"style":"flat"},"fold":{"enable":false,"height":500},"language":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"mediumzoom":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"stickytabs":false,"motion":{"enable":false,"async":false,"duration":200,"transition":{"menu_item":"fadeInDown","post_block":"fadeIn","post_header":"fadeInDown","post_body":"fadeInDown","coll_header":"fadeInLeft","sidebar":"fadeInUp"}},"i18n":{"placeholder":"搜索...","empty":"没有找到任何搜索结果：${query}","hits_time":"找到 ${hits} 个搜索结果（用时 ${time} 毫秒）","hits":"找到 ${hits} 个搜索结果"},"path":"/search.xml","localsearch":{"enable":true,"top_n_per_article":2,"unescape":true,"preload":false}}</script><script src="/js/config.js" defer></script>
+
+    <meta name="description" content="使用递归处理化学式括号，结合哈希表计数并按顺序输出原子数量。">
+<meta property="og:type" content="article">
+<meta property="og:title" content="原子的数量">
+<meta property="og:url" content="https://wulinze.github.io/2025/10/28/726.%E5%8E%9F%E5%AD%90%E7%9A%84%E6%95%B0%E9%87%8F/">
+<meta property="og:site_name" content="Wu&#39;s Blog">
+<meta property="og:description" content="使用递归处理化学式括号，结合哈希表计数并按顺序输出原子数量。">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2025-10-27T16:00:00.000Z">
+<meta property="article:modified_time" content="2025-10-27T16:00:00.000Z">
+<meta property="article:author" content="wulinze">
+<meta property="article:tag" content="C++">
+<meta property="article:tag" content="哈希表">
+<meta property="article:tag" content="字符串">
+<meta property="article:tag" content="递归">
+<meta name="twitter:card" content="summary">
+
+
+<link rel="canonical" href="https://wulinze.github.io/2025/10/28/726.%E5%8E%9F%E5%AD%90%E7%9A%84%E6%95%B0%E9%87%8F/">
+
+
+<script class="next-config" data-name="page" type="application/json">{"sidebar":"","isHome":false,"isPost":true,"lang":"zh-CN","comments":true,"permalink":"https://wulinze.github.io/2025/10/28/726.%E5%8E%9F%E5%AD%90%E7%9A%84%E6%95%B0%E9%87%8F/","path":"/2025/10/28/726.原子的数量/","title":"原子的数量"}</script>
+
+<script class="next-config" data-name="calendar" type="application/json">""</script>
+<title>原子的数量 | Wu's Blog</title>
+  
+
+
+
+
+
+
+
+
+  
+<script src="/js/utils.js" defer></script><script src="/js/sidebar.js" defer></script><script src="/js/next-boot.js" defer></script>
+
+  <script src="/assets/local-search/search.js" defer></script>
+<script src="/js/third-party/search/local-search.js" defer></script>
+
+
+
+
+
+
+
+  
+
+
+
+
+  
+
+  <script class="next-config" data-name="enableMath" type="application/json">true</script><link rel="stylesheet" href="/assets/katex/katex.min.css">
+
+
+<link rel="icon" type="image/svg+xml" href="/images/avatar.svg">
+
+  <noscript>
+    <link rel="stylesheet" href="/css/noscript.css">
+  </noscript>
+<link rel="alternate" href="/atom.xml" title="Wu's Blog" type="application/atom+xml">
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="headband"></div>
+
+  <main class="main">
+    <div class="column">
+      <header class="header" itemscope itemtype="http://schema.org/WPHeader"><div class="site-brand-container">
+  <div class="site-nav-search popup-trigger" aria-label="搜索" role="button">
+      <i class="fa fa-search fa-fw fa-lg"></i>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <i class="logo-line"></i>
+      <p class="site-title">Wu's Blog</p>
+      <i class="logo-line"></i>
+    </a>
+      <p class="site-subtitle" itemprop="description">技术分享 · 思考与实践</p>
+  </div>
+
+  <div class="site-nav-toggle" aria-label="切换导航栏" role="button">
+      <i class="fa fa-ellipsis fa-fw fa-lg"></i>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  <ul class="main-menu menu"><li class="menu-item menu-item-home"><a href="/" rel="section">首页</a></li><li class="menu-item menu-item-categories"><a href="/categories/" rel="section">分类</a></li><li class="menu-item menu-item-tags"><a href="/tags/" rel="section">标签</a></li><li class="menu-item menu-item-archives"><a href="/archives/" rel="section">归档</a></li><li class="menu-item menu-item-about"><a href="/about/" rel="section">关于</a></li>
+      <li class="menu-item menu-item-search">
+        <a role="button" class="popup-trigger">搜索
+        </a>
+      </li>
+  </ul>
+</nav>
+
+
+
+  
+  <template id="search-popup-template"><div class="search-pop-overlay">
+    <div class="popup search-popup">
+      <div class="search-header">
+        <span class="search-icon">
+          <i class="fa fa-search"></i>
+        </span>
+        <div class="search-input-container">
+          <input autocomplete="off" autocapitalize="off" maxlength="80"
+                placeholder="搜索..." spellcheck="false"
+                type="search" class="search-input">
+        </div>
+        <span class="popup-btn-close" role="button">
+          <i class="fa fa-times-circle"></i>
+        </span>
+      </div>
+      <div class="search-result-container">
+        <div class="search-result-icon">
+          <i class="fa fa-spinner fa-pulse fa-5x"></i>
+        </div>
+      </div>
+    </div>
+  </div></template>
+
+
+</header>
+        
+  
+  <aside class="sidebar">
+
+    <div class="sidebar-inner sidebar-nav-active sidebar-toc-active">
+      <ul class="sidebar-nav">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <div class="sidebar-panel-container">
+        <!--noindex-->
+        <div class="post-toc-wrap sidebar-panel">
+            <div class="post-toc animated"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E9%A2%98%E7%9B%AE%E6%8F%8F%E8%BF%B0"><span class="nav-text">题目描述</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E9%A2%98%E7%9B%AE%E5%88%86%E6%9E%90"><span class="nav-text">题目分析</span></a></li></ol></div>
+        </div>
+        <!--/noindex-->
+
+        <div class="site-overview-wrap sidebar-panel">
+          <div class="site-author animated" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="wulinze"
+      src="/images/avatar.svg">
+  <p class="site-author-name" itemprop="name">wulinze</p>
+  <div class="site-description" itemprop="description">记录 JVM、C++、算法与系统工程中的问题、探索和实践。</div>
+</div>
+<div class="site-state-wrap animated">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+        <a href="/archives/">
+          <span class="site-state-item-count">71</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+          <a href="/categories/">
+        <span class="site-state-item-count">5</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+          <a href="/tags/">
+        <span class="site-state-item-count">64</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author animated">
+      <span class="links-of-author-item">
+        <a href="https://github.com/wulinze" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;wulinze" rel="noopener me" target="_blank"><i class="fab fa-github fa-fw"></i>GitHub</a>
+      </span>
+  </div>
+
+        </div>
+      </div>
+    </div>
+
+    
+  </aside>
+
+
+    </div>
+
+    <div class="main-inner post posts-expand">
+
+
+  
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://wulinze.github.io/2025/10/28/726.%E5%8E%9F%E5%AD%90%E7%9A%84%E6%95%B0%E9%87%8F/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.svg">
+      <meta itemprop="name" content="wulinze">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Wu's Blog">
+      <meta itemprop="description" content="记录 JVM、C++、算法与系统工程中的问题、探索和实践。">
+    </span>
+
+    <span hidden itemprop="post" itemscope itemtype="http://schema.org/CreativeWork">
+      <meta itemprop="name" content="原子的数量 | Wu's Blog">
+      <meta itemprop="description" content="使用递归处理化学式括号，结合哈希表计数并按顺序输出原子数量。">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          原子的数量
+        </h1>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">发表于</span>
+
+      <time title="创建时间：2025-10-28 00:00" itemprop="dateCreated datePublished" datetime="2025-10-28T00:00:00+08:00">2025-10-28</time>
+    </span>
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-folder"></i>
+      </span>
+      <span class="post-meta-item-text">分类于</span>
+        <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+          <a href="/categories/algorithms/" itemprop="url" rel="index"><span itemprop="name">算法与数据结构</span></a>
+        </span>
+    </span>
+
+  
+</div>
+
+            <div class="post-description">使用递归处理化学式括号，结合哈希表计数并按顺序输出原子数量。</div>
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody"><h2 id="题目描述" tabindex="-1">题目描述</h2>
+<p>给定一个化学式formula（作为字符串），返回每种原子的数量。</p>
+<p>原子总是以一个大写字母开始，接着跟随0个或任意个小写字母，表示原子的名字。</p>
+<p>如果数量大于 1，原子后会跟着数字表示原子的数量。如果数量等于 1 则不会跟数字。例如，H2O 和 H2O2 是可行的，但 H1O2 这个表达是不可行的。</p>
+<p>两个化学式连在一起是新的化学式。例如 H2O2He3Mg4 也是化学式。</p>
+<p>一个括号中的化学式和数字（可选择性添加）也是化学式。例如 (H2O2) 和 (H2O2)3 是化学式。</p>
+<p>给定一个化学式 formula ，返回所有原子的数量。格式为：第一个（按字典序）原子的名字，跟着它的数量（如果数量大于 1），然后是第二个原子的名字（按字典序），跟着它的数量（如果数量大于 1），以此类推。</p>
+<p><strong>示例 1：</strong></p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">输入：formula = &quot;H2O&quot;</span><br><span class="line">输出：&quot;H2O&quot;</span><br><span class="line">解释：</span><br><span class="line">原子的数量是 &#123;&#x27;H&#x27;: 2, &#x27;O&#x27;: 1&#125;。</span><br></pre></td></tr></table></figure>
+<p><strong>示例 2：</strong></p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">输入：formula = &quot;Mg(OH)2&quot;</span><br><span class="line">输出：&quot;H2MgO2&quot;</span><br><span class="line">解释： </span><br><span class="line">原子的数量是 &#123;&#x27;H&#x27;: 2, &#x27;Mg&#x27;: 1, &#x27;O&#x27;: 2&#125;。</span><br></pre></td></tr></table></figure>
+<p><strong>示例 3：</strong></p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">输入：formula = &quot;K4(ON(SO3)2)2&quot;</span><br><span class="line">输出：&quot;K4N2O14S4&quot;</span><br><span class="line">解释：</span><br><span class="line">原子的数量是 &#123;&#x27;K&#x27;: 4, &#x27;N&#x27;: 2, &#x27;O&#x27;: 14, &#x27;S&#x27;: 4&#125;。</span><br></pre></td></tr></table></figure>
+<p><strong>示例 4：</strong></p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">输入：formula = &quot;Be32&quot;</span><br><span class="line">输出：&quot;Be32&quot;</span><br></pre></td></tr></table></figure>
+<p>提示：</p>
+<ul>
+<li>1 &lt;= formula.length &lt;= 1000</li>
+<li>formula 由小写英文字母、数字 '(' 和 ')' 组成。</li>
+<li>formula 是有效的化学式。</li>
+</ul>
+<h2 id="题目分析" tabindex="-1">题目分析</h2>
+<p>可以构造一个哈希表存储数据之后使用优先队列对其进行排序之后输出对应字符串，之后括号可以用递归进行解决</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">class</span> <span class="title class_">Solution</span> &#123;</span><br><span class="line"><span class="keyword">public</span>:</span><br><span class="line">    <span class="keyword">class</span> <span class="title class_">cmp</span>&#123;</span><br><span class="line">    <span class="keyword">public</span>:</span><br><span class="line">        <span class="function"><span class="type">bool</span> <span class="title">operator</span><span class="params">()</span><span class="params">(pair&lt;string, <span class="type">int</span>&gt;&amp; p1, pair&lt;string, <span class="type">int</span>&gt;&amp; p2)</span></span>&#123;</span><br><span class="line">            <span class="keyword">return</span> p1.first &gt; p2.first;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;;</span><br><span class="line">    <span class="function"><span class="type">void</span> <span class="title">merge</span><span class="params">(unordered_map&lt;string, <span class="type">int</span>&gt;&amp; m, string&amp; atom, unordered_map&lt;string, <span class="type">int</span>&gt;&amp; tmp, <span class="type">int</span>&amp; num)</span></span>&#123;</span><br><span class="line">        <span class="keyword">if</span>(!atom.<span class="built_in">empty</span>())&#123;</span><br><span class="line">            m[atom] += <span class="number">1</span>;atom.<span class="built_in">clear</span>();</span><br><span class="line">        &#125;<span class="keyword">else</span> <span class="keyword">if</span>(!tmp.<span class="built_in">empty</span>())&#123;</span><br><span class="line">            <span class="keyword">for</span>(<span class="keyword">auto</span>&amp; p : tmp)&#123;</span><br><span class="line">                <span class="keyword">if</span>(num != <span class="number">0</span>)</span><br><span class="line">                    m[p.first] += p.second * num;</span><br><span class="line">                <span class="keyword">else</span></span><br><span class="line">                    m[p.first] += p.second;</span><br><span class="line">            &#125;</span><br><span class="line">            tmp.<span class="built_in">clear</span>();</span><br><span class="line">        &#125;</span><br><span class="line">        num = <span class="number">0</span>;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="function">unordered_map&lt;string, <span class="type">int</span>&gt; <span class="title">count</span><span class="params">(string formula)</span> </span>&#123;</span><br><span class="line">        unordered_map&lt;string, <span class="type">int</span>&gt; m, tmp;</span><br><span class="line">        <span class="type">int</span> left=<span class="number">0</span>, right=<span class="number">0</span>;</span><br><span class="line">        <span class="type">int</span> start = <span class="number">0</span>;</span><br><span class="line">        <span class="type">int</span> l = formula.<span class="built_in">length</span>();</span><br><span class="line">        string atom;</span><br><span class="line">        <span class="type">int</span> num=<span class="number">0</span>;</span><br><span class="line"></span><br><span class="line">        <span class="keyword">for</span>(<span class="type">int</span> i=<span class="number">0</span>; i&lt;l; i++)&#123;</span><br><span class="line">            <span class="keyword">if</span>(formula[i] == <span class="string">&#x27;(&#x27;</span>)&#123;</span><br><span class="line">                <span class="built_in">merge</span>(m, atom, tmp, num);</span><br><span class="line">                left++;</span><br><span class="line">                start = i;</span><br><span class="line">                <span class="keyword">while</span>(i &lt; l &amp;&amp; left != right)&#123;</span><br><span class="line">                    i++;</span><br><span class="line">                    <span class="keyword">if</span>(formula[i] == <span class="string">&#x27;(&#x27;</span>)left++;</span><br><span class="line">                    <span class="keyword">if</span>(formula[i] == <span class="string">&#x27;)&#x27;</span>)right++;</span><br><span class="line">                &#125;</span><br><span class="line">                tmp = <span class="built_in">count</span>(formula.<span class="built_in">substr</span>(start<span class="number">+1</span>, i-start<span class="number">-1</span>));</span><br><span class="line">            &#125; <span class="keyword">else</span> <span class="keyword">if</span>(formula[i] &gt;= <span class="string">&#x27;0&#x27;</span> &amp;&amp; formula[i] &lt;= <span class="string">&#x27;9&#x27;</span>)&#123;</span><br><span class="line">                num *= <span class="number">10</span>;</span><br><span class="line">                num += formula[i] - <span class="string">&#x27;0&#x27;</span>;</span><br><span class="line">                <span class="keyword">if</span>(i &gt;= l<span class="number">-1</span> || !(formula[i<span class="number">+1</span>] &gt;= <span class="string">&#x27;0&#x27;</span> &amp;&amp; formula[i<span class="number">+1</span>] &lt;= <span class="string">&#x27;9&#x27;</span>))&#123;</span><br><span class="line">                    <span class="keyword">if</span>(tmp.<span class="built_in">empty</span>())&#123;</span><br><span class="line">                        m[atom] += num;</span><br><span class="line">                        atom.<span class="built_in">clear</span>();</span><br><span class="line">                    &#125; <span class="keyword">else</span>&#123;</span><br><span class="line">                        <span class="keyword">for</span>(<span class="keyword">auto</span>&amp; p : tmp)&#123;</span><br><span class="line">                            m[p.first] += p.second * num;</span><br><span class="line">                        &#125;</span><br><span class="line">                        tmp.<span class="built_in">clear</span>();</span><br><span class="line">                    &#125;</span><br><span class="line">                &#125;</span><br><span class="line">            &#125; <span class="keyword">else</span> <span class="keyword">if</span>(formula[i] &gt;= <span class="string">&#x27;A&#x27;</span> &amp;&amp; formula[i] &lt;= <span class="string">&#x27;Z&#x27;</span>)&#123;</span><br><span class="line">                <span class="built_in">merge</span>(m, atom, tmp, num);</span><br><span class="line">                atom.<span class="built_in">push_back</span>(formula[i]);</span><br><span class="line">            &#125; <span class="keyword">else</span> <span class="keyword">if</span>(formula[i] &gt;= <span class="string">&#x27;a&#x27;</span> &amp;&amp; formula[i] &lt;= <span class="string">&#x27;z&#x27;</span>)&#123;</span><br><span class="line">                atom.<span class="built_in">push_back</span>(formula[i]);</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="built_in">merge</span>(m, atom, tmp, num);</span><br><span class="line"></span><br><span class="line">        <span class="keyword">return</span> m;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="function">string <span class="title">countOfAtoms</span><span class="params">(string formula)</span> </span>&#123;</span><br><span class="line">        priority_queue&lt;pair&lt;string, <span class="type">int</span>&gt;, vector&lt;pair&lt;string, <span class="type">int</span>&gt;&gt;, cmp&gt; q;</span><br><span class="line">        unordered_map&lt;string, <span class="type">int</span>&gt; m = <span class="built_in">count</span>(formula);</span><br><span class="line">        string res;</span><br><span class="line"></span><br><span class="line">        <span class="keyword">for</span>(<span class="keyword">auto</span>&amp; p : m)&#123;</span><br><span class="line">            q.<span class="built_in">push</span>(p);</span><br><span class="line">            <span class="comment">// cout &lt;&lt; p.first &lt;&lt; &#x27;,&#x27; &lt;&lt; p.second &lt;&lt; endl;</span></span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">while</span>(!q.<span class="built_in">empty</span>())&#123;</span><br><span class="line">            <span class="keyword">if</span>(q.<span class="built_in">top</span>().second &gt; <span class="number">1</span>)&#123;</span><br><span class="line">                res += q.<span class="built_in">top</span>().first + <span class="built_in">to_string</span>(q.<span class="built_in">top</span>().second);</span><br><span class="line">            &#125; <span class="keyword">else</span>&#123;</span><br><span class="line">                res += q.<span class="built_in">top</span>().first;</span><br><span class="line">            &#125;</span><br><span class="line">            q.<span class="built_in">pop</span>();</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        <span class="keyword">return</span> res; </span><br><span class="line">    &#125;</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/cpp/" rel="tag"># C++</a>
+              <a href="/tags/%E5%93%88%E5%B8%8C%E8%A1%A8/" rel="tag"># 哈希表</a>
+              <a href="/tags/%E5%AD%97%E7%AC%A6%E4%B8%B2/" rel="tag"># 字符串</a>
+              <a href="/tags/%E9%80%92%E5%BD%92/" rel="tag"># 递归</a>
+          </div>
+
+        
+
+          <div class="post-nav">
+            <div class="post-nav-item">
+                <a href="/2025/10/28/765.%E6%83%85%E4%BE%A3%E7%89%B5%E6%89%8B/" rel="prev" title="情侣牵手">
+                  <i class="fa fa-angle-left"></i> 情侣牵手
+                </a>
+            </div>
+            <div class="post-nav-item">
+                <a href="/2025/10/28/617.%E5%90%88%E5%B9%B6%E4%BA%8C%E5%8F%89%E6%A0%91/" rel="next" title="合并二叉树">
+                  合并二叉树 <i class="fa fa-angle-right"></i>
+                </a>
+            </div>
+          </div>
+    </footer>
+  </article>
+</div>
+
+
+
+
+
+
+</div>
+  </main>
+
+  <footer class="footer">
+    <div class="footer-inner">
+
+  <div class="copyright">
+    &copy; 2023 – 
+    <span itemprop="copyrightYear">2026</span>
+    <span class="with-love">
+      <i class="fa fa-code"></i>
+    </span>
+    <span class="author" itemprop="copyrightHolder">wulinze</span>
+  </div>
+  <div class="powered-by">由 <a href="https://hexo.io/" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.js.org/mist/" rel="noopener" target="_blank">NexT.Mist</a> 强力驱动
+  </div>
+
+    </div>
+  </footer>
+
+  
+  <div class="toggle sidebar-toggle" role="button">
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+  </div>
+  <div class="back-to-top" role="button" aria-label="返回顶部">
+    <i class="fa fa-arrow-up fa-lg"></i>
+    <span>0%</span>
+  </div>
+
+<noscript>
+  <div class="noscript-warning">Theme NexT works best with JavaScript enabled</div>
+</noscript>
+
+</body>
+</html>

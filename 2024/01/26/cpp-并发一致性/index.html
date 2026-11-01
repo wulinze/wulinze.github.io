@@ -1,0 +1,411 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width">
+<meta name="theme-color" content="#222"><meta name="generator" content="Hexo 8.1.2">
+
+  <link rel="mask-icon" href="/images/avatar.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+
+<link rel="stylesheet" href="/assets/fontawesome/css/all.min.css">
+
+<script class="next-config" data-name="main" type="application/json">{"hostname":"wulinze.github.io","root":"/","images":"/images","scheme":"Mist","darkmode":false,"version":"8.29.1","exturl":false,"sidebar":{"position":"right","width_expanded":300,"width_dual_column":240,"display":"post","padding":18,"offset":12},"hljswrap":true,"codeblock":{"theme":{"light":"github","dark":"github-dark"},"prism":{"light":"prism","dark":"prism-dark"},"copy_button":{"enable":true,"style":"flat"},"fold":{"enable":false,"height":500},"language":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"mediumzoom":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"stickytabs":false,"motion":{"enable":false,"async":false,"duration":200,"transition":{"menu_item":"fadeInDown","post_block":"fadeIn","post_header":"fadeInDown","post_body":"fadeInDown","coll_header":"fadeInLeft","sidebar":"fadeInUp"}},"i18n":{"placeholder":"搜索...","empty":"没有找到任何搜索结果：${query}","hits_time":"找到 ${hits} 个搜索结果（用时 ${time} 毫秒）","hits":"找到 ${hits} 个搜索结果"},"path":"/search.xml","localsearch":{"enable":true,"top_n_per_article":2,"unescape":true,"preload":false}}</script><script src="/js/config.js" defer></script>
+
+    <meta name="description" content="整理缓存层级、MESI 协议消息，以及 C++ 并发中的顺序与同步关系。">
+<meta property="og:type" content="article">
+<meta property="og:title" content="C++ 并发与缓存一致性">
+<meta property="og:url" content="https://wulinze.github.io/2024/01/26/cpp-%E5%B9%B6%E5%8F%91%E4%B8%80%E8%87%B4%E6%80%A7/">
+<meta property="og:site_name" content="Wu&#39;s Blog">
+<meta property="og:description" content="整理缓存层级、MESI 协议消息，以及 C++ 并发中的顺序与同步关系。">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2024-01-26T04:47:49.000Z">
+<meta property="article:modified_time" content="2024-01-26T04:47:49.000Z">
+<meta property="article:author" content="wulinze">
+<meta property="article:tag" content="C++">
+<meta property="article:tag" content="内存模型">
+<meta property="article:tag" content="并发">
+<meta name="twitter:card" content="summary">
+
+
+<link rel="canonical" href="https://wulinze.github.io/2024/01/26/cpp-%E5%B9%B6%E5%8F%91%E4%B8%80%E8%87%B4%E6%80%A7/">
+
+
+<script class="next-config" data-name="page" type="application/json">{"sidebar":"","isHome":false,"isPost":true,"lang":"zh-CN","comments":true,"permalink":"https://wulinze.github.io/2024/01/26/cpp-%E5%B9%B6%E5%8F%91%E4%B8%80%E8%87%B4%E6%80%A7/","path":"/2024/01/26/cpp-并发一致性/","title":"C++ 并发与缓存一致性"}</script>
+
+<script class="next-config" data-name="calendar" type="application/json">""</script>
+<title>C++ 并发与缓存一致性 | Wu's Blog</title>
+  
+
+
+
+
+
+
+
+
+  
+<script src="/js/utils.js" defer></script><script src="/js/sidebar.js" defer></script><script src="/js/next-boot.js" defer></script>
+
+  <script src="/assets/local-search/search.js" defer></script>
+<script src="/js/third-party/search/local-search.js" defer></script>
+
+
+
+
+
+
+
+  
+
+
+
+
+  
+
+  <script class="next-config" data-name="enableMath" type="application/json">true</script><link rel="stylesheet" href="/assets/katex/katex.min.css">
+
+
+<link rel="icon" type="image/svg+xml" href="/images/avatar.svg">
+
+  <noscript>
+    <link rel="stylesheet" href="/css/noscript.css">
+  </noscript>
+<link rel="alternate" href="/atom.xml" title="Wu's Blog" type="application/atom+xml">
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="headband"></div>
+
+  <main class="main">
+    <div class="column">
+      <header class="header" itemscope itemtype="http://schema.org/WPHeader"><div class="site-brand-container">
+  <div class="site-nav-search popup-trigger" aria-label="搜索" role="button">
+      <i class="fa fa-search fa-fw fa-lg"></i>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <i class="logo-line"></i>
+      <p class="site-title">Wu's Blog</p>
+      <i class="logo-line"></i>
+    </a>
+      <p class="site-subtitle" itemprop="description">技术分享 · 思考与实践</p>
+  </div>
+
+  <div class="site-nav-toggle" aria-label="切换导航栏" role="button">
+      <i class="fa fa-ellipsis fa-fw fa-lg"></i>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  <ul class="main-menu menu"><li class="menu-item menu-item-home"><a href="/" rel="section">首页</a></li><li class="menu-item menu-item-categories"><a href="/categories/" rel="section">分类</a></li><li class="menu-item menu-item-tags"><a href="/tags/" rel="section">标签</a></li><li class="menu-item menu-item-archives"><a href="/archives/" rel="section">归档</a></li><li class="menu-item menu-item-about"><a href="/about/" rel="section">关于</a></li>
+      <li class="menu-item menu-item-search">
+        <a role="button" class="popup-trigger">搜索
+        </a>
+      </li>
+  </ul>
+</nav>
+
+
+
+  
+  <template id="search-popup-template"><div class="search-pop-overlay">
+    <div class="popup search-popup">
+      <div class="search-header">
+        <span class="search-icon">
+          <i class="fa fa-search"></i>
+        </span>
+        <div class="search-input-container">
+          <input autocomplete="off" autocapitalize="off" maxlength="80"
+                placeholder="搜索..." spellcheck="false"
+                type="search" class="search-input">
+        </div>
+        <span class="popup-btn-close" role="button">
+          <i class="fa fa-times-circle"></i>
+        </span>
+      </div>
+      <div class="search-result-container">
+        <div class="search-result-icon">
+          <i class="fa fa-spinner fa-pulse fa-5x"></i>
+        </div>
+      </div>
+    </div>
+  </div></template>
+
+
+</header>
+        
+  
+  <aside class="sidebar">
+
+    <div class="sidebar-inner sidebar-overview-active">
+      <ul class="sidebar-nav">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <div class="sidebar-panel-container">
+        <!--noindex-->
+        <div class="post-toc-wrap sidebar-panel">
+        </div>
+        <!--/noindex-->
+
+        <div class="site-overview-wrap sidebar-panel">
+          <div class="site-author animated" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="wulinze"
+      src="/images/avatar.svg">
+  <p class="site-author-name" itemprop="name">wulinze</p>
+  <div class="site-description" itemprop="description">记录 JVM、C++、算法与系统工程中的问题、探索和实践。</div>
+</div>
+<div class="site-state-wrap animated">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+        <a href="/archives/">
+          <span class="site-state-item-count">71</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+          <a href="/categories/">
+        <span class="site-state-item-count">5</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+          <a href="/tags/">
+        <span class="site-state-item-count">64</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author animated">
+      <span class="links-of-author-item">
+        <a href="https://github.com/wulinze" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;wulinze" rel="noopener me" target="_blank"><i class="fab fa-github fa-fw"></i>GitHub</a>
+      </span>
+  </div>
+
+        </div>
+      </div>
+    </div>
+
+    
+  </aside>
+
+
+    </div>
+
+    <div class="main-inner post posts-expand">
+
+
+  
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://wulinze.github.io/2024/01/26/cpp-%E5%B9%B6%E5%8F%91%E4%B8%80%E8%87%B4%E6%80%A7/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.svg">
+      <meta itemprop="name" content="wulinze">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Wu's Blog">
+      <meta itemprop="description" content="记录 JVM、C++、算法与系统工程中的问题、探索和实践。">
+    </span>
+
+    <span hidden itemprop="post" itemscope itemtype="http://schema.org/CreativeWork">
+      <meta itemprop="name" content="C++ 并发与缓存一致性 | Wu's Blog">
+      <meta itemprop="description" content="整理缓存层级、MESI 协议消息，以及 C++ 并发中的顺序与同步关系。">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          C++ 并发与缓存一致性
+        </h1>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">发表于</span>
+
+      <time title="创建时间：2024-01-26 12:47" itemprop="dateCreated datePublished" datetime="2024-01-26T12:47:49+08:00">2024-01-26</time>
+    </span>
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-folder"></i>
+      </span>
+      <span class="post-meta-item-text">分类于</span>
+        <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+          <a href="/categories/cpp/" itemprop="url" rel="index"><span itemprop="name">C++</span></a>
+        </span>
+    </span>
+
+  
+</div>
+
+            <div class="post-description">整理缓存层级、MESI 协议消息，以及 C++ 并发中的顺序与同步关系。</div>
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody"><ul>
+<li>cache 一致性
+<ul>
+<li>
+<p>register buffer/cache: ~1 cycle &lt; 1ns</p>
+</li>
+<li>
+<p>L1 cache: ~3 cycles ~ 1ns, 单核心独占</p>
+</li>
+<li>
+<p>L2 cache: ~12 cycles ~ 3ns, 双核心共享</p>
+</li>
+<li>
+<p>L3 cache: ~38 cycles ~ 12ns</p>
+</li>
+<li>
+<p>DRAM: ~65ns</p>
+</li>
+<li>
+<p>MESI协议: MESI是一种维护cacheline状态一致性的协议。MESI: 由Modified,Exclusive,Share,Invalid四种状态组合。</p>
+<ul>
+<li>Modified(M):
+当一个core 的cacheline的状态是M时，说明当前core最近修改了这个cache，那么其他core的cache不能再修改当前cache line对应的memory location，除非该cache将这个修改同步到了memory。这个core对这个memory location可以理解为Owned。</li>
+<li>Exclusive(E):
+E这个状态与M很像，区别在于当前core并没有修改当前的cacheline，这意味着当前cacheline存储的memory location的值是最新的。当前core可以对该cacheline进行modify且不需要与其他core的cache同步。这个core对这个memory location可以理解为Owned。</li>
+<li>Share(S):
+S表示当前cacheline在其他core的cache也存在copy，当前core如果需要修改该cacheline则需要与其他core的cache进行提前沟通。</li>
+<li>Invalid(I):
+I表示当前cacheline是空的。</li>
+</ul>
+</li>
+<li>
+<p>protocol message分为以下几种消息类型：</p>
+<ul>
+<li>Read
+当一个cache需要读取某个cacheline消息的时候就会发起read消息。</li>
+<li>Read Response
+read response是read的回应，这response可以来自其他core的cache也可以来自memory。当其他core中对当前cacheline是M状态时，则会发起read response。</li>
+<li>Invalidate
+Invalidate消息包含对应的memory location，接收到这个消息的cache需要将自己cacheline内容剔除，并响应。
+Invalidate acknowledge
+接收到Invalidate后删除cacheline中的数据就向发起者回复invalidate ack。</li>
+<li>Read Invalidate
+这个消息包含两个操作，read和invalidate，那么它也需要接收read response和多个invalidate ack响应。</li>
+<li>Write Back
+writeback包含数据和地址，会将这个地址对应的数据刷到内存中。</li>
+</ul>
+</li>
+</ul>
+</li>
+<li>关系术语
+<ul>
+<li>Sequenced-before：必须是完全的顺序，同一个线程语句A执行在B之前，此时满足sequenced-before关系</li>
+<li>Happens-before：happens-before关系表示的不同线程之间的操作先后顺序。如果A happens-before B，则A的内存状态将在B操作执行之前就可见。</li>
+<li>Synchronizes-with：synchronizes-with关系强调的是变量被修改之后的传播关系（propagate）， 即如果一个线程修改某变量的之后的结果能被其它线程可见，那么就是满足synchronizes-with关系的</li>
+<li>Carries dependency：同一个线程内，表达式A sequenced-before 表达式B，并且表达式B的值是受表达式A的影响的一种关系， 称之为&quot;Carries dependency&quot;。</li>
+</ul>
+</li>
+<li>c++ 内存一致性
+<ul>
+<li>memory_order_relaxed：不对顺序做任何保证</li>
+<li>memory_order_consume：本线程中有关本原子类型的操作，必须在本次原子操作之后</li>
+<li>memory_order_acquire：本线程中所有读操作，必须在本次原子操作之后</li>
+<li>memory_order_release：本线程中所有写操作完成了，才可以开始本次原子操作</li>
+<li>memory_order_acq_rel：同时满足acquire和release</li>
+<li>memory_order_seq_cst：完全顺序化执行</li>
+</ul>
+</li>
+</ul>
+
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/cpp/" rel="tag"># C++</a>
+              <a href="/tags/%E5%B9%B6%E5%8F%91/" rel="tag"># 并发</a>
+              <a href="/tags/%E5%86%85%E5%AD%98%E6%A8%A1%E5%9E%8B/" rel="tag"># 内存模型</a>
+          </div>
+
+        
+
+          <div class="post-nav">
+            <div class="post-nav-item">
+                <a href="/2024/01/26/cpp-%E6%9C%89%E8%B6%A3%E5%86%99%E6%B3%95/" rel="prev" title="C++ const_cast 与成员变量修改">
+                  <i class="fa fa-angle-left"></i> C++ const_cast 与成员变量修改
+                </a>
+            </div>
+            <div class="post-nav-item">
+                <a href="/2024/04/07/jvm-multi-tenant/" rel="next" title="JVM 多租户与 Cgroup 资源隔离">
+                  JVM 多租户与 Cgroup 资源隔离 <i class="fa fa-angle-right"></i>
+                </a>
+            </div>
+          </div>
+    </footer>
+  </article>
+</div>
+
+
+
+
+
+
+</div>
+  </main>
+
+  <footer class="footer">
+    <div class="footer-inner">
+
+  <div class="copyright">
+    &copy; 2023 – 
+    <span itemprop="copyrightYear">2026</span>
+    <span class="with-love">
+      <i class="fa fa-code"></i>
+    </span>
+    <span class="author" itemprop="copyrightHolder">wulinze</span>
+  </div>
+  <div class="powered-by">由 <a href="https://hexo.io/" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.js.org/mist/" rel="noopener" target="_blank">NexT.Mist</a> 强力驱动
+  </div>
+
+    </div>
+  </footer>
+
+  
+  <div class="toggle sidebar-toggle" role="button">
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+  </div>
+  <div class="back-to-top" role="button" aria-label="返回顶部">
+    <i class="fa fa-arrow-up fa-lg"></i>
+    <span>0%</span>
+  </div>
+
+<noscript>
+  <div class="noscript-warning">Theme NexT works best with JavaScript enabled</div>
+</noscript>
+
+</body>
+</html>
