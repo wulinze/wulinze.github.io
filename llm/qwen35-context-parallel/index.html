@@ -1,0 +1,507 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width">
+<meta name="theme-color" content="#222"><meta name="generator" content="Hexo 8.1.2">
+
+  <link rel="mask-icon" href="/images/avatar.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+
+<link rel="stylesheet" href="/assets/fontawesome/css/all.min.css">
+
+<script class="next-config" data-name="main" type="application/json">{"hostname":"wulinze.github.io","root":"/","images":"/images","scheme":"Mist","darkmode":false,"version":"8.29.1","exturl":false,"sidebar":{"position":"right","width_expanded":300,"width_dual_column":240,"display":"post","padding":18,"offset":12},"hljswrap":true,"codeblock":{"theme":{"light":"github","dark":"github-dark"},"prism":{"light":"prism","dark":"prism-dark"},"copy_button":{"enable":true,"style":"flat"},"fold":{"enable":false,"height":500},"language":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"mediumzoom":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"stickytabs":false,"motion":{"enable":false,"async":false,"duration":200,"transition":{"menu_item":"fadeInDown","post_block":"fadeIn","post_header":"fadeInDown","post_body":"fadeInDown","coll_header":"fadeInLeft","sidebar":"fadeInUp"}},"i18n":{"placeholder":"搜索...","empty":"没有找到任何搜索结果：${query}","hits_time":"找到 ${hits} 个搜索结果（用时 ${time} 毫秒）","hits":"找到 ${hits} 个搜索结果"},"path":"/search.xml","localsearch":{"enable":true,"top_n_per_article":2,"unescape":true,"preload":false}}</script><script src="/js/config.js" defer></script>
+
+    <meta name="description" content="记录混合模型 Context Parallel 中的 token 布局、GDN 状态递推、MoE 写回、缓存分片与 PD 传输，以及 metadata 和 workspace 的依赖管理。">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Qwen3.5 Context Parallel：布局、状态与缓存的实现">
+<meta property="og:url" content="https://wulinze.github.io/llm/qwen35-context-parallel/">
+<meta property="og:site_name" content="Wu&#39;s Blog">
+<meta property="og:description" content="记录混合模型 Context Parallel 中的 token 布局、GDN 状态递推、MoE 写回、缓存分片与 PD 传输，以及 metadata 和 workspace 的依赖管理。">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2026-11-01T04:00:00.000Z">
+<meta property="article:modified_time" content="2026-11-01T04:00:00.000Z">
+<meta property="article:author" content="wulinze">
+<meta property="article:tag" content="Context Parallel">
+<meta property="article:tag" content="GDN">
+<meta property="article:tag" content="KV Cache">
+<meta property="article:tag" content="MoE">
+<meta property="article:tag" content="Qwen3.5">
+<meta property="article:tag" content="SGLang">
+<meta name="twitter:card" content="summary">
+
+
+<link rel="canonical" href="https://wulinze.github.io/llm/qwen35-context-parallel/">
+
+
+<script class="next-config" data-name="page" type="application/json">{"sidebar":"","isHome":false,"isPost":true,"lang":"zh-CN","comments":true,"permalink":"https://wulinze.github.io/llm/qwen35-context-parallel/","path":"/llm/qwen35-context-parallel/","title":"Qwen3.5 Context Parallel：布局、状态与缓存的实现"}</script>
+
+<script class="next-config" data-name="calendar" type="application/json">""</script>
+<title>Qwen3.5 Context Parallel：布局、状态与缓存的实现 | Wu's Blog</title>
+  
+
+
+
+
+
+
+
+
+  
+<script src="/js/utils.js" defer></script><script src="/js/sidebar.js" defer></script><script src="/js/next-boot.js" defer></script>
+
+  <script src="/assets/local-search/search.js" defer></script>
+<script src="/js/third-party/search/local-search.js" defer></script>
+
+
+
+
+
+
+
+  
+
+
+
+
+  
+
+  <script class="next-config" data-name="enableMath" type="application/json">true</script><link rel="stylesheet" href="/assets/katex/katex.min.css">
+
+
+<link rel="icon" type="image/svg+xml" href="/images/avatar.svg">
+
+  <noscript>
+    <link rel="stylesheet" href="/css/noscript.css">
+  </noscript>
+<link rel="alternate" href="/atom.xml" title="Wu's Blog" type="application/atom+xml">
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="headband"></div>
+
+  <main class="main">
+    <div class="column">
+      <header class="header" itemscope itemtype="http://schema.org/WPHeader"><div class="site-brand-container">
+  <div class="site-nav-search popup-trigger" aria-label="搜索" role="button">
+      <i class="fa fa-search fa-fw fa-lg"></i>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <i class="logo-line"></i>
+      <p class="site-title">Wu's Blog</p>
+      <i class="logo-line"></i>
+    </a>
+      <p class="site-subtitle" itemprop="description">技术分享 · 思考与实践</p>
+  </div>
+
+  <div class="site-nav-toggle" aria-label="切换导航栏" role="button">
+      <i class="fa fa-ellipsis fa-fw fa-lg"></i>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  <ul class="main-menu menu"><li class="menu-item menu-item-home"><a href="/" rel="section">首页</a></li><li class="menu-item menu-item-文章"><a href="/blog/" rel="section">文章</a></li><li class="menu-item menu-item-categories"><a href="/categories/" rel="section">分类</a></li><li class="menu-item menu-item-tags"><a href="/tags/" rel="section">标签</a></li><li class="menu-item menu-item-archives"><a href="/archives/" rel="section">归档</a></li><li class="menu-item menu-item-about"><a href="/about/" rel="section">关于</a></li>
+      <li class="menu-item menu-item-search">
+        <a role="button" class="popup-trigger">搜索
+        </a>
+      </li>
+  </ul>
+</nav>
+
+
+
+  
+  <template id="search-popup-template"><div class="search-pop-overlay">
+    <div class="popup search-popup">
+      <div class="search-header">
+        <span class="search-icon">
+          <i class="fa fa-search"></i>
+        </span>
+        <div class="search-input-container">
+          <input autocomplete="off" autocapitalize="off" maxlength="80"
+                placeholder="搜索..." spellcheck="false"
+                type="search" class="search-input">
+        </div>
+        <span class="popup-btn-close" role="button">
+          <i class="fa fa-times-circle"></i>
+        </span>
+      </div>
+      <div class="search-result-container">
+        <div class="search-result-icon">
+          <i class="fa fa-spinner fa-pulse fa-5x"></i>
+        </div>
+      </div>
+    </div>
+  </div></template>
+
+</header>
+        
+  
+  <aside class="sidebar">
+
+    <div class="sidebar-inner sidebar-nav-active sidebar-toc-active">
+      <ul class="sidebar-nav">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <div class="sidebar-panel-container">
+        <!--noindex-->
+        <div class="post-toc-wrap sidebar-panel">
+            <div class="post-toc animated"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#1.-%E8%AE%A1%E7%AE%97%E5%B8%83%E5%B1%80%E4%B8%8E%E7%BC%93%E5%AD%98%E5%BD%92%E5%B1%9E%E5%88%86%E5%BC%80%E7%BB%B4%E6%8A%A4"><span class="nav-text">1. 计算布局与缓存归属分开维护</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#2.-Full-Attention%EF%BC%9AQ-%E7%95%99%E5%9C%A8%E6%9C%AC%E5%9C%B0%EF%BC%8CKV-%E6%8C%89-owner-%E8%BD%AE%E8%BD%AC"><span class="nav-text">2. Full Attention：Q 留在本地，KV 按 owner 轮转</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#Query-owner-%E4%B8%8E%E6%9C%AC%E5%9C%B0%E8%A1%8C%E5%BA%8F"><span class="nav-text">Query owner 与本地行序</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Prefix-%E4%B8%8E%E7%89%A9%E7%90%86%E5%9C%B0%E5%9D%80"><span class="nav-text">Prefix 与物理地址</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#3.-GDN%EF%BC%9A%E5%88%86%E5%88%AB%E5%A4%84%E7%90%86%E5%8D%B7%E7%A7%AF-halo-%E4%B8%8E%E9%80%92%E6%8E%A8%E7%8A%B6%E6%80%81"><span class="nav-text">3. GDN：分别处理卷积 halo 与递推状态</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%8D%B7%E7%A7%AF-halo"><span class="nav-text">卷积 halo</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%9C%89%E5%BA%8F%E7%8A%B6%E6%80%81%E6%91%98%E8%A6%81"><span class="nav-text">有序状态摘要</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E7%8A%B6%E6%80%81%E5%8F%91%E5%B8%83%E4%B8%8E%E7%AE%97%E5%AD%90%E8%BE%B9%E7%95%8C"><span class="nav-text">状态发布与算子边界</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#4.-MoE-EP%EF%BC%9A%E4%BF%9D%E6%8C%81-token-%E8%BA%AB%E4%BB%BD%EF%BC%8C%E8%B0%83%E6%95%B4%E6%9C%80%E7%BB%88%E5%86%99%E5%9B%9E%E4%BD%8D%E7%BD%AE"><span class="nav-text">4. MoE EP：保持 token 身份，调整最终写回位置</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#Combine-%E7%9B%B4%E6%8E%A5%E5%86%99%E5%85%A5%E4%B8%8B%E4%B8%80%E5%B1%82%E5%B8%83%E5%B1%80"><span class="nav-text">Combine 直接写入下一层布局</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Residual-%E7%9A%84%E4%B8%A4%E7%A7%8D%E6%90%AC%E8%BF%90%E4%BD%8D%E7%BD%AE"><span class="nav-text">Residual 的两种搬运位置</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#5.-Cache%EF%BC%9A%E5%AE%8C%E6%95%B4%E5%89%8D%E7%BC%80%E5%8C%B9%E9%85%8D%EF%BC%8CKV-%E4%B8%8E-state-%E5%88%86%E7%89%87%E6%8C%81%E4%B9%85%E5%8C%96"><span class="nav-text">5. Cache：完整前缀匹配，KV 与 state 分片持久化</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#6.-PD-bulk%EF%BC%9A%E6%8C%89-entry-%E8%BA%AB%E4%BB%BD%E4%BC%A0%E8%BE%93%E5%B9%B6%E6%81%A2%E5%A4%8D%E7%9B%AE%E6%A0%87%E5%B8%83%E5%B1%80"><span class="nav-text">6. PD bulk：按 entry 身份传输并恢复目标布局</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#7.-Metadata-%E4%B8%8E-overlap%EF%BC%9A%E6%8F%90%E5%89%8D%E8%A7%84%E5%88%92%EF%BC%8C%E6%8C%89%E4%BE%9D%E8%B5%96%E6%B6%88%E8%B4%B9"><span class="nav-text">7. Metadata 与 overlap：提前规划，按依赖消费</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#8.-Warmup-%E4%B8%8E%E5%AE%9E%E7%8E%B0%E9%AA%8C%E8%AF%81"><span class="nav-text">8. Warmup 与实现验证</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%8F%82%E8%80%83%E8%B5%84%E6%96%99"><span class="nav-text">参考资料</span></a></li></ol></div>
+        </div>
+        <!--/noindex-->
+
+        <div class="site-overview-wrap sidebar-panel">
+          <div class="site-author animated" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="wulinze"
+      src="/images/avatar.svg">
+  <p class="site-author-name" itemprop="name">wulinze</p>
+  <div class="site-description" itemprop="description">wulinze 的个人主页，关注 LLM 并行方式、Cache 池化与算子学习，分享系统知识和 LeetCode 刷题记录。</div>
+</div>
+<div class="site-state-wrap animated">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+        <a href="/archives/">
+          <span class="site-state-item-count">72</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+        <span class="site-state-item-count">4</span>
+        <span class="site-state-item-name">分类</span>
+      </div>
+      <div class="site-state-item site-state-tags">
+          <a href="/tags/">
+        <span class="site-state-item-count">70</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author animated">
+      <span class="links-of-author-item">
+        <a href="https://github.com/wulinze" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;wulinze" rel="noopener me" target="_blank"><i class="fab fa-github fa-fw"></i>GitHub</a>
+      </span>
+  </div>
+
+        </div>
+      </div>
+    </div>
+
+    
+  </aside>
+
+
+    </div>
+
+    <div class="main-inner post posts-expand">
+
+
+  
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://wulinze.github.io/llm/qwen35-context-parallel/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.svg">
+      <meta itemprop="name" content="wulinze">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Wu's Blog">
+      <meta itemprop="description" content="wulinze 的个人主页，关注 LLM 并行方式、Cache 池化与算子学习，分享系统知识和 LeetCode 刷题记录。">
+    </span>
+
+    <span hidden itemprop="post" itemscope itemtype="http://schema.org/CreativeWork">
+      <meta itemprop="name" content="Qwen3.5 Context Parallel：布局、状态与缓存的实现 | Wu's Blog">
+      <meta itemprop="description" content="记录混合模型 Context Parallel 中的 token 布局、GDN 状态递推、MoE 写回、缓存分片与 PD 传输，以及 metadata 和 workspace 的依赖管理。">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          Qwen3.5 Context Parallel：布局、状态与缓存的实现
+        </h1>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">发表于</span>
+
+      <time title="创建时间：2026-11-01 12:00" itemprop="dateCreated datePublished" datetime="2026-11-01T12:00:00+08:00">2026-11-01</time>
+    </span>
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-folder"></i>
+      </span>
+      <span class="post-meta-item-text">分类于</span>
+        <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+          <a href="/categories/llm-inference/" itemprop="url" rel="index"><span itemprop="name">LLM 推理</span></a>
+        </span>
+    </span>
+
+  
+</div>
+
+            <div class="post-description">记录混合模型 Context Parallel 中的 token 布局、GDN 状态递推、MoE 写回、缓存分片与 PD 传输，以及 metadata 和 workspace 的依赖管理。</div>
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody"><p>Qwen3.5 的混合结构同时包含有序递推的 Gated DeltaNet（GDN）、需要完整历史 KV 的 Full Attention，以及按专家路由的 MoE。三者对 token 顺序和数据归属的要求不同，Context Parallel（CP）需要同时处理计算布局、缓存布局和跨层依赖。</p>
+<p>这篇笔记围绕 <strong>CP4、Attention TP1、MoE EP4（Mega）</strong> 的实现展开。文中的启动参数和接口名称来自这份实现记录；直接 combine 与 Mega 内 residual 搬运仍属于实验接入方案，不代表上游通用能力或完整服务已经采用。</p>
+<span id="more"></span>
+<h2 id="1.-计算布局与缓存归属分开维护" tabindex="-1">1. 计算布局与缓存归属分开维护</h2>
+<p>GDN 使用连续序列段，保证递推顺序；Full Attention 使用 round-robin query 布局，持久 KV 按绝对 token 位置交错分片。zigzag query 保留为兼容路径。</p>
+<table>
+<thead>
+<tr>
+<th>对象</th>
+<th>布局与职责</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>GDN 输入</td>
+<td>每个请求按连续段切分，段间传递卷积历史与递推状态</td>
+</tr>
+<tr>
+<td>Full Attention query</td>
+<td>round-robin；兼容 zigzag 两端块分配</td>
+</tr>
+<tr>
+<td>持久 KV</td>
+<td>按绝对位置确定 owner，不随层间 hidden 排列变化</td>
+</tr>
+<tr>
+<td>hidden 与 residual</td>
+<td>由同一份 token 映射转换，进入下一层时身份一致</td>
+</tr>
+<tr>
+<td>MoE</td>
+<td>本地有效 token 路由到专家，再按原 token 身份归并</td>
+</tr>
+</tbody>
+</table>
+<p><code>prepare_attn</code> 根据当前层与 metadata 转换 hidden/residual，同布局时直接复用。实现中的 <code>--prefill-cp-mode round-robin-split</code> 对应交错 query，<code>in-seq-split</code> 对应 zigzag；两者都保持 GDN 连续分片。该参数描述序列布局，不限定请求并发数。</p>
+<p>设 CP 大小为 <span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>C</mi></mrow><annotation encoding="application/x-tex">C</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="katex-base"><span class="katex-strut" style="height:0.6833em;"></span><span class="mord mathnormal" style="margin-right:0.0715em;">C</span></span></span></span>，hidden size 为 <span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>D</mi></mrow><annotation encoding="application/x-tex">D</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="katex-base"><span class="katex-strut" style="height:0.6833em;"></span><span class="mord mathnormal" style="margin-right:0.0278em;">D</span></span></span></span>，Q/KV head 数为 <span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msub><mi>H</mi><mi>q</mi></msub><mi mathvariant="normal">/</mi><msub><mi>H</mi><mrow><mi>k</mi><mi>v</mi></mrow></msub></mrow><annotation encoding="application/x-tex">H_q/H_{kv}</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="katex-base"><span class="katex-strut" style="height:1.0361em;vertical-align:-0.2861em;"></span><span class="mord"><span class="mord mathnormal" style="margin-right:0.0813em;">H</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.1514em;"><span style="top:-2.55em;margin-left:-0.0813em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="katex-sizing reset-size6 size3 mtight"><span class="mord mathnormal mtight" style="margin-right:0.0359em;">q</span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.2861em;"><span></span></span></span></span></span></span><span class="mord">/</span><span class="mord"><span class="mord mathnormal" style="margin-right:0.0813em;">H</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.3361em;"><span style="top:-2.55em;margin-left:-0.0813em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="katex-sizing reset-size6 size3 mtight"><span class="mord mtight"><span class="mord mathnormal mtight" style="margin-right:0.0315em;">k</span><span class="mord mathnormal mtight" style="margin-right:0.0359em;">v</span></span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.15em;"><span></span></span></span></span></span></span></span></span></span>，head dimension 为 <span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msub><mi>d</mi><mi>h</mi></msub></mrow><annotation encoding="application/x-tex">d_h</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="katex-base"><span class="katex-strut" style="height:0.8444em;vertical-align:-0.15em;"></span><span class="mord"><span class="mord mathnormal">d</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.3361em;"><span style="top:-2.55em;margin-left:0em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="katex-sizing reset-size6 size3 mtight"><span class="mord mathnormal mtight">h</span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.15em;"><span></span></span></span></span></span></span></span></span></span>，逻辑页大小为 <span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>P</mi></mrow><annotation encoding="application/x-tex">P</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="katex-base"><span class="katex-strut" style="height:0.6833em;"></span><span class="mord mathnormal" style="margin-right:0.1389em;">P</span></span></span></span>。hidden 的本地形状为 <span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mo stretchy="false">[</mo><msub><mi>N</mi><mrow><mi>l</mi><mi>o</mi><mi>c</mi><mi>a</mi><mi>l</mi></mrow></msub><mo separator="true">,</mo><mi>D</mi><mo stretchy="false">]</mo></mrow><annotation encoding="application/x-tex">[N_{local},D]</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="katex-base"><span class="katex-strut" style="height:1em;vertical-align:-0.25em;"></span><span class="mopen">[</span><span class="mord"><span class="mord mathnormal" style="margin-right:0.109em;">N</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.3361em;"><span style="top:-2.55em;margin-left:-0.109em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="katex-sizing reset-size6 size3 mtight"><span class="mord mtight"><span class="mord mathnormal mtight" style="margin-right:0.0197em;">l</span><span class="mord mathnormal mtight">oc</span><span class="mord mathnormal mtight">a</span><span class="mord mathnormal mtight" style="margin-right:0.0197em;">l</span></span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.15em;"><span></span></span></span></span></span></span><span class="mpunct">,</span><span class="mspace" style="margin-right:0.1667em;"></span><span class="mord mathnormal" style="margin-right:0.0278em;">D</span><span class="mclose">]</span></span></span></span>，Q 为 <span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mo stretchy="false">[</mo><msub><mi>N</mi><mi>q</mi></msub><mo separator="true">,</mo><msub><mi>H</mi><mi>q</mi></msub><mo separator="true">,</mo><msub><mi>d</mi><mi>h</mi></msub><mo stretchy="false">]</mo></mrow><annotation encoding="application/x-tex">[N_q,H_q,d_h]</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="katex-base"><span class="katex-strut" style="height:1.0361em;vertical-align:-0.2861em;"></span><span class="mopen">[</span><span class="mord"><span class="mord mathnormal" style="margin-right:0.109em;">N</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.1514em;"><span style="top:-2.55em;margin-left:-0.109em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="katex-sizing reset-size6 size3 mtight"><span class="mord mathnormal mtight" style="margin-right:0.0359em;">q</span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.2861em;"><span></span></span></span></span></span></span><span class="mpunct">,</span><span class="mspace" style="margin-right:0.1667em;"></span><span class="mord"><span class="mord mathnormal" style="margin-right:0.0813em;">H</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.1514em;"><span style="top:-2.55em;margin-left:-0.0813em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="katex-sizing reset-size6 size3 mtight"><span class="mord mathnormal mtight" style="margin-right:0.0359em;">q</span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.2861em;"><span></span></span></span></span></span></span><span class="mpunct">,</span><span class="mspace" style="margin-right:0.1667em;"></span><span class="mord"><span class="mord mathnormal">d</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.3361em;"><span style="top:-2.55em;margin-left:0em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="katex-sizing reset-size6 size3 mtight"><span class="mord mathnormal mtight">h</span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.15em;"><span></span></span></span></span></span></span><span class="mclose">]</span></span></span></span>，保留完整 hidden/head 维度。在页大小可被 <span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>C</mi></mrow><annotation encoding="application/x-tex">C</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="katex-base"><span class="katex-strut" style="height:0.6833em;"></span><span class="mord mathnormal" style="margin-right:0.0715em;">C</span></span></span></span> 整除的配置下，本地单页 K、V 各为 <span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mo stretchy="false">[</mo><mi>P</mi><mi mathvariant="normal">/</mi><mi>C</mi><mo separator="true">,</mo><msub><mi>H</mi><mrow><mi>k</mi><mi>v</mi></mrow></msub><mo separator="true">,</mo><msub><mi>d</mi><mi>h</mi></msub><mo stretchy="false">]</mo></mrow><annotation encoding="application/x-tex">[P/C,H_{kv},d_h]</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="katex-base"><span class="katex-strut" style="height:1em;vertical-align:-0.25em;"></span><span class="mopen">[</span><span class="mord mathnormal" style="margin-right:0.1389em;">P</span><span class="mord">/</span><span class="mord mathnormal" style="margin-right:0.0715em;">C</span><span class="mpunct">,</span><span class="mspace" style="margin-right:0.1667em;"></span><span class="mord"><span class="mord mathnormal" style="margin-right:0.0813em;">H</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.3361em;"><span style="top:-2.55em;margin-left:-0.0813em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="katex-sizing reset-size6 size3 mtight"><span class="mord mtight"><span class="mord mathnormal mtight" style="margin-right:0.0315em;">k</span><span class="mord mathnormal mtight" style="margin-right:0.0359em;">v</span></span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.15em;"><span></span></span></span></span></span></span><span class="mpunct">,</span><span class="mspace" style="margin-right:0.1667em;"></span><span class="mord"><span class="mord mathnormal">d</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.3361em;"><span style="top:-2.55em;margin-left:0em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="katex-sizing reset-size6 size3 mtight"><span class="mord mathnormal mtight">h</span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.15em;"><span></span></span></span></span></span></span><span class="mclose">]</span></span></span></span>。</p>
+<p>GDN 每请求的物理段宽按下式对齐，其中 <span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>N</mi></mrow><annotation encoding="application/x-tex">N</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="katex-base"><span class="katex-strut" style="height:0.6833em;"></span><span class="mord mathnormal" style="margin-right:0.109em;">N</span></span></span></span> 是本次新增 token 数：</p>
+<p class="katex-block"><span class="katex-display"><span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML" display="block"><semantics><mrow><msub><mi>L</mi><mrow><mi>p</mi><mi>h</mi><mi>y</mi><mi>s</mi><mi>i</mi><mi>c</mi><mi>a</mi><mi>l</mi></mrow></msub><mo>=</mo><mn>64</mn><mrow><mo fence="true">⌈</mo><mfrac><mi>N</mi><mrow><mn>64</mn><mi>C</mi></mrow></mfrac><mo fence="true">⌉</mo></mrow><mi mathvariant="normal">.</mi></mrow><annotation encoding="application/x-tex">L_{physical}=64\left\lceil\frac{N}{64C}\right\rceil.
+</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="katex-base"><span class="katex-strut" style="height:0.9694em;vertical-align:-0.2861em;"></span><span class="mord"><span class="mord mathnormal">L</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.3361em;"><span style="top:-2.55em;margin-left:0em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="katex-sizing reset-size6 size3 mtight"><span class="mord mtight"><span class="mord mathnormal mtight">p</span><span class="mord mathnormal mtight">h</span><span class="mord mathnormal mtight" style="margin-right:0.0359em;">y</span><span class="mord mathnormal mtight">s</span><span class="mord mathnormal mtight">i</span><span class="mord mathnormal mtight">c</span><span class="mord mathnormal mtight">a</span><span class="mord mathnormal mtight" style="margin-right:0.0197em;">l</span></span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.2861em;"><span></span></span></span></span></span></span><span class="mspace" style="margin-right:0.2778em;"></span><span class="mrel">=</span><span class="mspace" style="margin-right:0.2778em;"></span></span><span class="katex-base"><span class="katex-strut" style="height:2.4em;vertical-align:-0.95em;"></span><span class="mord">64</span><span class="mspace" style="margin-right:0.1667em;"></span><span class="minner"><span class="mopen delimcenter" style="top:0em;"><span class="delimsizing size3">⌈</span></span><span class="mord"><span class="mopen nulldelimiter"></span><span class="mfrac"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:1.3603em;"><span style="top:-2.314em;"><span class="pstrut" style="height:3em;"></span><span class="mord"><span class="mord">64</span><span class="mord mathnormal" style="margin-right:0.0715em;">C</span></span></span><span style="top:-3.23em;"><span class="pstrut" style="height:3em;"></span><span class="frac-line" style="border-bottom-width:0.04em;"></span></span><span style="top:-3.677em;"><span class="pstrut" style="height:3em;"></span><span class="mord"><span class="mord mathnormal" style="margin-right:0.109em;">N</span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.686em;"><span></span></span></span></span></span><span class="mclose nulldelimiter"></span></span><span class="mclose delimcenter" style="top:0em;"><span class="delimsizing size3">⌉</span></span></span><span class="mspace" style="margin-right:0.1667em;"></span><span class="mord">.</span></span></span></span></span></p>
+<p>padding 只服务算子对齐，不进入有效 MoE 路由、KV 写入或真实状态更新。请求长度、prefix、有效 token 和还原映射均逐请求记录，尾部和空 shard 按实际长度处理。</p>
+<h2 id="2.-Full-Attention：Q-留在本地，KV-按-owner-轮转" tabindex="-1">2. Full Attention：Q 留在本地，KV 按 owner 轮转</h2>
+<p>新增 token 的 KV 必须写入持久 owner。round-robin query 与 KV owner 一致，可直接写入；zigzag 的两种 owner 不一致，需要先转换新 K/V 的归属。</p>
+<p>计算过程如下：</p>
+<ol>
+<li>将新 K/V 写入本地缓存，读取包含 prefix 的本地 KV shard。</li>
+<li>Q 保留在当前 rank，双缓冲轮转其他 owner 的 KV。</li>
+<li>每轮按全局位置确定 causal 可见范围，调用已有 attention kernel。</li>
+<li>用各轮 partial output 与 log-sum-exp（LSE）合并输出，最后恢复本地 Q 行序。</li>
+</ol>
+<p>轮转的是 KV，合并的是 attention 输出。若第 <span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>r</mi></mrow><annotation encoding="application/x-tex">r</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="katex-base"><span class="katex-strut" style="height:0.4306em;"></span><span class="mord mathnormal" style="margin-right:0.0278em;">r</span></span></span></span> 个非空分片返回归一化输出 <span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msub><mi>O</mi><mi>r</mi></msub></mrow><annotation encoding="application/x-tex">O_r</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="katex-base"><span class="katex-strut" style="height:0.8333em;vertical-align:-0.15em;"></span><span class="mord"><span class="mord mathnormal" style="margin-right:0.0278em;">O</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.1514em;"><span style="top:-2.55em;margin-left:-0.0278em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="katex-sizing reset-size6 size3 mtight"><span class="mord mathnormal mtight" style="margin-right:0.0278em;">r</span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.15em;"><span></span></span></span></span></span></span></span></span></span> 和自然对数形式的 LSE <span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msub><mi mathvariant="normal">ℓ</mi><mi>r</mi></msub></mrow><annotation encoding="application/x-tex">\ell_r</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="katex-base"><span class="katex-strut" style="height:0.8444em;vertical-align:-0.15em;"></span><span class="mord"><span class="mord">ℓ</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.1514em;"><span style="top:-2.55em;margin-left:0em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="katex-sizing reset-size6 size3 mtight"><span class="mord mathnormal mtight" style="margin-right:0.0278em;">r</span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.15em;"><span></span></span></span></span></span></span></span></span></span>，则可用以下形式表达合并关系：</p>
+<p class="katex-block"><span class="katex-display"><span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML" display="block"><semantics><mrow><mi>m</mi><mo>=</mo><munder><mrow><mi>max</mi><mo>⁡</mo></mrow><mi>r</mi></munder><msub><mi mathvariant="normal">ℓ</mi><mi>r</mi></msub><mo separator="true">,</mo><mspace width="2em"/><mi>O</mi><mo>=</mo><mfrac><mrow><munder><mo>∑</mo><mi>r</mi></munder><msup><mi>e</mi><mrow><msub><mi mathvariant="normal">ℓ</mi><mi>r</mi></msub><mo>−</mo><mi>m</mi></mrow></msup><msub><mi>O</mi><mi>r</mi></msub></mrow><mrow><munder><mo>∑</mo><mi>r</mi></munder><msup><mi>e</mi><mrow><msub><mi mathvariant="normal">ℓ</mi><mi>r</mi></msub><mo>−</mo><mi>m</mi></mrow></msup></mrow></mfrac><mi mathvariant="normal">.</mi></mrow><annotation encoding="application/x-tex">m=\max_r\ell_r,\qquad
+O=\frac{\sum_r e^{\ell_r-m}O_r}{\sum_r e^{\ell_r-m}}.
+</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="katex-base"><span class="katex-strut" style="height:0.4306em;"></span><span class="mord mathnormal">m</span><span class="mspace" style="margin-right:0.2778em;"></span><span class="mrel">=</span><span class="mspace" style="margin-right:0.2778em;"></span></span><span class="katex-base"><span class="katex-strut" style="height:1.3944em;vertical-align:-0.7em;"></span><span class="mop op-limits"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.4306em;"><span style="top:-2.4em;margin-left:0em;"><span class="pstrut" style="height:3em;"></span><span class="katex-sizing reset-size6 size3 mtight"><span class="mord mathnormal mtight" style="margin-right:0.0278em;">r</span></span></span><span style="top:-3em;"><span class="pstrut" style="height:3em;"></span><span><span class="mop">max</span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.7em;"><span></span></span></span></span></span><span class="mspace" style="margin-right:0.1667em;"></span><span class="mord"><span class="mord">ℓ</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.1514em;"><span style="top:-2.55em;margin-left:0em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="katex-sizing reset-size6 size3 mtight"><span class="mord mathnormal mtight" style="margin-right:0.0278em;">r</span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.15em;"><span></span></span></span></span></span></span><span class="mpunct">,</span><span class="mspace" style="margin-right:2em;"></span><span class="mspace" style="margin-right:0.1667em;"></span><span class="mord mathnormal" style="margin-right:0.0278em;">O</span><span class="mspace" style="margin-right:0.2778em;"></span><span class="mrel">=</span><span class="mspace" style="margin-right:0.2778em;"></span></span><span class="katex-base"><span class="katex-strut" style="height:2.5245em;vertical-align:-0.9857em;"></span><span class="mord"><span class="mopen nulldelimiter"></span><span class="mfrac"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:1.5388em;"><span style="top:-2.314em;"><span class="pstrut" style="height:3em;"></span><span class="mord"><span class="mop"><span class="mop op-symbol small-op" style="position:relative;top:0em;">∑</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.0017em;"><span style="top:-2.4003em;margin-left:0em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="katex-sizing reset-size6 size3 mtight"><span class="mord mathnormal mtight" style="margin-right:0.0278em;">r</span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.2997em;"><span></span></span></span></span></span></span><span class="mspace" style="margin-right:0.1667em;"></span><span class="mord"><span class="mord mathnormal">e</span><span class="msupsub"><span class="vlist-t"><span class="vlist-r"><span class="vlist" style="height:0.7751em;"><span style="top:-2.989em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="katex-sizing reset-size6 size3 mtight"><span class="mord mtight"><span class="mord mtight"><span class="mord mtight">ℓ</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.1645em;"><span style="top:-2.357em;margin-left:0em;margin-right:0.0714em;"><span class="pstrut" style="height:2.5em;"></span><span class="katex-sizing reset-size3 size1 mtight"><span class="mord mathnormal mtight" style="margin-right:0.0278em;">r</span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.143em;"><span></span></span></span></span></span></span><span class="mbin mtight">−</span><span class="mord mathnormal mtight">m</span></span></span></span></span></span></span></span></span></span></span><span style="top:-3.23em;"><span class="pstrut" style="height:3em;"></span><span class="frac-line" style="border-bottom-width:0.04em;"></span></span><span style="top:-3.6897em;"><span class="pstrut" style="height:3em;"></span><span class="mord"><span class="mop"><span class="mop op-symbol small-op" style="position:relative;top:0em;">∑</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.0017em;"><span style="top:-2.4003em;margin-left:0em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="katex-sizing reset-size6 size3 mtight"><span class="mord mathnormal mtight" style="margin-right:0.0278em;">r</span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.2997em;"><span></span></span></span></span></span></span><span class="mspace" style="margin-right:0.1667em;"></span><span class="mord"><span class="mord mathnormal">e</span><span class="msupsub"><span class="vlist-t"><span class="vlist-r"><span class="vlist" style="height:0.8491em;"><span style="top:-3.063em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="katex-sizing reset-size6 size3 mtight"><span class="mord mtight"><span class="mord mtight"><span class="mord mtight">ℓ</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.1645em;"><span style="top:-2.357em;margin-left:0em;margin-right:0.0714em;"><span class="pstrut" style="height:2.5em;"></span><span class="katex-sizing reset-size3 size1 mtight"><span class="mord mathnormal mtight" style="margin-right:0.0278em;">r</span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.143em;"><span></span></span></span></span></span></span><span class="mbin mtight">−</span><span class="mord mathnormal mtight">m</span></span></span></span></span></span></span></span></span><span class="mord"><span class="mord mathnormal" style="margin-right:0.0278em;">O</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.1514em;"><span style="top:-2.55em;margin-left:-0.0278em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="katex-sizing reset-size6 size3 mtight"><span class="mord mathnormal mtight" style="margin-right:0.0278em;">r</span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.15em;"><span></span></span></span></span></span></span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.9857em;"><span></span></span></span></span></span><span class="mclose nulldelimiter"></span></span><span class="mord">.</span></span></span></span></span></p>
+<p>这是对分片 softmax 合并的数学表达；具体 backend 的 LSE 对数底数需先统一，全 masked 的行需单独处理，不能直接计算未定义的差值。</p>
+<h3 id="Query-owner-与本地行序" tabindex="-1">Query owner 与本地行序</h3>
+<p>zigzag 先按请求两端块分配 Q，再在本 rank 内按位置余数整理为供 varlen 接口使用的虚拟序列。它不会把 Q 再次分发给 <code>position % C</code> 对应的 rank。</p>
+<p>例如，CP4、64 个 token 时，rank0 可持有 <code>[0…7]</code> 与 <code>[56…63]</code>。本地分组改变调用时的排列，不改变这些 Q 的 owner。各组根据全局位置确定当前 KV shard 的可见截止范围，继续复用底右对齐 causal mask；多个组在一次 varlen 调用中批量处理。</p>
+<h3 id="Prefix-与物理地址" tabindex="-1">Prefix 与物理地址</h3>
+<p>新增 token 的 owner 从完整逻辑位置计算：</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">kv_owner = (prefix_len + new_token_index) % cp_size</span><br><span class="line">page_row = local_row * cp_size + rank</span><br></pre></td></tr></table></figure>
+<p>不能在每个新 chunk 从 rank0 重新计数。物理 slot 继续由现有页表、分配器与 CP 映射定位，逻辑位置不能直接充当物理地址。</p>
+<p>这份实现通过 <code>--attn-cp-transport</code> 选择 <code>nccl</code> 或 <code>symm_rma</code>，通信流与计算流以事件衔接。KV ring、GDN 状态通信和 Mega dispatch 是不同通路，应分别管理依赖。Attention 继续复用已有 FA3/TRTLLM prefill backend，CP 不改变 backend 的 dtype 约束。</p>
+<h2 id="3.-GDN：分别处理卷积-halo-与递推状态" tabindex="-1">3. GDN：分别处理卷积 halo 与递推状态</h2>
+<p>连续切分后，本段短卷积缺少前驱尾部，递推缺少前面各段作用后的初始 state。这两种依赖需要分别处理。</p>
+<h3 id="卷积-halo" tabindex="-1">卷积 halo</h3>
+<p>满足条件的 CP4 路径发布投影后 QKV 的最后三行，由卷积 kernel 通过对称内存读取前驱历史。这里传递的是卷积所需历史，不是把前驱 hidden 拼到 Mega combine 后重复投影。尾部不整齐、空 shard 等情况保留通用交换路径。</p>
+<h3 id="有序状态摘要" tabindex="-1">有序状态摘要</h3>
+<p>每段产生局部贡献 <span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>H</mi></mrow><annotation encoding="application/x-tex">H</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="katex-base"><span class="katex-strut" style="height:0.6833em;"></span><span class="mord mathnormal" style="margin-right:0.0813em;">H</span></span></span></span> 与状态变换 <span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>M</mi></mrow><annotation encoding="application/x-tex">M</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="katex-base"><span class="katex-strut" style="height:0.6833em;"></span><span class="mord mathnormal" style="margin-right:0.109em;">M</span></span></span></span>。为解释组合顺序，这里将状态向量化，并约定以左乘形式表示一段的作用：</p>
+<p class="katex-block"><span class="katex-display"><span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML" display="block"><semantics><mrow><msub><mi>S</mi><mrow><mi>o</mi><mi>u</mi><mi>t</mi></mrow></msub><mo>=</mo><mi>M</mi><msub><mi>S</mi><mrow><mi>i</mi><mi>n</mi></mrow></msub><mo>+</mo><mi>H</mi><mi mathvariant="normal">.</mi></mrow><annotation encoding="application/x-tex">S_{out}=MS_{in}+H.
+</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="katex-base"><span class="katex-strut" style="height:0.8333em;vertical-align:-0.15em;"></span><span class="mord"><span class="mord mathnormal" style="margin-right:0.0576em;">S</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.2806em;"><span style="top:-2.55em;margin-left:-0.0576em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="katex-sizing reset-size6 size3 mtight"><span class="mord mtight"><span class="mord mathnormal mtight">o</span><span class="mord mathnormal mtight">u</span><span class="mord mathnormal mtight">t</span></span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.15em;"><span></span></span></span></span></span></span><span class="mspace" style="margin-right:0.2778em;"></span><span class="mrel">=</span><span class="mspace" style="margin-right:0.2778em;"></span></span><span class="katex-base"><span class="katex-strut" style="height:0.8333em;vertical-align:-0.15em;"></span><span class="mord mathnormal" style="margin-right:0.109em;">M</span><span class="mord"><span class="mord mathnormal" style="margin-right:0.0576em;">S</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.3117em;"><span style="top:-2.55em;margin-left:-0.0576em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="katex-sizing reset-size6 size3 mtight"><span class="mord mtight"><span class="mord mathnormal mtight">in</span></span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.15em;"><span></span></span></span></span></span></span><span class="mspace" style="margin-right:0.2222em;"></span><span class="mbin">+</span><span class="mspace" style="margin-right:0.2222em;"></span></span><span class="katex-base"><span class="katex-strut" style="height:0.6833em;"></span><span class="mord mathnormal" style="margin-right:0.0813em;">H</span><span class="mord">.</span></span></span></span></span></p>
+<p>先执行段 <span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>a</mi></mrow><annotation encoding="application/x-tex">a</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="katex-base"><span class="katex-strut" style="height:0.4306em;"></span><span class="mord mathnormal">a</span></span></span></span>，再执行段 <span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>b</mi></mrow><annotation encoding="application/x-tex">b</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="katex-base"><span class="katex-strut" style="height:0.6944em;"></span><span class="mord mathnormal">b</span></span></span></span>，组合关系为：</p>
+<p class="katex-block"><span class="katex-display"><span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML" display="block"><semantics><mrow><mo stretchy="false">(</mo><msub><mi>M</mi><mi>b</mi></msub><mo separator="true">,</mo><msub><mi>H</mi><mi>b</mi></msub><mo stretchy="false">)</mo><mo>∘</mo><mo stretchy="false">(</mo><msub><mi>M</mi><mi>a</mi></msub><mo separator="true">,</mo><msub><mi>H</mi><mi>a</mi></msub><mo stretchy="false">)</mo><mo>=</mo><mo stretchy="false">(</mo><msub><mi>M</mi><mi>b</mi></msub><msub><mi>M</mi><mi>a</mi></msub><mo separator="true">,</mo><mtext> </mtext><msub><mi>M</mi><mi>b</mi></msub><msub><mi>H</mi><mi>a</mi></msub><mo>+</mo><msub><mi>H</mi><mi>b</mi></msub><mo stretchy="false">)</mo><mi mathvariant="normal">.</mi></mrow><annotation encoding="application/x-tex">(M_b,H_b)\circ(M_a,H_a)
+=(M_bM_a,\ M_bH_a+H_b).
+</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="katex-base"><span class="katex-strut" style="height:1em;vertical-align:-0.25em;"></span><span class="mopen">(</span><span class="mord"><span class="mord mathnormal" style="margin-right:0.109em;">M</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.3361em;"><span style="top:-2.55em;margin-left:-0.109em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="katex-sizing reset-size6 size3 mtight"><span class="mord mathnormal mtight">b</span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.15em;"><span></span></span></span></span></span></span><span class="mpunct">,</span><span class="mspace" style="margin-right:0.1667em;"></span><span class="mord"><span class="mord mathnormal" style="margin-right:0.0813em;">H</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.3361em;"><span style="top:-2.55em;margin-left:-0.0813em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="katex-sizing reset-size6 size3 mtight"><span class="mord mathnormal mtight">b</span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.15em;"><span></span></span></span></span></span></span><span class="mclose">)</span><span class="mspace" style="margin-right:0.2222em;"></span><span class="mbin">∘</span><span class="mspace" style="margin-right:0.2222em;"></span></span><span class="katex-base"><span class="katex-strut" style="height:1em;vertical-align:-0.25em;"></span><span class="mopen">(</span><span class="mord"><span class="mord mathnormal" style="margin-right:0.109em;">M</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.1514em;"><span style="top:-2.55em;margin-left:-0.109em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="katex-sizing reset-size6 size3 mtight"><span class="mord mathnormal mtight">a</span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.15em;"><span></span></span></span></span></span></span><span class="mpunct">,</span><span class="mspace" style="margin-right:0.1667em;"></span><span class="mord"><span class="mord mathnormal" style="margin-right:0.0813em;">H</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.1514em;"><span style="top:-2.55em;margin-left:-0.0813em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="katex-sizing reset-size6 size3 mtight"><span class="mord mathnormal mtight">a</span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.15em;"><span></span></span></span></span></span></span><span class="mclose">)</span><span class="mspace" style="margin-right:0.2778em;"></span><span class="mrel">=</span><span class="mspace" style="margin-right:0.2778em;"></span></span><span class="katex-base"><span class="katex-strut" style="height:1em;vertical-align:-0.25em;"></span><span class="mopen">(</span><span class="mord"><span class="mord mathnormal" style="margin-right:0.109em;">M</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.3361em;"><span style="top:-2.55em;margin-left:-0.109em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="katex-sizing reset-size6 size3 mtight"><span class="mord mathnormal mtight">b</span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.15em;"><span></span></span></span></span></span></span><span class="mord"><span class="mord mathnormal" style="margin-right:0.109em;">M</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.1514em;"><span style="top:-2.55em;margin-left:-0.109em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="katex-sizing reset-size6 size3 mtight"><span class="mord mathnormal mtight">a</span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.15em;"><span></span></span></span></span></span></span><span class="mpunct">,</span><span class="mspace"> </span><span class="mspace" style="margin-right:0.1667em;"></span><span class="mord"><span class="mord mathnormal" style="margin-right:0.109em;">M</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.3361em;"><span style="top:-2.55em;margin-left:-0.109em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="katex-sizing reset-size6 size3 mtight"><span class="mord mathnormal mtight">b</span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.15em;"><span></span></span></span></span></span></span><span class="mord"><span class="mord mathnormal" style="margin-right:0.0813em;">H</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.1514em;"><span style="top:-2.55em;margin-left:-0.0813em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="katex-sizing reset-size6 size3 mtight"><span class="mord mathnormal mtight">a</span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.15em;"><span></span></span></span></span></span></span><span class="mspace" style="margin-right:0.2222em;"></span><span class="mbin">+</span><span class="mspace" style="margin-right:0.2222em;"></span></span><span class="katex-base"><span class="katex-strut" style="height:1em;vertical-align:-0.25em;"></span><span class="mord"><span class="mord mathnormal" style="margin-right:0.0813em;">H</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.3361em;"><span style="top:-2.55em;margin-left:-0.0813em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="katex-sizing reset-size6 size3 mtight"><span class="mord mathnormal mtight">b</span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.15em;"><span></span></span></span></span></span></span><span class="mclose">)</span><span class="mord">.</span></span></span></span></span></p>
+<p>这一表达用于说明摘要的有序组合；实际 kernel 的张量布局和乘法方向应以实现约定为准。组合顺序与原序列一致，不能将状态摘要当作普通数值求和，也不能用一次广播替代前缀计算。</p>
+<p>peer-prefix kernel 从对称内存读取前面各段摘要，按序得到本段初始 state，再生成本段输出与快照。实现也保留 ring 算法和未启用对称内存时的兼容路径。</p>
+<p>数学推导参考：<a target="_blank" rel="noopener" href="https://zhuanlan.zhihu.com/p/2007937984738129405">GDN / Context Parallel 数学推导参考（知乎）</a>。</p>
+<h3 id="状态发布与算子边界" tabindex="-1">状态发布与算子边界</h3>
+<p>final state 与 checkpoint 按 owner 发布，可使用 multicast。工作区暂时存在相同结果，不意味着每卡长期保存同一份 cache。</p>
+<p>公共分配、peer 地址和同步原语复用 <code>TorchSymmMemCommunicator</code>；递推与状态语义留在 GDN/FLA 算子内。CP 路径通过已有 kernel dispatcher 的 extend 入口接入，decode 与 target verify 保留各自支持的入口。</p>
+<h2 id="4.-MoE-EP：保持-token-身份，调整最终写回位置" tabindex="-1">4. MoE EP：保持 token 身份，调整最终写回位置</h2>
+<p>本地有效 token 执行 top-k，dispatch 到持有完整专家的 rank，由 Mega 完成通信与专家计算，再按路由权重归并回原 token。该 EP 路径不再依赖旧 MoE TP 的全量 hidden All-Gather/Reduce-Scatter。</p>
+<table>
+<thead>
+<tr>
+<th>本实现中的配置</th>
+<th>Attention</th>
+<th>MoE</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>tp=4, cp=4, ep=1</code></td>
+<td>CP4、TP1</td>
+<td>TP4</td>
+</tr>
+<tr>
+<td><code>tp=4, cp=4, ep=4</code>，启用 Mega</td>
+<td>CP4、TP1</td>
+<td>EP4、TP1</td>
+</tr>
+</tbody>
+</table>
+<p>Mega 经已有 <code>FusedMoE.forward</code> 分派，各层复用 workspace。量化接入必须独立说明：本实现的 Hopper W4AFP8 路径通过 <code>--enable-mxfp4-mega</code> 转换专家权重表示，并由 FlashInfer stage 量化输入，不能将它视为原量化格式下的纯通信替换。</p>
+<h3 id="Combine-直接写入下一层布局" tabindex="-1">Combine 直接写入下一层布局</h3>
+<p>常规路径先把专家结果 combine 回本层输入行，下一层再把 hidden 从连续段转换为 round-robin，或反向转换。实验方案把这个目标位置映射放进最终 reducer：</p>
+<ol>
+<li>dispatch、专家计算、top-k 权重和 token 归并身份保持原语义。</li>
+<li>reducer 按既有 BF16 舍入顺序归并，并加入同一 token 的 shared expert 输出。</li>
+<li>根据下一层 CP metadata 的目标 rank/row，将最终 hidden 写入目标对称内存。</li>
+<li>residual 使用相同映射转换，hidden 与 residual 都就绪后更新当前布局。</li>
+</ol>
+<p>shared expert 只相加一次。改动发生在最终写回阶段，不是提前把 FC2 专家结果改投到另一 rank。跨 rank 数据仍需搬运，只是 hidden 的布局转换并入最终 store；residual 转换仍然存在。</p>
+<p>目标映射由 batch 阶段的 CPU plan 提供，经 <code>prepare_mlp</code>、<code>postprocess_layer</code>、<code>prepare_attn</code> 衔接。同布局继续本地消费；末层没有下一层目标，保留模型出口的 token 顺序还原。</p>
+<p>round-robin 转回连续段时，可预建源行排列，让相邻 CTA 的工作交错面向不同目标 rank，避免连续工作集中写一个 peer。排列只改变工作分配，不改变输出地址和数值，也不规定 GPU 的实际执行顺序。</p>
+<p>对称 workspace 在 warmup 准备。生产者写完后消费者才能读取，上一轮消费结束后才能覆盖；取消中间 clone 后，这些依赖必须显式成立。</p>
+<h3 id="Residual-的两种搬运位置" tabindex="-1">Residual 的两种搬运位置</h3>
+<p>独立 stream 方案在 post-attention Add/Norm 生成更新后的 residual 后，提前提交布局交换。计算流继续执行 shared expert、router/top-k 和 Mega，到下一层 Norm 消费前再等待完成事件。</p>
+<p>Mega 内搬运方案让 kernel 接收 residual、目标 rank/row 和 peer 指针，由 dispatch 中的搬运工作将 residual 一次写到目标位置。residual 不参与 top-k 复制，也不执行专家 combine；完成同步复用 Mega 的尾部机制。目标 buffer 交替使用，避免快 rank 覆盖慢 rank 尚未消费的数据。</p>
+<p>直接 combine 已完成算子与层间组合验证，完整 forward 接入仍在推进；Mega 内 residual 搬运也是实验接口，尚未成为正式默认路径。融合搬运会与专家计算共享执行资源，是否采用需结合调用链和依赖验证，不能仅根据少了一次独立交换作判断。</p>
+<h2 id="5.-Cache：完整前缀匹配，KV-与-state-分片持久化" tabindex="-1">5. Cache：完整前缀匹配，KV 与 state 分片持久化</h2>
+<p>混合模型恢复前缀时，既需要对应 KV，也需要同一位置的 GDN state。只在大 chunk 末尾保存 state，会让中间公共前缀缺少恢复点。</p>
+<p>radix 仍按完整 prompt token 序列匹配和插入，节点保存逻辑 KV 索引。层执行时才将这些索引解析到各 rank 的物理 KV。Mamba state 则按逻辑 slot 分散持久化，slot 0 留作空状态：</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">def</span> <span class="title function_">state_location</span>(<span class="params">slot, cp_size</span>):</span><br><span class="line">    <span class="keyword">assert</span> slot &gt; <span class="number">0</span>  <span class="comment"># slot 0 is reserved</span></span><br><span class="line">    owner = (slot - <span class="number">1</span>) % cp_size</span><br><span class="line">    local_slot = (slot - <span class="number">1</span>) // cp_size + <span class="number">1</span></span><br><span class="line">    <span class="keyword">return</span> owner, local_slot</span><br></pre></td></tr></table></figure>
+<p>读取 prefix 时从实际 owner 取 state，写回也只由 owner 持久化。一个 checkpoint 同时包含 temporal state 与对应的短卷积历史，不保存逐 token 的 GDN KV。</p>
+<p>在原有分叉点与末尾 checkpoint 基础上，可按预算补充对齐的 shard 端点快照。新增快照复用已有 KV 前缀链；预算不足时减少可选快照，不为短尾快照驱逐完整前缀。分叉恢复点也不应截断整个 CP chunk 的缓存发布。</p>
+<p>缓存可恢复性需要联合检查请求所在实例、radix 匹配位置、state 是否存在以及是否已被驱逐，不能仅由 KV 容量推断。</p>
+<h2 id="6.-PD-bulk：按-entry-身份传输并恢复目标布局" tabindex="-1">6. PD bulk：按 entry 身份传输并恢复目标布局</h2>
+<p>Prefill（P）与 Decode（D）的缓存层数可能不同，例如 D 多出 draft/NEXTN 层。两端不能仅依靠 buffer 数量或顺序对齐。</p>
+<p>bulk 路径按 <code>(target/draft, K/V, layer)</code> 匹配 entry，再协商每行字节数和偏移。P 将本 rank 的 KV pack 成连续数据，各 writer 写入各自 staging 区域；D 等相关 writer 和 scatter 完成后消费目标 KV。</p>
+<p>需要保持以下约束：</p>
+<ul>
+<li>D 端额外 draft/NEXTN entry 不被 target 数据覆盖，也不应仅因多一层就让 target bulk 回退。</li>
+<li>页内行恢复遵循 <code>local_row * C + rank</code>；BF16/FP8 按字节布局搬运，不隐式转换数值。</li>
+<li>fallback writer 用完成 mask 区分有效区域，未写入的 staging 数据不能 scatter 到目标页。</li>
+<li>Mamba state 独立传输，由逻辑 slot 的实际 owner 发送，不固定由 CP0 发送。</li>
+<li>保持已有 <code>SGLANG_DISAGG_STAGING_BUFFER</code> 入口兼容；显式要求 bulk 时，失败应报告原因。</li>
+</ul>
+<p>EPD 场景仍按 encoder → prefill → decode 分工。encoder 生成 embedding，P 在切分前按有效 token 位置接入 embedding/MRoPE；这里的 CP 作用于 prefill，不把 encoder 当作 CP rank。</p>
+<h2 id="7.-Metadata-与-overlap：提前规划，按依赖消费" tabindex="-1">7. Metadata 与 overlap：提前规划，按依赖消费</h2>
+<p>scheduler 在进入 forward stream 前，以 CPU/NumPy 构建 batch 只读 metadata，包含层间重排、KV 路由、attention segments 和模型出口还原计划。各字段按对齐偏移打包到 pinned buffer，一次异步 H2D 后恢复 view；权威 KV slot 表继续在 GPU 查询。</p>
+<p>同形状计划可以复用，但每批 request slot、prefix 和在途工作必须独立持有。下一批不能覆盖上一批仍在使用的 workspace。</p>
+<p>安全的同请求 continuation 可以提前准备和提交，真实 KV/state 递推依赖仍在设备侧保留。DP=1 且完整 CP 组持有相同 batch 信息时，可复用本地信息；实际数据通信不会因此消失。</p>
+<p>overlap 是否成立取决于提交时机和依赖图。CPU 尚未提交完 eager 算子时，后续工作无法仅靠一个 overlap 开关自动提前执行。</p>
+<h2 id="8.-Warmup-与实现验证" tabindex="-1">8. Warmup 与实现验证</h2>
+<p><code>ModelRunner</code> 按模型几何与启用路径统一准备重排、norm、卷积、状态计算、attention merge、FlashQLA 上下文与通信 workspace，再准备 Mega 权重、buffer 和 tactic。参数相关的编译与调优放在启动期，数据相关的 batch plan 留在调度阶段。</p>
+<p>执行继续进入已有模型层、GDN/Full Attention backend 和 MoE layer。计算算法、token 映射和公共对称内存资源分别维护，避免另建一套包含完整 forward 的 CP backend。</p>
+<p>实现验证应覆盖：</p>
+<ul>
+<li>round-robin/zigzag 与连续段之间的 token 身份、hidden/residual 一致性。</li>
+<li>prefix 续接、ragged、padding、空 shard 和多请求 batch。</li>
+<li>分片 attention 合并、GDN 前缀状态与 checkpoint 的对应关系。</li>
+<li>shared expert 只加一次、既有舍入顺序及模型出口行序还原。</li>
+<li>多轮 workspace 复用，以及快慢 rank 间的读写完成依赖。</li>
+<li>PD 两端 entry 不同、fallback 完成 mask 和 state owner 传输。</li>
+</ul>
+<p>这些验证应区分算子、层间组合与完整服务三个范围，避免把局部验证结果当作整条调用链已经接入。</p>
+<h2 id="参考资料" tabindex="-1">参考资料</h2>
+<ul>
+<li><a target="_blank" rel="noopener" href="https://zhuanlan.zhihu.com/p/2007937984738129405">数学推导参考（知乎）</a></li>
+<li><a href="/llm/">返回 LLM 专题</a></li>
+</ul>
+
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/Qwen3-5/" rel="tag"># Qwen3.5</a>
+              <a href="/tags/Context-Parallel/" rel="tag"># Context Parallel</a>
+              <a href="/tags/GDN/" rel="tag"># GDN</a>
+              <a href="/tags/MoE/" rel="tag"># MoE</a>
+              <a href="/tags/KV-Cache/" rel="tag"># KV Cache</a>
+              <a href="/tags/SGLang/" rel="tag"># SGLang</a>
+          </div>
+
+        
+
+          <div class="post-nav">
+            <div class="post-nav-item">
+                <a href="/2025/10/28/1004.%E6%9C%80%E5%A4%A7%E8%BF%9E%E7%BB%AD1%E7%9A%84%E4%B8%AA%E6%95%B0III/" rel="prev" title="最大连续 1 的个数 III">
+                  <i class="fa fa-angle-left"></i> 最大连续 1 的个数 III
+                </a>
+            </div>
+            <div class="post-nav-item">
+            </div>
+          </div>
+    </footer>
+  </article>
+</div>
+
+
+
+
+
+
+</div>
+  </main>
+
+  <footer class="footer">
+    <div class="footer-inner">
+
+  <div class="copyright">
+    &copy; 2023 – 
+    <span itemprop="copyrightYear">2026</span>
+    <span class="with-love">
+      <i class="fa fa-code"></i>
+    </span>
+    <span class="author" itemprop="copyrightHolder">wulinze</span>
+  </div>
+  <div class="powered-by">由 <a href="https://hexo.io/" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.js.org/mist/" rel="noopener" target="_blank">NexT.Mist</a> 强力驱动
+  </div>
+
+    </div>
+  </footer>
+
+  
+  <div class="toggle sidebar-toggle" role="button">
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+  </div>
+  <div class="back-to-top" role="button" aria-label="返回顶部">
+    <i class="fa fa-arrow-up fa-lg"></i>
+    <span>0%</span>
+  </div>
+
+<noscript>
+  <div class="noscript-warning">Theme NexT works best with JavaScript enabled</div>
+</noscript>
+
+</body>
+</html>
