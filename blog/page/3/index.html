@@ -15,12 +15,12 @@
 
 <script class="next-config" data-name="main" type="application/json">{"hostname":"wulinze.github.io","root":"/","images":"/images","scheme":"Mist","darkmode":false,"version":"8.29.1","exturl":false,"sidebar":{"position":"right","width_expanded":300,"width_dual_column":240,"display":"post","padding":18,"offset":12},"hljswrap":true,"codeblock":{"theme":{"light":"github","dark":"github-dark"},"prism":{"light":"prism","dark":"prism-dark"},"copy_button":{"enable":true,"style":"flat"},"fold":{"enable":false,"height":500},"language":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"mediumzoom":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"stickytabs":false,"motion":{"enable":false,"async":false,"duration":200,"transition":{"menu_item":"fadeInDown","post_block":"fadeIn","post_header":"fadeInDown","post_body":"fadeInDown","coll_header":"fadeInLeft","sidebar":"fadeInUp"}},"i18n":{"placeholder":"搜索...","empty":"没有找到任何搜索结果：${query}","hits_time":"找到 ${hits} 个搜索结果（用时 ${time} 毫秒）","hits":"找到 ${hits} 个搜索结果"},"path":"/search.xml","localsearch":{"enable":true,"top_n_per_article":2,"unescape":true,"preload":false}}</script><script src="/js/config.js" defer></script>
 
-    <meta name="description" content="wulinze 的个人主页，分享 LeetCode 刷题、系统知识与 LLM 推理的学习和实践。">
+    <meta name="description" content="wulinze 的个人主页，关注 LLM 并行方式、Cache 池化与算子学习，分享系统知识和 LeetCode 刷题记录。">
 <meta property="og:type" content="website">
 <meta property="og:title" content="Wu&#39;s Blog">
 <meta property="og:url" content="https://wulinze.github.io/blog/page/3/">
 <meta property="og:site_name" content="Wu&#39;s Blog">
-<meta property="og:description" content="wulinze 的个人主页，分享 LeetCode 刷题、系统知识与 LLM 推理的学习和实践。">
+<meta property="og:description" content="wulinze 的个人主页，关注 LLM 并行方式、Cache 池化与算子学习，分享系统知识和 LeetCode 刷题记录。">
 <meta property="og:locale" content="zh_CN">
 <meta property="article:author" content="wulinze">
 <meta name="twitter:card" content="summary">
@@ -160,7 +160,7 @@
     <img class="site-author-image" itemprop="image" alt="wulinze"
       src="/images/avatar.svg">
   <p class="site-author-name" itemprop="name">wulinze</p>
-  <div class="site-description" itemprop="description">wulinze 的个人主页，分享 LeetCode 刷题、系统知识与 LLM 推理的学习和实践。</div>
+  <div class="site-description" itemprop="description">wulinze 的个人主页，关注 LLM 并行方式、Cache 池化与算子学习，分享系统知识和 LeetCode 刷题记录。</div>
 </div>
 <div class="site-state-wrap animated">
   <nav class="site-state">
@@ -216,7 +216,7 @@
 
     <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
       <meta itemprop="name" content="Wu's Blog">
-      <meta itemprop="description" content="wulinze 的个人主页，分享 LeetCode 刷题、系统知识与 LLM 推理的学习和实践。">
+      <meta itemprop="description" content="wulinze 的个人主页，关注 LLM 并行方式、Cache 池化与算子学习，分享系统知识和 LeetCode 刷题记录。">
     </span>
 
     <span hidden itemprop="post" itemscope itemtype="http://schema.org/CreativeWork">
@@ -292,91 +292,6 @@
   
 
   <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="">
-    <link itemprop="mainEntityOfPage" href="https://wulinze.github.io/2025/10/28/378.%20%E6%9C%89%E5%BA%8F%E7%9F%A9%E9%98%B5%E4%B8%AD%E7%AC%ACK%E5%B0%8F%E7%9A%84%E5%85%83%E7%B4%A0/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.svg">
-      <meta itemprop="name" content="wulinze">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="Wu's Blog">
-      <meta itemprop="description" content="wulinze 的个人主页，分享 LeetCode 刷题、系统知识与 LLM 推理的学习和实践。">
-    </span>
-
-    <span hidden itemprop="post" itemscope itemtype="http://schema.org/CreativeWork">
-      <meta itemprop="name" content=" | Wu's Blog">
-      <meta itemprop="description" content="">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          <a href="/2025/10/28/378.%20%E6%9C%89%E5%BA%8F%E7%9F%A9%E9%98%B5%E4%B8%AD%E7%AC%ACK%E5%B0%8F%E7%9A%84%E5%85%83%E7%B4%A0/" class="post-title-link" itemprop="url">有序矩阵中第 K 小的元素</a>
-        </h2>
-
-        <div class="post-meta-container">
-          <div class="post-meta">
-    <span class="post-meta-item">
-      <span class="post-meta-item-icon">
-        <i class="far fa-calendar"></i>
-      </span>
-      <span class="post-meta-item-text">发表于</span>
-
-      <time title="创建时间：2025-10-28 00:00" itemprop="dateCreated datePublished" datetime="2025-10-28T00:00:00+08:00">2025-10-28</time>
-    </span>
-    <span class="post-meta-item">
-      <span class="post-meta-item-icon">
-        <i class="far fa-folder"></i>
-      </span>
-      <span class="post-meta-item-text">分类于</span>
-        <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-          <a href="/categories/leetcode/" itemprop="url" rel="index"><span itemprop="name">LeetCode 刷题</span></a>
-        </span>
-    </span>
-
-  
-</div>
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-          <p>整理有序矩阵第 K 小元素的归并与二分查找方法。</p>
-          <!--noindex-->
-            <div class="post-button">
-              <a class="btn" href="/2025/10/28/378.%20%E6%9C%89%E5%BA%8F%E7%9F%A9%E9%98%B5%E4%B8%AD%E7%AC%ACK%E5%B0%8F%E7%9A%84%E5%85%83%E7%B4%A0/">
-                阅读全文 &raquo;
-              </a>
-            </div>
-          <!--/noindex-->
-        
-      
-    </div>
-
-    
-    
-    
-
-    <footer class="post-footer">
-        <div class="post-eof"></div>
-      
-    </footer>
-  </article>
-</div>
-
-
-
-
-    
-
-
-<div class="post-block">
-  
-  
-
-  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="">
     <link itemprop="mainEntityOfPage" href="https://wulinze.github.io/2025/10/28/338.%E6%AF%94%E7%89%B9%E4%BD%8D%E8%AE%A1%E6%95%B0/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
@@ -386,7 +301,7 @@
 
     <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
       <meta itemprop="name" content="Wu's Blog">
-      <meta itemprop="description" content="wulinze 的个人主页，分享 LeetCode 刷题、系统知识与 LLM 推理的学习和实践。">
+      <meta itemprop="description" content="wulinze 的个人主页，关注 LLM 并行方式、Cache 池化与算子学习，分享系统知识和 LeetCode 刷题记录。">
     </span>
 
     <span hidden itemprop="post" itemscope itemtype="http://schema.org/CreativeWork">
@@ -471,7 +386,7 @@
 
     <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
       <meta itemprop="name" content="Wu's Blog">
-      <meta itemprop="description" content="wulinze 的个人主页，分享 LeetCode 刷题、系统知识与 LLM 推理的学习和实践。">
+      <meta itemprop="description" content="wulinze 的个人主页，关注 LLM 并行方式、Cache 池化与算子学习，分享系统知识和 LeetCode 刷题记录。">
     </span>
 
     <span hidden itemprop="post" itemscope itemtype="http://schema.org/CreativeWork">
@@ -547,7 +462,7 @@
   
 
   <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="">
-    <link itemprop="mainEntityOfPage" href="https://wulinze.github.io/2025/10/28/400.%E7%AC%ACN%E4%BD%8D%E6%95%B0%E5%AD%97/">
+    <link itemprop="mainEntityOfPage" href="https://wulinze.github.io/2025/10/28/378.%20%E6%9C%89%E5%BA%8F%E7%9F%A9%E9%98%B5%E4%B8%AD%E7%AC%ACK%E5%B0%8F%E7%9A%84%E5%85%83%E7%B4%A0/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
       <meta itemprop="image" content="/images/avatar.svg">
@@ -556,7 +471,7 @@
 
     <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
       <meta itemprop="name" content="Wu's Blog">
-      <meta itemprop="description" content="wulinze 的个人主页，分享 LeetCode 刷题、系统知识与 LLM 推理的学习和实践。">
+      <meta itemprop="description" content="wulinze 的个人主页，关注 LLM 并行方式、Cache 池化与算子学习，分享系统知识和 LeetCode 刷题记录。">
     </span>
 
     <span hidden itemprop="post" itemscope itemtype="http://schema.org/CreativeWork">
@@ -565,7 +480,7 @@
     </span>
       <header class="post-header">
         <h2 class="post-title" itemprop="name headline">
-          <a href="/2025/10/28/400.%E7%AC%ACN%E4%BD%8D%E6%95%B0%E5%AD%97/" class="post-title-link" itemprop="url">第 N 位数字</a>
+          <a href="/2025/10/28/378.%20%E6%9C%89%E5%BA%8F%E7%9F%A9%E9%98%B5%E4%B8%AD%E7%AC%ACK%E5%B0%8F%E7%9A%84%E5%85%83%E7%B4%A0/" class="post-title-link" itemprop="url">有序矩阵中第 K 小的元素</a>
         </h2>
 
         <div class="post-meta-container">
@@ -598,95 +513,10 @@
     
     
     <div class="post-body" itemprop="articleBody">
-          <p>按数字位数划分区间，确定第 N 位数字落在哪个整数及其哪一位。</p>
+          <p>整理有序矩阵第 K 小元素的归并与二分查找方法。</p>
           <!--noindex-->
             <div class="post-button">
-              <a class="btn" href="/2025/10/28/400.%E7%AC%ACN%E4%BD%8D%E6%95%B0%E5%AD%97/">
-                阅读全文 &raquo;
-              </a>
-            </div>
-          <!--/noindex-->
-        
-      
-    </div>
-
-    
-    
-    
-
-    <footer class="post-footer">
-        <div class="post-eof"></div>
-      
-    </footer>
-  </article>
-</div>
-
-
-
-
-    
-
-
-<div class="post-block">
-  
-  
-
-  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="">
-    <link itemprop="mainEntityOfPage" href="https://wulinze.github.io/2025/10/28/424.%E6%9B%BF%E6%8D%A2%E5%90%8E%E7%9A%84%E6%9C%80%E9%95%BF%E9%87%8D%E5%A4%8D%E5%AD%97%E7%AC%A6/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.svg">
-      <meta itemprop="name" content="wulinze">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="Wu's Blog">
-      <meta itemprop="description" content="wulinze 的个人主页，分享 LeetCode 刷题、系统知识与 LLM 推理的学习和实践。">
-    </span>
-
-    <span hidden itemprop="post" itemscope itemtype="http://schema.org/CreativeWork">
-      <meta itemprop="name" content=" | Wu's Blog">
-      <meta itemprop="description" content="">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          <a href="/2025/10/28/424.%E6%9B%BF%E6%8D%A2%E5%90%8E%E7%9A%84%E6%9C%80%E9%95%BF%E9%87%8D%E5%A4%8D%E5%AD%97%E7%AC%A6/" class="post-title-link" itemprop="url">替换后的最长重复字符</a>
-        </h2>
-
-        <div class="post-meta-container">
-          <div class="post-meta">
-    <span class="post-meta-item">
-      <span class="post-meta-item-icon">
-        <i class="far fa-calendar"></i>
-      </span>
-      <span class="post-meta-item-text">发表于</span>
-
-      <time title="创建时间：2025-10-28 00:00" itemprop="dateCreated datePublished" datetime="2025-10-28T00:00:00+08:00">2025-10-28</time>
-    </span>
-    <span class="post-meta-item">
-      <span class="post-meta-item-icon">
-        <i class="far fa-folder"></i>
-      </span>
-      <span class="post-meta-item-text">分类于</span>
-        <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-          <a href="/categories/leetcode/" itemprop="url" rel="index"><span itemprop="name">LeetCode 刷题</span></a>
-        </span>
-    </span>
-
-  
-</div>
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-          <p>维护区间内出现最多的字符与替换预算，寻找最长重复字符子串。</p>
-          <!--noindex-->
-            <div class="post-button">
-              <a class="btn" href="/2025/10/28/424.%E6%9B%BF%E6%8D%A2%E5%90%8E%E7%9A%84%E6%9C%80%E9%95%BF%E9%87%8D%E5%A4%8D%E5%AD%97%E7%AC%A6/">
+              <a class="btn" href="/2025/10/28/378.%20%E6%9C%89%E5%BA%8F%E7%9F%A9%E9%98%B5%E4%B8%AD%E7%AC%ACK%E5%B0%8F%E7%9A%84%E5%85%83%E7%B4%A0/">
                 阅读全文 &raquo;
               </a>
             </div>
@@ -726,7 +556,7 @@
 
     <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
       <meta itemprop="name" content="Wu's Blog">
-      <meta itemprop="description" content="wulinze 的个人主页，分享 LeetCode 刷题、系统知识与 LLM 推理的学习和实践。">
+      <meta itemprop="description" content="wulinze 的个人主页，关注 LLM 并行方式、Cache 池化与算子学习，分享系统知识和 LeetCode 刷题记录。">
     </span>
 
     <span hidden itemprop="post" itemscope itemtype="http://schema.org/CreativeWork">
@@ -802,7 +632,7 @@
   
 
   <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="">
-    <link itemprop="mainEntityOfPage" href="https://wulinze.github.io/2025/10/28/448.%E6%89%BE%E5%88%B0%E6%89%80%E6%9C%89%E6%95%B0%E7%BB%84%E4%B8%AD%E6%B6%88%E5%A4%B1%E7%9A%84%E6%95%B0%E5%AD%97/">
+    <link itemprop="mainEntityOfPage" href="https://wulinze.github.io/2025/10/28/400.%E7%AC%ACN%E4%BD%8D%E6%95%B0%E5%AD%97/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
       <meta itemprop="image" content="/images/avatar.svg">
@@ -811,7 +641,7 @@
 
     <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
       <meta itemprop="name" content="Wu's Blog">
-      <meta itemprop="description" content="wulinze 的个人主页，分享 LeetCode 刷题、系统知识与 LLM 推理的学习和实践。">
+      <meta itemprop="description" content="wulinze 的个人主页，关注 LLM 并行方式、Cache 池化与算子学习，分享系统知识和 LeetCode 刷题记录。">
     </span>
 
     <span hidden itemprop="post" itemscope itemtype="http://schema.org/CreativeWork">
@@ -820,7 +650,7 @@
     </span>
       <header class="post-header">
         <h2 class="post-title" itemprop="name headline">
-          <a href="/2025/10/28/448.%E6%89%BE%E5%88%B0%E6%89%80%E6%9C%89%E6%95%B0%E7%BB%84%E4%B8%AD%E6%B6%88%E5%A4%B1%E7%9A%84%E6%95%B0%E5%AD%97/" class="post-title-link" itemprop="url">找到所有数组中消失的数字</a>
+          <a href="/2025/10/28/400.%E7%AC%ACN%E4%BD%8D%E6%95%B0%E5%AD%97/" class="post-title-link" itemprop="url">第 N 位数字</a>
         </h2>
 
         <div class="post-meta-container">
@@ -853,10 +683,10 @@
     
     
     <div class="post-body" itemprop="articleBody">
-          <p>利用数值范围在原数组上累加标记，寻找数组中未出现的数字。</p>
+          <p>按数字位数划分区间，确定第 N 位数字落在哪个整数及其哪一位。</p>
           <!--noindex-->
             <div class="post-button">
-              <a class="btn" href="/2025/10/28/448.%E6%89%BE%E5%88%B0%E6%89%80%E6%9C%89%E6%95%B0%E7%BB%84%E4%B8%AD%E6%B6%88%E5%A4%B1%E7%9A%84%E6%95%B0%E5%AD%97/">
+              <a class="btn" href="/2025/10/28/400.%E7%AC%ACN%E4%BD%8D%E6%95%B0%E5%AD%97/">
                 阅读全文 &raquo;
               </a>
             </div>
@@ -896,7 +726,7 @@
 
     <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
       <meta itemprop="name" content="Wu's Blog">
-      <meta itemprop="description" content="wulinze 的个人主页，分享 LeetCode 刷题、系统知识与 LLM 推理的学习和实践。">
+      <meta itemprop="description" content="wulinze 的个人主页，关注 LLM 并行方式、Cache 池化与算子学习，分享系统知识和 LeetCode 刷题记录。">
     </span>
 
     <span hidden itemprop="post" itemscope itemtype="http://schema.org/CreativeWork">
@@ -972,6 +802,176 @@
   
 
   <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="">
+    <link itemprop="mainEntityOfPage" href="https://wulinze.github.io/2025/10/28/424.%E6%9B%BF%E6%8D%A2%E5%90%8E%E7%9A%84%E6%9C%80%E9%95%BF%E9%87%8D%E5%A4%8D%E5%AD%97%E7%AC%A6/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.svg">
+      <meta itemprop="name" content="wulinze">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Wu's Blog">
+      <meta itemprop="description" content="wulinze 的个人主页，关注 LLM 并行方式、Cache 池化与算子学习，分享系统知识和 LeetCode 刷题记录。">
+    </span>
+
+    <span hidden itemprop="post" itemscope itemtype="http://schema.org/CreativeWork">
+      <meta itemprop="name" content=" | Wu's Blog">
+      <meta itemprop="description" content="">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          <a href="/2025/10/28/424.%E6%9B%BF%E6%8D%A2%E5%90%8E%E7%9A%84%E6%9C%80%E9%95%BF%E9%87%8D%E5%A4%8D%E5%AD%97%E7%AC%A6/" class="post-title-link" itemprop="url">替换后的最长重复字符</a>
+        </h2>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">发表于</span>
+
+      <time title="创建时间：2025-10-28 00:00" itemprop="dateCreated datePublished" datetime="2025-10-28T00:00:00+08:00">2025-10-28</time>
+    </span>
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-folder"></i>
+      </span>
+      <span class="post-meta-item-text">分类于</span>
+        <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+          <a href="/categories/leetcode/" itemprop="url" rel="index"><span itemprop="name">LeetCode 刷题</span></a>
+        </span>
+    </span>
+
+  
+</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+          <p>维护区间内出现最多的字符与替换预算，寻找最长重复字符子串。</p>
+          <!--noindex-->
+            <div class="post-button">
+              <a class="btn" href="/2025/10/28/424.%E6%9B%BF%E6%8D%A2%E5%90%8E%E7%9A%84%E6%9C%80%E9%95%BF%E9%87%8D%E5%A4%8D%E5%AD%97%E7%AC%A6/">
+                阅读全文 &raquo;
+              </a>
+            </div>
+          <!--/noindex-->
+        
+      
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+        <div class="post-eof"></div>
+      
+    </footer>
+  </article>
+</div>
+
+
+
+
+    
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="">
+    <link itemprop="mainEntityOfPage" href="https://wulinze.github.io/2025/10/28/448.%E6%89%BE%E5%88%B0%E6%89%80%E6%9C%89%E6%95%B0%E7%BB%84%E4%B8%AD%E6%B6%88%E5%A4%B1%E7%9A%84%E6%95%B0%E5%AD%97/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.svg">
+      <meta itemprop="name" content="wulinze">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Wu's Blog">
+      <meta itemprop="description" content="wulinze 的个人主页，关注 LLM 并行方式、Cache 池化与算子学习，分享系统知识和 LeetCode 刷题记录。">
+    </span>
+
+    <span hidden itemprop="post" itemscope itemtype="http://schema.org/CreativeWork">
+      <meta itemprop="name" content=" | Wu's Blog">
+      <meta itemprop="description" content="">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          <a href="/2025/10/28/448.%E6%89%BE%E5%88%B0%E6%89%80%E6%9C%89%E6%95%B0%E7%BB%84%E4%B8%AD%E6%B6%88%E5%A4%B1%E7%9A%84%E6%95%B0%E5%AD%97/" class="post-title-link" itemprop="url">找到所有数组中消失的数字</a>
+        </h2>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">发表于</span>
+
+      <time title="创建时间：2025-10-28 00:00" itemprop="dateCreated datePublished" datetime="2025-10-28T00:00:00+08:00">2025-10-28</time>
+    </span>
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-folder"></i>
+      </span>
+      <span class="post-meta-item-text">分类于</span>
+        <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+          <a href="/categories/leetcode/" itemprop="url" rel="index"><span itemprop="name">LeetCode 刷题</span></a>
+        </span>
+    </span>
+
+  
+</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+          <p>利用数值范围在原数组上累加标记，寻找数组中未出现的数字。</p>
+          <!--noindex-->
+            <div class="post-button">
+              <a class="btn" href="/2025/10/28/448.%E6%89%BE%E5%88%B0%E6%89%80%E6%9C%89%E6%95%B0%E7%BB%84%E4%B8%AD%E6%B6%88%E5%A4%B1%E7%9A%84%E6%95%B0%E5%AD%97/">
+                阅读全文 &raquo;
+              </a>
+            </div>
+          <!--/noindex-->
+        
+      
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+        <div class="post-eof"></div>
+      
+    </footer>
+  </article>
+</div>
+
+
+
+
+    
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="">
     <link itemprop="mainEntityOfPage" href="https://wulinze.github.io/2025/10/28/456.132%E6%A8%A1%E5%BC%8F/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
@@ -981,7 +981,7 @@
 
     <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
       <meta itemprop="name" content="Wu's Blog">
-      <meta itemprop="description" content="wulinze 的个人主页，分享 LeetCode 刷题、系统知识与 LLM 推理的学习和实践。">
+      <meta itemprop="description" content="wulinze 的个人主页，关注 LLM 并行方式、Cache 池化与算子学习，分享系统知识和 LeetCode 刷题记录。">
     </span>
 
     <span hidden itemprop="post" itemscope itemtype="http://schema.org/CreativeWork">
