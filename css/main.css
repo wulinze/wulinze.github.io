@@ -13,17 +13,17 @@
   --table-row-odd-bg-color: #f9f9f9;
   --table-row-hover-bg-color: #f5f5f5;
   --menu-item-bg-color: #f5f5f5;
-  --theme-color: #222;
+  --theme-color: #10151b;
   --btn-default-bg: #fff;
   --btn-default-color: #555;
   --btn-default-border-color: #555;
   --btn-default-hover-bg: #222;
   --btn-default-hover-color: #fff;
   --btn-default-hover-border-color: #222;
-  --highlight-background: #fff;
-  --highlight-foreground: #24292e;
-  --highlight-gutter-background: #e9e9ea;
-  --highlight-gutter-foreground: #393e42;
+  --highlight-background: #0d1117;
+  --highlight-foreground: #c9d1d9;
+  --highlight-gutter-background: #1f242a;
+  --highlight-gutter-foreground: #b6bdc5;
   color-scheme: light;
 }
 html {
@@ -374,18 +374,18 @@ code.hljs {
   padding: 3px 5px
 }
 /*!
-  Theme: GitHub
-  Description: Light theme as seen on github.com
+  Theme: GitHub Dark
+  Description: Dark theme as seen on github.com
   Author: github.com
   Maintainer: @Hirse
   Updated: 2021-05-15
 
-  Outdated base version: https://github.com/primer/github-syntax-light
+  Outdated base version: https://github.com/primer/github-syntax-dark
   Current colors taken from GitHub's CSS
 */
 .hljs {
-  color: #24292e;
-  background: #ffffff
+  color: #c9d1d9;
+  background: #0d1117
 }
 .hljs-doctag,
 .hljs-keyword,
@@ -395,14 +395,14 @@ code.hljs {
 .hljs-type,
 .hljs-variable.language_ {
   /* prettylights-syntax-keyword */
-  color: #d73a49
+  color: #ff7b72
 }
 .hljs-title,
 .hljs-title.class_,
 .hljs-title.class_.inherited__,
 .hljs-title.function_ {
   /* prettylights-syntax-entity */
-  color: #6f42c1
+  color: #d2a8ff
 }
 .hljs-attr,
 .hljs-attribute,
@@ -415,64 +415,64 @@ code.hljs {
 .hljs-selector-class,
 .hljs-selector-id {
   /* prettylights-syntax-constant */
-  color: #005cc5
+  color: #79c0ff
 }
 .hljs-regexp,
 .hljs-string,
 .hljs-meta .hljs-string {
   /* prettylights-syntax-string */
-  color: #032f62
+  color: #a5d6ff
 }
 .hljs-built_in,
 .hljs-symbol {
   /* prettylights-syntax-variable */
-  color: #e36209
+  color: #ffa657
 }
 .hljs-comment,
 .hljs-code,
 .hljs-formula {
   /* prettylights-syntax-comment */
-  color: #6a737d
+  color: #8b949e
 }
 .hljs-name,
 .hljs-quote,
 .hljs-selector-tag,
 .hljs-selector-pseudo {
   /* prettylights-syntax-entity-tag */
-  color: #22863a
+  color: #7ee787
 }
 .hljs-subst {
   /* prettylights-syntax-storage-modifier-import */
-  color: #24292e
+  color: #c9d1d9
 }
 .hljs-section {
   /* prettylights-syntax-markup-heading */
-  color: #005cc5;
+  color: #1f6feb;
   font-weight: bold
 }
 .hljs-bullet {
   /* prettylights-syntax-markup-list */
-  color: #735c0f
+  color: #f2cc60
 }
 .hljs-emphasis {
   /* prettylights-syntax-markup-italic */
-  color: #24292e;
+  color: #c9d1d9;
   font-style: italic
 }
 .hljs-strong {
   /* prettylights-syntax-markup-bold */
-  color: #24292e;
+  color: #c9d1d9;
   font-weight: bold
 }
 .hljs-addition {
   /* prettylights-syntax-markup-inserted */
-  color: #22863a;
-  background-color: #f0fff4
+  color: #aff5b4;
+  background-color: #033a16
 }
 .hljs-deletion {
   /* prettylights-syntax-markup-deleted */
-  color: #b31d28;
-  background-color: #ffeef0
+  color: #ffdcd7;
+  background-color: #67060c
 }
 .hljs-char.escape_,
 .hljs-link,
@@ -1248,7 +1248,7 @@ pre code {
     vertical-align: middle;
   }
   .links-of-author a::before {
-    background: #160eff;
+    background: #524f0a;
     display: inline-block;
     margin-right: 3px;
     transform: translateY(-2px);
@@ -1637,7 +1637,7 @@ pre code {
   width: 100%;
 }
 .with-love {
-  color: #1c685b;
+  color: #89c7ad;
   display: inline-block;
   margin: 0 5px;
 }
@@ -2739,125 +2739,21 @@ header.header {
     margin-bottom: 10px;
   }
 }
-:root {
-  --body-bg-color: #f7f6f2;
-  --content-bg-color: #f7f6f2;
-  --text-color: #343b38;
-  --link-color: #244f43;
-  --link-hover-color: #18735d;
-  --btn-default-bg: #244f43;
-  --btn-default-color: #fff;
-}
 body {
   font-family: "Noto Sans CJK SC", "Microsoft YaHei", "PingFang SC", sans-serif;
   line-height: 1.85;
 }
-.header {
-  background: #f7f6f2;
-  border-top: 4px solid #244f43;
-}
-.header-inner,
-.main-inner {
-  max-width: 960px;
-}
-.site-title {
-  font-family: Georgia, "Noto Serif CJK SC", serif;
-  font-weight: 700;
-  letter-spacing: -0.04em;
-  font-size: 28px;
-}
-.site-subtitle {
-  color: #6e7871;
-}
-.menu .menu-item a {
-  font-size: 14px;
-}
-.posts-expand .post-title {
-  font-size: 25px;
-  line-height: 1.6;
-  text-align: left;
-}
-.posts-expand .post-meta {
-  text-align: left;
-  color: #6d776f;
-  margin-top: 10px;
-}
-.post-block {
-  margin-bottom: 48px;
-}
-.post-body {
-  font-size: 16px;
-}
-.post-body h2 {
-  font-size: 24px;
-  margin-top: 42px;
-  padding-bottom: 8px;
-  border-bottom: 1px solid #d8ddd5;
-}
-.post-body h3 {
-  font-size: 20px;
-}
-.post-body blockquote {
-  background: #eeefe8;
-  border-left: 3px solid #557967;
-  padding: 12px 20px;
-}
 .post-body code,
 .post-body pre {
   font-family: "Cascadia Code", "JetBrains Mono", Consolas, monospace;
-}
-.post-body pre,
-.post-body .highlight,
-.post-body .highlight pre {
-  font-size: 16px;
-  line-height: 1.65;
-}
-.post-body .highlight {
-  border: 1px solid #e1e4dc;
-  border-radius: 4px;
-}
-.post-body img {
-  max-width: 100%;
-  height: auto;
 }
 .post-button {
   text-align: left;
 }
 .post-button .btn {
   border: 0;
-  border-bottom: 1px solid #9daea1;
+  border-bottom: 1px solid var(--border);
   padding: 0 0 4px;
   background: transparent;
-  color: #244f43;
-}
-.post-eof {
-  background: #d8ddd5;
-  margin: 44px auto 0;
-  width: 100%;
-}
-.katex-display {
-  overflow-x: auto;
-  overflow-y: hidden;
-  padding: 8px 0;
-}
-.footer {
-  color: #7a827b;
-  font-size: 12px;
-}
-@media (max-width: 767px) {
-  .header-inner {
-    padding: 22px 20px;
-  }
-  .main-inner {
-    padding: 0 20px;
-  }
-  .posts-expand .post-title {
-    font-size: 22px;
-  }
-  .post-body {
-    font-size: 15px;
-  }
-  .post-body h2 {
-    font-size: 21px;
-  }
+  color: var(--accent);
 }
