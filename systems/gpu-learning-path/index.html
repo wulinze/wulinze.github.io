@@ -1,0 +1,663 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width">
+<meta name="theme-color" content="#10151b"><meta name="generator" content="Hexo 8.1.2">
+
+  <link rel="mask-icon" href="/images/avatar.svg" color="#10151b">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+
+<link rel="stylesheet" href="/assets/fontawesome/css/all.min.css">
+
+<script class="next-config" data-name="main" type="application/json">{"hostname":"wulinze.github.io","root":"/","images":"/images","scheme":"Pisces","darkmode":false,"version":"8.29.1","exturl":false,"sidebar":{"position":"left","width_expanded":300,"width_dual_column":272,"display":"post","padding":18,"offset":12},"hljswrap":true,"codeblock":{"theme":{"light":"github-dark","dark":"github-dark"},"prism":{"light":"prism","dark":"prism-dark"},"copy_button":{"enable":true,"style":"flat"},"fold":{"enable":false,"height":500},"language":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"mediumzoom":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"stickytabs":false,"motion":{"enable":false,"async":false,"duration":200,"transition":{"menu_item":"fadeInDown","post_block":"fadeIn","post_header":"fadeInDown","post_body":"fadeInDown","coll_header":"fadeInLeft","sidebar":"fadeInUp"}},"i18n":{"placeholder":"搜索...","empty":"没有找到任何搜索结果：${query}","hits_time":"找到 ${hits} 个搜索结果（用时 ${time} 毫秒）","hits":"找到 ${hits} 个搜索结果"},"path":"/search.xml","localsearch":{"enable":true,"top_n_per_article":2,"unescape":true,"preload":false}}</script><script src="/js/config.js" defer></script>
+
+    <meta name="description" content="根据 leetcuda-20261029 的内容按知识依赖重组，列出各主题的前置知识、实验、Triton 与 TileLang 练习和验收要求。">
+<meta property="og:type" content="article">
+<meta property="og:title" content="GPU 算子学习路线：从性能模型到 Attention 与低精度计算">
+<meta property="og:url" content="https://wulinze.github.io/systems/gpu-learning-path/">
+<meta property="og:site_name" content="Wu&#39;s Blog">
+<meta property="og:description" content="根据 leetcuda-20261029 的内容按知识依赖重组，列出各主题的前置知识、实验、Triton 与 TileLang 练习和验收要求。">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://wulinze.github.io/images/gpu-roofline/learning-route.svg">
+<meta property="article:published_time" content="2026-11-02T07:20:00.000Z">
+<meta property="article:modified_time" content="2026-11-02T07:20:00.000Z">
+<meta property="article:author" content="wulinze">
+<meta property="article:tag" content="CUDA">
+<meta property="article:tag" content="TileLang">
+<meta property="article:tag" content="Triton">
+<meta property="article:tag" content="学习路线">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://wulinze.github.io/images/gpu-roofline/learning-route.svg">
+
+
+<link rel="canonical" href="https://wulinze.github.io/systems/gpu-learning-path/">
+
+
+<script class="next-config" data-name="page" type="application/json">{"sidebar":"","isHome":false,"isPost":true,"lang":"zh-CN","comments":true,"permalink":"https://wulinze.github.io/systems/gpu-learning-path/","path":"/systems/gpu-learning-path/","title":"GPU 算子学习路线：从性能模型到 Attention 与低精度计算"}</script>
+
+<script class="next-config" data-name="calendar" type="application/json">""</script>
+<title>GPU 算子学习路线：从性能模型到 Attention 与低精度计算 | Wu's Blog</title>
+  
+
+
+
+
+
+
+
+
+  
+<script src="/js/utils.js" defer></script><script src="/js/sidebar.js" defer></script><script src="/js/next-boot.js" defer></script>
+
+  <script src="/assets/local-search/search.js" defer></script>
+<script src="/js/third-party/search/local-search.js" defer></script>
+
+
+
+
+
+
+
+  
+
+
+
+
+  
+
+  <script class="next-config" data-name="enableMath" type="application/json">true</script><link rel="stylesheet" href="/assets/katex/katex.min.css">
+
+
+<link rel="icon" type="image/svg+xml" href="/images/avatar.svg">
+<link rel="stylesheet" href="/css/palette.css">
+<link rel="stylesheet" href="/css/reading.css">
+
+  <noscript>
+    <link rel="stylesheet" href="/css/noscript.css">
+  </noscript>
+<link rel="alternate" href="/atom.xml" title="Wu's Blog" type="application/atom+xml">
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="headband"></div>
+
+  <main class="main">
+    <div class="column">
+      <header class="header" itemscope itemtype="http://schema.org/WPHeader"><div class="site-brand-container">
+  <div class="site-nav-search popup-trigger" aria-label="搜索" role="button">
+      <i class="fa fa-search fa-fw fa-lg"></i>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <i class="logo-line"></i>
+      <p class="site-title">Wu's Blog</p>
+      <i class="logo-line"></i>
+    </a>
+      <p class="site-subtitle" itemprop="description">技术分享 · 思考与实践</p>
+  </div>
+
+  <div class="site-nav-toggle" aria-label="切换导航栏" role="button">
+      <i class="fa fa-ellipsis fa-fw fa-lg"></i>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  <ul class="main-menu menu"><li class="menu-item menu-item-home"><a href="/" rel="section">首页</a></li><li class="menu-item menu-item-文章"><a href="/blog/" rel="section">文章</a></li><li class="menu-item menu-item-categories"><a href="/categories/" rel="section">分类</a></li><li class="menu-item menu-item-tags"><a href="/tags/" rel="section">标签</a></li><li class="menu-item menu-item-archives"><a href="/archives/" rel="section">归档</a></li><li class="menu-item menu-item-about"><a href="/about/" rel="section">关于</a></li>
+      <li class="menu-item menu-item-search">
+        <a role="button" class="popup-trigger">搜索
+        </a>
+      </li>
+  </ul>
+</nav>
+
+
+
+  
+  <template id="search-popup-template"><div class="search-pop-overlay">
+    <div class="popup search-popup">
+      <div class="search-header">
+        <span class="search-icon">
+          <i class="fa fa-search"></i>
+        </span>
+        <div class="search-input-container">
+          <input autocomplete="off" autocapitalize="off" maxlength="80"
+                placeholder="搜索..." spellcheck="false"
+                type="search" class="search-input">
+        </div>
+        <span class="popup-btn-close" role="button">
+          <i class="fa fa-times-circle"></i>
+        </span>
+      </div>
+      <div class="search-result-container">
+        <div class="search-result-icon">
+          <i class="fa fa-spinner fa-pulse fa-5x"></i>
+        </div>
+      </div>
+    </div>
+  </div></template>
+
+</header>
+        
+  
+  <aside class="sidebar">
+
+    <div class="sidebar-inner sidebar-nav-active sidebar-toc-active">
+      <ul class="sidebar-nav">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <div class="sidebar-panel-container">
+        <!--noindex-->
+        <div class="post-toc-wrap sidebar-panel">
+            <div class="post-toc animated"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%BB%8E%E8%BF%99%E9%87%8C%E5%BC%80%E5%A7%8B"><span class="nav-text">从这里开始</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%AF%8F%E4%B8%AA%E4%B8%BB%E9%A2%98%E6%80%8E%E6%A0%B7%E5%AD%A6"><span class="nav-text">每个主题怎样学</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%9C%BA%E5%99%A8%E3%80%81%E6%89%A7%E8%A1%8C%E4%B8%8E%E6%B5%8B%E9%87%8F"><span class="nav-text">机器、执行与测量</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#GPU-%E6%9E%B6%E6%9E%84%E4%B8%8E-Roofline%EF%BC%9A%E5%85%88%E9%A2%84%E6%B5%8B%EF%BC%8C%E5%86%8D%E6%B5%8B%E9%87%8F"><span class="nav-text">GPU 架构与 Roofline：先预测，再测量</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%9F%BA%E7%A1%80%E5%B9%B6%E8%A1%8C%E5%8E%9F%E8%AF%AD%E4%B8%8E%E8%A1%8C%E7%AE%97%E5%AD%90"><span class="nav-text">基础并行原语与行算子</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%BD%92%E7%BA%A6%E4%B8%8E%E7%82%B9%E7%A7%AF%EF%BC%9A%E4%BB%8E%E4%B8%80%E7%BB%84%E6%95%B0%E5%88%B0%E4%B8%80%E4%B8%AA%E7%BB%93%E6%9E%9C"><span class="nav-text">归约与点积：从一组数到一个结果</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E8%AE%BF%E9%97%AE%E7%B2%92%E5%BA%A6%E4%B8%8E%E5%8E%9F%E5%AD%90%E5%86%B2%E7%AA%81%EF%BC%9A%E5%90%91%E9%87%8F%E5%8C%96%E5%92%8C%E7%9B%B4%E6%96%B9%E5%9B%BE"><span class="nav-text">访问粒度与原子冲突：向量化和直方图</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E7%A8%B3%E5%AE%9A-Softmax%EF%BC%9A%E4%BB%8E%E6%95%B4%E8%A1%8C%E5%88%B0%E5%9C%A8%E7%BA%BF%E7%8A%B6%E6%80%81"><span class="nav-text">稳定 Softmax：从整行到在线状态</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#LSE-%E4%B8%8E%E6%B3%A8%E6%84%8F%E5%8A%9B%E7%8A%B6%E6%80%81%E5%90%88%E5%B9%B6"><span class="nav-text">LSE 与注意力状态合并</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#RMSNorm-%E4%B8%8E-LayerNorm%EF%BC%9A%E7%BB%9F%E8%AE%A1%E9%87%8F%E5%92%8C%E5%B9%BF%E6%92%AD"><span class="nav-text">RMSNorm 与 LayerNorm：统计量和广播</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#RoPE-%E4%B8%8E%E8%BD%AC%E7%BD%AE%EF%BC%9A%E6%95%B0%E6%8D%AE%E9%87%8D%E6%8E%92%E4%B8%BA%E4%BD%95%E5%BD%B1%E5%93%8D%E6%80%A7%E8%83%BD"><span class="nav-text">RoPE 与转置：数据重排为何影响性能</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E7%9F%A9%E9%98%B5%E4%B9%98%E4%B8%8E%E5%A4%9A%E5%B1%82%E5%A4%8D%E7%94%A8"><span class="nav-text">矩阵乘与多层复用</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#GEMV%EF%BC%9A%E5%A6%82%E4%BD%95%E6%8A%8A%E4%B8%80%E8%A1%8C%E4%BA%A4%E7%BB%99-warp"><span class="nav-text">GEMV：如何把一行交给 warp</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#GEMM%EF%BC%9Ablock-tile-%E4%B8%8E%E5%AF%84%E5%AD%98%E5%99%A8-tile"><span class="nav-text">GEMM：block tile 与寄存器 tile</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E7%B2%BE%E5%BA%A6%E4%B8%8E%E5%BC%82%E6%AD%A5%E6%90%AC%E8%BF%90%EF%BC%9ATF32-%E5%92%8C%E5%8F%8C%E7%BC%93%E5%86%B2"><span class="nav-text">精度与异步搬运：TF32 和双缓冲</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#MMA-%E4%B8%8E-fragment%EF%BC%9A%E7%90%86%E8%A7%A3%E5%8D%8F%E4%BD%9C%E8%AE%A1%E7%AE%97%E7%9A%84%E6%95%B0%E6%8D%AE%E5%BD%92%E5%B1%9E"><span class="nav-text">MMA 与 fragment：理解协作计算的数据归属</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%B8%83%E5%B1%80%E4%B8%8E%E8%B0%83%E5%BA%A6%EF%BC%9A%E4%B8%89%E7%A7%8D%E4%B8%8D%E5%90%8C%E7%9A%84-swizzle"><span class="nav-text">布局与调度：三种不同的 swizzle</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#TMA-%E4%B8%8E-WGMMA%EF%BC%9AHopper-%E7%9A%84%E5%AE%8C%E6%88%90%E5%8D%8F%E8%AE%AE"><span class="nav-text">TMA 与 WGMMA：Hopper 的完成协议</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#SM120-%E7%9A%84%E7%94%9F%E4%BA%A7%E6%B6%88%E8%B4%B9%E6%B5%81%E6%B0%B4"><span class="nav-text">SM120 的生产消费流水</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%B3%A8%E6%84%8F%E5%8A%9B%EF%BC%9A%E4%BB%8E%E6%95%B0%E5%AD%A6%E7%8A%B6%E6%80%81%E5%88%B0%E5%88%86%E5%B7%A5"><span class="nav-text">注意力：从数学状态到分工</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#FlashAttention%EF%BC%9A%E4%B8%BA%E4%BB%80%E4%B9%88%E5%8F%AF%E4%BB%A5%E4%B8%8D%E5%86%99%E5%87%BA%E5%88%86%E6%95%B0%E7%9F%A9%E9%98%B5"><span class="nav-text">FlashAttention：为什么可以不写出分数矩阵</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Split-Q%EF%BC%9A%E8%AE%A9%E6%AF%8F%E7%BB%84%E7%BA%BF%E7%A8%8B%E6%8B%A5%E6%9C%89%E8%87%AA%E5%B7%B1%E7%9A%84%E6%9F%A5%E8%AF%A2%E8%A1%8C"><span class="nav-text">Split-Q：让每组线程拥有自己的查询行</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%B3%A8%E6%84%8F%E5%8A%9B%E7%9A%84%E5%8F%8C%E6%B5%81%E6%B0%B4%EF%BC%9AK%E3%80%81V-%E4%B8%8E%E8%A7%92%E8%89%B2%E5%88%86%E5%B7%A5"><span class="nav-text">注意力的双流水：K、V 与角色分工</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%A4%9A-consumer-%E4%B8%8E%E5%88%86%E6%AE%B5%E5%90%88%E5%B9%B6"><span class="nav-text">多 consumer 与分段合并</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%A4%A7-head_dim%EF%BC%9ASplit-D-%E7%9A%84%E4%B8%A4%E6%AC%A1%E5%88%86%E5%9D%97"><span class="nav-text">大 head_dim：Split-D 的两次分块</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%B8%83%E5%B1%80%E4%BB%A3%E6%95%B0%E4%B8%8E-CuTe-%E6%80%9D%E7%BB%B4%E8%BF%81%E7%A7%BB"><span class="nav-text">布局代数与 CuTe 思维迁移</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#Layout%EF%BC%9A%E5%9D%90%E6%A0%87%E3%80%81%E5%9C%B0%E5%9D%80%E4%B8%8E%E5%8F%AF%E9%80%86%E6%98%A0%E5%B0%84"><span class="nav-text">Layout：坐标、地址与可逆映射</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Copy-%E7%9A%84%E5%BD%92%E5%B1%9E%EF%BC%9A%E8%B0%81%E6%90%AC%E4%BB%80%E4%B9%88%EF%BC%8C%E6%90%AC%E5%88%B0%E5%93%AA%E9%87%8C"><span class="nav-text">Copy 的归属：谁搬什么，搬到哪里</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#MMA-%E7%9A%84%E5%BD%92%E5%B1%9E%EF%BC%9A%E4%BB%8E%E5%8E%9F%E5%AD%90%E5%88%B0%E8%BE%93%E5%87%BA-fragment"><span class="nav-text">MMA 的归属：从原子到输出 fragment</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Swizzle-%E4%B8%8E-TMA-%E7%9A%84%E5%9C%B0%E5%9D%80%E5%A5%91%E7%BA%A6"><span class="nav-text">Swizzle 与 TMA 的地址契约</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%B8%83%E5%B1%80%E9%A9%B1%E5%8A%A8%E7%9A%84-GEMM-%E5%B7%A5%E7%A8%8B"><span class="nav-text">布局驱动的 GEMM 工程</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Attention-%E5%AE%9E%E7%8E%B0%E5%AF%B9%E7%85%A7%EF%BC%9A%E7%BB%9F%E4%B8%80%E6%B5%81%E6%B0%B4%E3%80%81%E8%A7%92%E8%89%B2%E5%88%86%E5%B7%A5%E4%B8%8E%E5%8F%8C-consumer"><span class="nav-text">Attention 实现对照：统一流水、角色分工与双 consumer</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%A4%A7-D-%E7%9A%84%E5%B8%83%E5%B1%80%E4%BB%A3%E6%95%B0%E4%B8%8E%E5%AF%84%E5%AD%98%E5%99%A8%E9%A2%84%E7%AE%97"><span class="nav-text">大 D 的布局代数与寄存器预算</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%9E%B6%E6%9E%84%E4%B8%93%E7%94%A8%E8%B0%83%E5%BA%A6%E4%B8%8E%E5%AE%8C%E6%95%B4%E6%B5%81%E6%B0%B4"><span class="nav-text">架构专用调度与完整流水</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#Persistent-Attention%EF%BC%9A%E4%BB%BB%E5%8A%A1%E5%BE%AA%E7%8E%AF%E4%B8%8E%E5%B0%BE%E6%B3%A2"><span class="nav-text">Persistent Attention：任务循环与尾波</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%A4%A7-D-%E7%9A%84-non-WS-%E6%B5%81%E6%B0%B4%EF%BC%9A%E8%AE%A9%E6%89%80%E6%9C%89%E7%BA%BF%E7%A8%8B%E5%8F%82%E4%B8%8E-MMA"><span class="nav-text">大 D 的 non-WS 流水：让所有线程参与 MMA</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%BD%8E%E7%B2%BE%E5%BA%A6%E7%9F%A9%E9%98%B5%E4%B9%98%EF%BC%9A%E6%A0%BC%E5%BC%8F%E3%80%81scale-%E4%B8%8E%E8%AF%AF%E5%B7%AE"><span class="nav-text">低精度矩阵乘：格式、scale 与误差</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#FP8-%E7%9A%84%E6%A0%BC%E5%BC%8F%E4%B8%8E%E9%87%8F%E5%8C%96%E5%89%8D%E5%A4%84%E7%90%86"><span class="nav-text">FP8 的格式与量化前处理</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#FP8-GEMM%EF%BC%9Ascale-%E5%A6%82%E4%BD%95%E8%BF%9B%E5%85%A5%E7%B4%AF%E5%8A%A0"><span class="nav-text">FP8 GEMM：scale 如何进入累加</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#NVFP4%EF%BC%9A%E4%B8%A4%E7%BA%A7-scale-%E4%B8%8E%E6%89%93%E5%8C%85"><span class="nav-text">NVFP4：两级 scale 与打包</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Block-scaled-MMA%EF%BC%9Ascale-%E4%B9%9F%E6%98%AF%E6%93%8D%E4%BD%9C%E6%95%B0"><span class="nav-text">Block-scaled MMA：scale 也是操作数</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E9%87%8F%E5%8C%96%E6%B3%A8%E6%84%8F%E5%8A%9B%E4%B8%8E%E6%9C%80%E7%BB%88%E9%AA%8C%E6%94%B6"><span class="nav-text">量化注意力与最终验收</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E9%87%8F%E5%8C%96-Attention%EF%BC%9A%E8%AF%AF%E5%B7%AE%E5%9C%A8%E5%93%AA%E9%87%8C%E8%A2%AB%E6%94%BE%E5%A4%A7"><span class="nav-text">量化 Attention：误差在哪里被放大</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#FP8-Attention-%E7%9A%84%E5%89%8D%E5%A4%84%E7%90%86%E9%93%BE"><span class="nav-text">FP8 Attention 的前处理链</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#FP8-persist-D-%E4%B8%8E-scale-%E6%8A%98%E5%8F%A0"><span class="nav-text">FP8 persist-D 与 scale 折叠</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#FP8-%E5%A4%A7-D%EF%BC%9ASplit-D-%E4%B8%8E%E5%B9%B6%E8%A1%8C%E5%B8%83%E5%B1%80"><span class="nav-text">FP8 大 D：Split-D 与并行布局</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#FP4-Attention-%E7%9A%84%E9%87%8F%E5%8C%96%E9%93%BE"><span class="nav-text">FP4 Attention 的量化链</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#FP4-Attention%EF%BC%9AP-%E7%9A%84%E4%B8%A4%E7%BA%A7%E9%87%8F%E5%8C%96"><span class="nav-text">FP4 Attention：P 的两级量化</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%9F%BA%E5%87%86%E4%B8%8E%E7%B2%BE%E5%BA%A6%EF%BC%9A%E6%8A%8A%E5%AD%A6%E4%B9%A0%E7%BB%93%E6%9E%9C%E5%8F%98%E6%88%90%E5%8F%AF%E5%A4%8D%E7%8E%B0%E5%AE%9E%E9%AA%8C"><span class="nav-text">基准与精度：把学习结果变成可复现实验</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%9D%90%E6%96%99%E8%8C%83%E5%9B%B4%E4%B8%8E%E6%8C%81%E7%BB%AD%E7%BB%B4%E6%8A%A4"><span class="nav-text">材料范围与持续维护</span></a></li></ol></div>
+        </div>
+        <!--/noindex-->
+
+        <div class="site-overview-wrap sidebar-panel">
+          <div class="site-author animated" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="wulinze"
+      src="/images/avatar.svg">
+  <p class="site-author-name" itemprop="name">wulinze</p>
+  <div class="site-description" itemprop="description">wulinze 的个人主页，关注 LLM 并行方式、Cache 池化与算子学习，分享系统知识和 LeetCode 刷题记录。</div>
+</div>
+<div class="site-state-wrap animated">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+        <a href="/archives/">
+          <span class="site-state-item-count">67</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+        <span class="site-state-item-count">4</span>
+        <span class="site-state-item-name">分类</span>
+      </div>
+      <div class="site-state-item site-state-tags">
+          <a href="/tags/">
+        <span class="site-state-item-count">67</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author animated">
+      <span class="links-of-author-item">
+        <a href="https://github.com/wulinze" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;wulinze" rel="noopener me" target="_blank"><i class="fab fa-github fa-fw"></i>GitHub</a>
+      </span>
+  </div>
+
+        </div>
+      </div>
+    </div>
+
+    
+  </aside>
+
+
+    </div>
+
+    <div class="main-inner post posts-expand">
+
+
+  
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://wulinze.github.io/systems/gpu-learning-path/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.svg">
+      <meta itemprop="name" content="wulinze">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Wu's Blog">
+      <meta itemprop="description" content="wulinze 的个人主页，关注 LLM 并行方式、Cache 池化与算子学习，分享系统知识和 LeetCode 刷题记录。">
+    </span>
+
+    <span hidden itemprop="post" itemscope itemtype="http://schema.org/CreativeWork">
+      <meta itemprop="name" content="GPU 算子学习路线：从性能模型到 Attention 与低精度计算 | Wu's Blog">
+      <meta itemprop="description" content="根据 leetcuda-20261029 的内容按知识依赖重组，列出各主题的前置知识、实验、Triton 与 TileLang 练习和验收要求。">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          GPU 算子学习路线：从性能模型到 Attention 与低精度计算
+        </h1>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">发表于</span>
+
+      <time title="创建时间：2026-11-02 15:20" itemprop="dateCreated datePublished" datetime="2026-11-02T15:20:00+08:00">2026-11-02</time>
+    </span>
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-folder"></i>
+      </span>
+      <span class="post-meta-item-text">分类于</span>
+        <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+          <a href="/categories/systems/" itemprop="url" rel="index"><span itemprop="name">系统知识</span></a>
+        </span>
+    </span>
+
+  
+</div>
+
+            <div class="post-description">根据 leetcuda-20261029 的内容按知识依赖重组，列出各主题的前置知识、实验、Triton 与 TileLang 练习和验收要求。</div>
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody"><h2 id="从这里开始" tabindex="-1">从这里开始</h2>
+<p>这条路线依据 <code>leetcuda-20261029.pdf</code> 的目录与主题覆盖范围梳理；完整教程再逐主题回读原文、核对实现与官方资料。<strong>按“学会什么、怎样做出来、如何验证”组织，不沿用原书章节编号。</strong> 架构专用实现安排在通用原理之后；CuTe 的布局思想会通过 Python 小模型以及 Triton／TileLang 对照练习来理解，不把三者的 API 当成一一对应关系。</p>
+<p>当前可直接学习：</p>
+<ul>
+<li><a href="/systems/cuda-basics/">CUDA 基础：GPU 结构、执行与内存</a>——先建立物理结构与编程模型。</li>
+<li><a href="/systems/cuda-overlap/">SM 调度、warp stall、访存优化与流水线</a>——理解等待、驻留、tiling、overlap，并学会采集证据。</li>
+<li><a href="/systems/gpu-roofline/">Roofline：估算性能上限，再用 Triton 和 TileLang 验证</a>——接续当前学习，附图、交互计算器、CPU demo、两套 GPU 基线和练习入口。</li>
+</ul>
+<p><strong>下面覆盖后续全部学习主题，但“学习任务已梳理”与“完整教程已发布”分开标注。</strong> 标为“待展开”的条目已有学习目标和练习设计，尚没有配套成品；完成讲解、流程图、demo、练习与检查后，逐篇替换成文章链接。不会将空模板列为已完成教程。</p>
+<figure class="cuda-diagram">
+<a href="/images/gpu-roofline/learning-route.svg" target="_blank" rel="noopener"><img src="/images/gpu-roofline/learning-route.svg" alt="机器测量到基础并行，再到矩阵计算、注意力布局和低精度的知识依赖路线" loading="lazy"></a>
+<figcaption>从上到下是推荐前置关系，不要求按原书顺序背诵。<a href="/images/gpu-roofline/learning-route.excalidraw" download>下载可编辑原图</a></figcaption>
+</figure>
+<p>路线图把基础能力汇合到 Attention，再由布局、调度和量化各自深化。图中的箭头表示理解上的依赖：例如不了解 online 状态就直接改 FlashAttention 流水，数值问题与同步问题会混在一起；先做稳定 Softmax 和 LSE merge，可以把两者分开验证。</p>
+<h2 id="每个主题怎样学" tabindex="-1">每个主题怎样学</h2>
+<p>一轮学习按五步走：<strong>说清输入输出 → 用小例子手算 → 沿图追踪数据与控制 → 跑完整 demo → 独立完成练习并验收</strong>。CUDA 用于解释硬件机制，Triton 练习强调块级表达，TileLang 练习强调 tile、布局与搬运配合。高级硬件机制先检查 GPU 和编译器支持，不能为了凑语言对照把不支持的指令伪装成可用。</p>
+<ul>
+<li>练习分为“实现正确结果”和“验证一个性能假设”。没有固定加速倍数要求，变慢也可以形成正确结论。</li>
+<li>每份验收记录保留 shape、dtype、布局、GPU、软件版本、误差、独立计时及必要 profiler 证据。</li>
+<li>CPU 模型验证索引或代数；GPU correctness 验证输出；实际性能需要真实设备计时。三种状态分别记录。</li>
+<li>全书实验性能不等于本机性能。所有微架构数量、API 和编译目标按当时官方资料及目标设备复核。</li>
+</ul>
+<h2 id="机器、执行与测量" tabindex="-1">机器、执行与测量</h2>
+<p>先读上方两篇已发布基础资料；会用 Python 和张量 shape。</p>
+<h3 id="GPU-架构与-Roofline：先预测，再测量" tabindex="-1"><a href="/systems/gpu-roofline/">GPU 架构与 Roofline：先预测，再测量</a></h3>
+<p><strong>状态：已发布，可开始学习。</strong> 读懂逻辑流量、分层流量和两种时间下界。</p>
+<ul>
+<li><strong>Triton 练习</strong>：向量加法与 axpy；扫 tile / num_warps。</li>
+<li><strong>TileLang 练习</strong>：同样语义；扫 T.Parallel 范围 / threads。</li>
+<li><strong>通过条件</strong>：先跑边界校验，再解释工作集与请求带宽；能说明为什么 roofline 不是测速结果。</li>
+</ul>
+<h2 id="基础并行原语与行算子" tabindex="-1">基础并行原语与行算子</h2>
+<p>前置：线程/warp、掩码与同步。归约是 Softmax 和 Norm 的公共前置，LSE 合并在 Softmax 之后。</p>
+<h3 id="归约与点积：从一组数到一个结果" tabindex="-1">归约与点积：从一组数到一个结果</h3>
+<p><strong>状态：待展开；学习任务已梳理。</strong> warp 内交换、block 两级归约、跨 block 合并与浮点误差。</p>
+<ul>
+<li><strong>Triton 练习</strong>：块内 tl.sum；两阶段 dot，处理尾部。</li>
+<li><strong>TileLang 练习</strong>：fragment 归约；多 block partial 与最终合并。</li>
+<li><strong>通过条件</strong>：比较 FP64 参考，测非整除长度；解释为何不能在普通 grid 内随意全局同步。</li>
+</ul>
+<h3 id="访问粒度与原子冲突：向量化和直方图" tabindex="-1">访问粒度与原子冲突：向量化和直方图</h3>
+<p><strong>状态：待展开；学习任务已梳理。</strong> 区分合并访存、单线程宽访存和原子串行化。</p>
+<ul>
+<li><strong>Triton 练习</strong>：连续 / 跨距访问；整数 histogram。</li>
+<li><strong>TileLang 练习</strong>：宽 copy；每 block 局部 histogram 后合并。</li>
+<li><strong>通过条件</strong>：同一有效数据量比较请求；均匀与热点分布均正确，直方图总数守恒。</li>
+</ul>
+<h3 id="稳定-Softmax：从整行到在线状态" tabindex="-1">稳定 Softmax：从整行到在线状态</h3>
+<p><strong>状态：待展开；学习任务已梳理。</strong> 减最大值，推导分块 max 与 sum 的重缩放。</p>
+<ul>
+<li><strong>Triton 练习</strong>：单行 softmax；长行分块状态。</li>
+<li><strong>TileLang 练习</strong>：reduce_max / reduce_sum；online 两状态。</li>
+<li><strong>通过条件</strong>：极大输入不溢出，行和接近 1；空行与全 mask 行有明确约定。</li>
+</ul>
+<h3 id="LSE-与注意力状态合并" tabindex="-1">LSE 与注意力状态合并</h3>
+<p><strong>状态：待展开；学习任务已梳理。</strong> 把归一化输出与 log-sum-exp 组合成可合并状态。</p>
+<ul>
+<li><strong>Triton 练习</strong>：实现两段与多段 LSE merge。</li>
+<li><strong>TileLang 练习</strong>：并行分段 merge；避免额外中间张量。</li>
+<li><strong>通过条件</strong>：分段合并对齐完整参考，覆盖空段与两边都空，明确对数底。</li>
+</ul>
+<h3 id="RMSNorm-与-LayerNorm：统计量和广播" tabindex="-1">RMSNorm 与 LayerNorm：统计量和广播</h3>
+<p><strong>状态：待展开；学习任务已梳理。</strong> 理解平方均值、中心化方差、eps 与稳定计算。</p>
+<ul>
+<li><strong>Triton 练习</strong>：fused RMSNorm；LayerNorm 两遍统计。</li>
+<li><strong>TileLang 练习</strong>：fragment 归约；比较两遍方差与 Welford。</li>
+<li><strong>通过条件</strong>：小方差、大偏置、非整除 hidden size；匹配 eps 和方差定义。</li>
+</ul>
+<h3 id="RoPE-与转置：数据重排为何影响性能" tabindex="-1">RoPE 与转置：数据重排为何影响性能</h3>
+<p><strong>状态：待展开；学习任务已梳理。</strong> 旋转配对、相对位置性质、global 合并与 shared bank。</p>
+<ul>
+<li><strong>Triton 练习</strong>：两种 RoPE 配对格式；带尾部转置。</li>
+<li><strong>TileLang 练习</strong>：shared 中转转置；padding 布局实验。</li>
+<li><strong>通过条件</strong>：旋转范数近似保持，转置两次还原；手算真实 lane 地址后再判断冲突。</li>
+</ul>
+<h2 id="矩阵乘与多层复用" tabindex="-1">矩阵乘与多层复用</h2>
+<p>前置：归约、内存访问与 Roofline；先 GEMV/GEMM，再看 Tensor Core、流水和架构专用协议。</p>
+<h3 id="GEMV：如何把一行交给-warp" tabindex="-1">GEMV：如何把一行交给 warp</h3>
+<p><strong>状态：待展开；学习任务已梳理。</strong> 长短 K 的并行分工，矩阵流量与向量复用。</p>
+<ul>
+<li><strong>Triton 练习</strong>：每 program 一行与多行 GEMV。</li>
+<li><strong>TileLang 练习</strong>：线程划分变化；短 K 多行打包。</li>
+<li><strong>通过条件</strong>：M/K 尾部正确，区分任务太少与 DRAM 吞吐受限。</li>
+</ul>
+<h3 id="GEMM：block-tile-与寄存器-tile" tabindex="-1">GEMM：block tile 与寄存器 tile</h3>
+<p><strong>状态：待展开；学习任务已梳理。</strong> 从 2MNK 推导复用收益，区分 block / thread tile。</p>
+<ul>
+<li><strong>Triton 练习</strong>：带 mask 的 tl.dot matmul；扫 BM/BN/BK。</li>
+<li><strong>TileLang 练习</strong>：shared tile + fragment accumulator + T.gemm。</li>
+<li><strong>通过条件</strong>：非方阵和尾块正确；解释 BK 与输出 tile 改变的不同资源。</li>
+</ul>
+<h3 id="精度与异步搬运：TF32-和双缓冲" tabindex="-1">精度与异步搬运：TF32 和双缓冲</h3>
+<p><strong>状态：待展开；学习任务已梳理。</strong> 区分精度改变、Tensor Core 通路与 cp.async 时序。</p>
+<ul>
+<li><strong>Triton 练习</strong>：切换 input_precision；分开报告误差与时间。</li>
+<li><strong>TileLang 练习</strong>：num_stages 对照；检查生成的 async 指令。</li>
+<li><strong>通过条件</strong>：必须先报告精度，再谈速度；只看到异步指令不算 overlap 已被证明。</li>
+</ul>
+<h3 id="MMA-与-fragment：理解协作计算的数据归属" tabindex="-1">MMA 与 fragment：理解协作计算的数据归属</h3>
+<p><strong>状态：待展开；学习任务已梳理。</strong> lane / fragment / ldmatrix 与多级流水。</p>
+<ul>
+<li><strong>Triton 练习</strong>：检查 dot 的 lowering；扩展题使用显式布局。</li>
+<li><strong>TileLang 练习</strong>：用布局可视化追踪 A/B/C 的 fragment。</li>
+<li><strong>通过条件</strong>：独立核对每个输出坐标与覆盖；不能把高层 tile 当每线程存储量。</li>
+</ul>
+<h3 id="布局与调度：三种不同的-swizzle" tabindex="-1">布局与调度：三种不同的 swizzle</h3>
+<p><strong>状态：待展开；学习任务已梳理。</strong> shared 地址 XOR、寄存器双缓冲、CTA 顺序互不等价。</p>
+<ul>
+<li><strong>Triton 练习</strong>：grouped program ordering；比较工作集复用。</li>
+<li><strong>TileLang 练习</strong>：shared swizzle 与分块调度分别做 A/B。</li>
+<li><strong>通过条件</strong>：验证映射一一对应，再用实际访问组验证 bank；不混淆 L2 与 shared。</li>
+</ul>
+<h3 id="TMA-与-WGMMA：Hopper-的完成协议" tabindex="-1">TMA 与 WGMMA：Hopper 的完成协议</h3>
+<p><strong>状态：待展开；学习任务已梳理。</strong> descriptor、transaction barrier、异步 MMA 与 slot 释放。</p>
+<ul>
+<li><strong>Triton 练习</strong>：Hopper descriptor / persistent matmul 练习，先检查支持。</li>
+<li><strong>TileLang 练习</strong>：TMA 搬运与 gemm 流水；核对生成屏障。</li>
+<li><strong>通过条件</strong>：列出 arrive、expected bytes、完成和复用事件；目标硬件不支持时仅做协议模拟。</li>
+</ul>
+<h3 id="SM120-的生产消费流水" tabindex="-1">SM120 的生产消费流水</h3>
+<p><strong>状态：待展开；学习任务已梳理。</strong> 架构能力边界、mma.sync 与资源分配协议。</p>
+<ul>
+<li><strong>Triton 练习</strong>：在目标设备检查生成指令和支持路径。</li>
+<li><strong>TileLang 练习</strong>：producer/consumer 方案与常规方案对照。</li>
+<li><strong>通过条件</strong>：能力核验在前；不能照搬 Hopper WGMMA，资源池预算与死锁条件须可解释。</li>
+</ul>
+<h2 id="注意力：从数学状态到分工" tabindex="-1">注意力：从数学状态到分工</h2>
+<p>前置：Softmax、LSE merge、GEMM 和流水；先证明数学状态，再改变线程角色。</p>
+<h3 id="FlashAttention：为什么可以不写出分数矩阵" tabindex="-1">FlashAttention：为什么可以不写出分数矩阵</h3>
+<p><strong>状态：待展开；学习任务已梳理。</strong> QK、online softmax、PV 的状态不变量与 IO。</p>
+<ul>
+<li><strong>Triton 练习</strong>：小尺寸 fused attention 与逐块 CPU 参考。</li>
+<li><strong>TileLang 练习</strong>：分块 QK / PV；维护 m、l、O。</li>
+<li><strong>通过条件</strong>：与完整 attention 对齐，覆盖 causal、尾块；解释旧输出为何也必须缩放。</li>
+</ul>
+<h3 id="Split-Q：让每组线程拥有自己的查询行" tabindex="-1">Split-Q：让每组线程拥有自己的查询行</h3>
+<p><strong>状态：待展开；学习任务已梳理。</strong> 减少跨 warp 归约；S/P 布局如何交给下一次 MMA。</p>
+<ul>
+<li><strong>Triton 练习</strong>：查询分块 attention；改变 BQ/BK。</li>
+<li><strong>TileLang 练习</strong>：QK fragment 到 PV fragment 的交接。</li>
+<li><strong>通过条件</strong>：每行状态有明确 owner；区分减少同步与增加重复加载。</li>
+</ul>
+<h3 id="注意力的双流水：K、V-与角色分工" tabindex="-1">注意力的双流水：K、V 与角色分工</h3>
+<p><strong>状态：待展开；学习任务已梳理。</strong> 不同数据的就绪时机，stage 占用和 full/empty 协议。</p>
+<ul>
+<li><strong>Triton 练习</strong>：比较编译器流水配置与支持的 warp specialization。</li>
+<li><strong>TileLang 练习</strong>：分别调 K/V stages，追踪 consumer 释放。</li>
+<li><strong>通过条件</strong>：短序列、单 tile、尾 tile 先通过；生产/消费不平衡需要时间线证据。</li>
+</ul>
+<h3 id="多-consumer-与分段合并" tabindex="-1">多 consumer 与分段合并</h3>
+<p><strong>状态：待展开；学习任务已梳理。</strong> 区分书中双 consumer 方案与泛称 FA3；合并局部状态。</p>
+<ul>
+<li><strong>Triton 练习</strong>：split-KV attention + LSE merge。</li>
+<li><strong>TileLang 练习</strong>：多 consumer 结构或分 kernel 等价基线。</li>
+<li><strong>通过条件</strong>：单段退化、奇数 KV tile、空段均正确；合并成本计入总时间。</li>
+</ul>
+<h3 id="大-head_dim：Split-D-的两次分块" tabindex="-1">大 head_dim：Split-D 的两次分块</h3>
+<p><strong>状态：待展开；学习任务已梳理。</strong> QK 的 D 归约与 PV 的输出 D 分块不同。</p>
+<ul>
+<li><strong>Triton 练习</strong>：D 分块点积后再 softmax；多输出 D tile。</li>
+<li><strong>TileLang 练习</strong>：QK 与 PV 使用不同 fragment 形状。</li>
+<li><strong>通过条件</strong>：先完成完整点积再做 softmax；比较 D=64/128/256/非整除。</li>
+</ul>
+<h2 id="布局代数与-CuTe-思维迁移" tabindex="-1">布局代数与 CuTe 思维迁移</h2>
+<p>前置：地址/stride、tile、MMA 基础；先用坐标枚举验证映射，再组合 Copy 与 MMA。</p>
+<h3 id="Layout：坐标、地址与可逆映射" tabindex="-1">Layout：坐标、地址与可逆映射</h3>
+<p><strong>状态：待展开；学习任务已梳理。</strong> 从 shape/stride 到 composition、divide 与 product。</p>
+<ul>
+<li><strong>Triton 练习</strong>：构造同逻辑张量的连续与转置 view。</li>
+<li><strong>TileLang 练习</strong>：可视化 layout；核对 element 到 thread/value 映射。</li>
+<li><strong>通过条件</strong>：Python 小模型穷举地址；分清逻辑 reshape 与真实搬运。</li>
+</ul>
+<h3 id="Copy-的归属：谁搬什么，搬到哪里" tabindex="-1">Copy 的归属：谁搬什么，搬到哪里</h3>
+<p><strong>状态：待展开；学习任务已梳理。</strong> Tensor 视图与 TiledCopy 的 thread/value 划分。</p>
+<ul>
+<li><strong>Triton 练习</strong>：不同 tile 载入映射，跟踪 mask 与布局。</li>
+<li><strong>TileLang 练习</strong>：T.copy 的 global/shared/fragment 路径。</li>
+<li><strong>通过条件</strong>：覆盖无遗漏、无非法重叠；对齐、向量宽度和尾部都可解释。</li>
+</ul>
+<h3 id="MMA-的归属：从原子到输出-fragment" tabindex="-1">MMA 的归属：从原子到输出 fragment</h3>
+<p><strong>状态：待展开；学习任务已梳理。</strong> TiledMMA 分层与 A/B/C 的不同坐标映射。</p>
+<ul>
+<li><strong>Triton 练习</strong>：dot 两端布局变化及编译器中间表示。</li>
+<li><strong>TileLang 练习</strong>：T.gemm 片段分配和 accumulator 可视化。</li>
+<li><strong>通过条件</strong>：元素计数守恒；点积输入布局与输出布局不能直接混用。</li>
+</ul>
+<h3 id="Swizzle-与-TMA-的地址契约" tabindex="-1">Swizzle 与 TMA 的地址契约</h3>
+<p><strong>状态：待展开；学习任务已梳理。</strong> 软件访问地址必须匹配 descriptor 生成的布局。</p>
+<ul>
+<li><strong>Triton 练习</strong>：descriptor 路径与普通 load 的等价验证。</li>
+<li><strong>TileLang 练习</strong>：显式 swizzle 与 TMA copy 配对实验。</li>
+<li><strong>通过条件</strong>：先小 tile round-trip，再接 MMA；分别核验对齐、base 与 phase。</li>
+</ul>
+<h3 id="布局驱动的-GEMM-工程" tabindex="-1">布局驱动的 GEMM 工程</h3>
+<p><strong>状态：待展开；学习任务已梳理。</strong> 把数据布局、搬运划分、计算划分组合起来。</p>
+<ul>
+<li><strong>Triton 练习</strong>：有 epilogue 的矩阵乘，完整基线对照。</li>
+<li><strong>TileLang 练习</strong>：共享内存布局 + 流水 + 向量写回。</li>
+<li><strong>通过条件</strong>：核心、epilogue 与尾块逐层校验，源码/配置/版本一起保存。</li>
+</ul>
+<h3 id="Attention-实现对照：统一流水、角色分工与双-consumer" tabindex="-1">Attention 实现对照：统一流水、角色分工与双 consumer</h3>
+<p><strong>状态：待展开；学习任务已梳理。</strong> 同一数学接口下比较不同数据流组织。</p>
+<ul>
+<li><strong>Triton 练习</strong>：对同一输入公平比较普通与 specialized 路径。</li>
+<li><strong>TileLang 练习</strong>：对同一输入比较 cp.async / TMA 方案。</li>
+<li><strong>通过条件</strong>：统一 mask、精度、计时范围；不把框架差异都归因于某一条指令。</li>
+</ul>
+<h3 id="大-D-的布局代数与寄存器预算" tabindex="-1">大 D 的布局代数与寄存器预算</h3>
+<p><strong>状态：待展开；学习任务已梳理。</strong> QK/PV 两套 tile 与中间 P 的布局衔接。</p>
+<ul>
+<li><strong>Triton 练习</strong>：不同 D 分块布局的 equivalent kernel。</li>
+<li><strong>TileLang 练习</strong>：双 GEMM 片段与寄存器生命周期实验。</li>
+<li><strong>通过条件</strong>：手算元素归属，检查 spill 与 shared；禁用不能证明的 reinterpret。</li>
+</ul>
+<h2 id="架构专用调度与完整流水" tabindex="-1">架构专用调度与完整流水</h2>
+<p>前置：Attention、布局代数、异步完成协议；需明确目标 GPU 能力。</p>
+<h3 id="Persistent-Attention：任务循环与尾波" tabindex="-1">Persistent Attention：任务循环与尾波</h3>
+<p><strong>状态：待展开；学习任务已梳理。</strong> CTA 常驻循环、linear task assignment、条件重缩放。</p>
+<ul>
+<li><strong>Triton 练习</strong>：persistent work queue 与普通 grid 对照。</li>
+<li><strong>TileLang 练习</strong>：persistent attention 及 epilogue 路径。</li>
+<li><strong>通过条件</strong>：任务无漏算/重算，短长序列都测；比较整段时间，不能预设胜过厂商库。</li>
+</ul>
+<h3 id="大-D-的-non-WS-流水：让所有线程参与-MMA" tabindex="-1">大 D 的 non-WS 流水：让所有线程参与 MMA</h3>
+<p><strong>状态：待展开；学习任务已梳理。</strong> chunk 解耦、跨 tile 预取、独立 barrier 集。</p>
+<ul>
+<li><strong>Triton 练习</strong>：全员计算路径与分工路径的调参对照。</li>
+<li><strong>TileLang 练习</strong>：独立 K/V stages 与 non-WS 编排。</li>
+<li><strong>通过条件</strong>：先画 buffer 生命周期，再测寄存器/等待/时间；更多 stage 不保证更快。</li>
+</ul>
+<h2 id="低精度矩阵乘：格式、scale-与误差" tabindex="-1">低精度矩阵乘：格式、scale 与误差</h2>
+<p>前置：GEMM、数值误差和布局；先软件量化参考，再硬件低精度乘法。</p>
+<h3 id="FP8-的格式与量化前处理" tabindex="-1">FP8 的格式与量化前处理</h3>
+<p><strong>状态：待展开；学习任务已梳理。</strong> e4m3、动态范围、per-row/per-block scale。</p>
+<ul>
+<li><strong>Triton 练习</strong>：amax 与缩放量化；零块和离群点。</li>
+<li><strong>TileLang 练习</strong>：归约 + 转换融合；scale 排布。</li>
+<li><strong>通过条件</strong>：重建误差与饱和计数；明确舍入和 scale 方向，先不要求 Tensor Core。</li>
+</ul>
+<h3 id="FP8-GEMM：scale-如何进入累加" tabindex="-1">FP8 GEMM：scale 如何进入累加</h3>
+<p><strong>状态：待展开；学习任务已梳理。</strong> 在线反量化、缩放粒度和矩阵乘等价式。</p>
+<ul>
+<li><strong>Triton 练习</strong>：FP8 dot 与 scale 应用。</li>
+<li><strong>TileLang 练习</strong>：FP8 GEMM + scale epilogue。</li>
+<li><strong>通过条件</strong>：与反量化参考对齐，前处理成本计入端到端；不同 K scale 不能直接外提。</li>
+</ul>
+<h3 id="NVFP4：两级-scale-与打包" tabindex="-1">NVFP4：两级 scale 与打包</h3>
+<p><strong>状态：待展开；学习任务已梳理。</strong> 4-bit 线格式、global/block scale、误差来源。</p>
+<ul>
+<li><strong>Triton 练习</strong>：软件量化/打包参考；支持时 scaled dot。</li>
+<li><strong>TileLang 练习</strong>：FP4 packing 与 scale layout。</li>
+<li><strong>通过条件</strong>：逐 byte round-trip；零值、极值、奇数长度和饱和策略均有定义。</li>
+</ul>
+<h3 id="Block-scaled-MMA：scale-也是操作数" tabindex="-1">Block-scaled MMA：scale 也是操作数</h3>
+<p><strong>状态：待展开；学习任务已梳理。</strong> scale fragment、数据布局与流水的协同。</p>
+<ul>
+<li><strong>Triton 练习</strong>：目标架构支持的 block-scaled matmul。</li>
+<li><strong>TileLang 练习</strong>：数据和 scale 的协作加载。</li>
+<li><strong>通过条件</strong>：每个 scale 与正确数据块对应；对齐厂商库数值约定后再测。</li>
+</ul>
+<h2 id="量化注意力与最终验收" tabindex="-1">量化注意力与最终验收</h2>
+<p>前置：稳定 Attention、FP8/FP4 格式与 scale；逐阶段定位误差，再看端到端收益。</p>
+<h3 id="量化-Attention：误差在哪里被放大" tabindex="-1">量化 Attention：误差在哪里被放大</h3>
+<p><strong>状态：待展开；学习任务已梳理。</strong> Q/K/V/P 的误差传播、平滑与不变性。</p>
+<ul>
+<li><strong>Triton 练习</strong>：高精度参考对照分步量化误差。</li>
+<li><strong>TileLang 练习</strong>：按阶段插入量化并保留误差日志。</li>
+<li><strong>通过条件</strong>：区分 logits、概率、输出误差；极端分布/长序列都要覆盖。</li>
+</ul>
+<h3 id="FP8-Attention-的前处理链" tabindex="-1">FP8 Attention 的前处理链</h3>
+<p><strong>状态：待展开；学习任务已梳理。</strong> 融合、平滑、量化及 scale 生成。</p>
+<ul>
+<li><strong>Triton 练习</strong>：融合前处理与多 kernel 基线。</li>
+<li><strong>TileLang 练习</strong>：归约、转置与量化的 tile 融合。</li>
+<li><strong>通过条件</strong>：各中间量均可核验，先测端到端占比再优化主 kernel。</li>
+</ul>
+<h3 id="FP8-persist-D-与-scale-折叠" tabindex="-1">FP8 persist-D 与 scale 折叠</h3>
+<p><strong>状态：待展开；学习任务已梳理。</strong> 保持 D 的注意力流水与合法的 scale 外提。</p>
+<ul>
+<li><strong>Triton 练习</strong>：固定 D 的量化 attention 与反量化参考。</li>
+<li><strong>TileLang 练习</strong>：scale 融入 QK / PV 与输出修正。</li>
+<li><strong>通过条件</strong>：证明每个外提条件，动态 range 与不同 shape 下误差达标。</li>
+</ul>
+<h3 id="FP8-大-D：Split-D-与并行布局" tabindex="-1">FP8 大 D：Split-D 与并行布局</h3>
+<p><strong>状态：待展开；学习任务已梳理。</strong> 工作量增加与寄存器增长是不同瓶颈。</p>
+<ul>
+<li><strong>Triton 练习</strong>：大 D 的分块与任务划分对照。</li>
+<li><strong>TileLang 练习</strong>：M/N 方向的 warp 排布与流水调整。</li>
+<li><strong>通过条件</strong>：并行度、spill 与耗时分别记录；不能仅看 occupancy。</li>
+</ul>
+<h3 id="FP4-Attention-的量化链" tabindex="-1">FP4 Attention 的量化链</h3>
+<p><strong>状态：待展开；学习任务已梳理。</strong> NVFP4 格式在 Q/K/V 预处理中的应用。</p>
+<ul>
+<li><strong>Triton 练习</strong>：软件 packed 参考与完整前处理。</li>
+<li><strong>TileLang 练习</strong>：两级 scale 生成和打包融合。</li>
+<li><strong>通过条件</strong>：数据/scale 同时对齐，精度与转换成本单独报告。</li>
+</ul>
+<h3 id="FP4-Attention：P-的两级量化" tabindex="-1">FP4 Attention：P 的两级量化</h3>
+<p><strong>状态：待展开；学习任务已梳理。</strong> online 状态、P 量化与输出缩放的交互。</p>
+<ul>
+<li><strong>Triton 练习</strong>：量化 P 的逐阶段误差定位。</li>
+<li><strong>TileLang 练习</strong>：block-scaled PV 与 rescale 的接口。</li>
+<li><strong>通过条件</strong>：各 KV tile 后验证状态；短序列正确不能代替长序列稳定性。</li>
+</ul>
+<h3 id="基准与精度：把学习结果变成可复现实验" tabindex="-1">基准与精度：把学习结果变成可复现实验</h3>
+<p><strong>状态：待展开；学习任务已梳理。</strong> 环境、计时、缓存、误差统计和生态约束。</p>
+<ul>
+<li><strong>Triton 练习</strong>：统一测试 harness 与多形状报表。</li>
+<li><strong>TileLang 练习</strong>：相同 harness 跑等价语义实现。</li>
+<li><strong>通过条件</strong>：同时交付正确性、精度分布、端到端时间、条件和失败案例。</li>
+</ul>
+<h2 id="材料范围与持续维护" tabindex="-1">材料范围与持续维护</h2>
+<p>依据本地提供的 <code>leetcuda-20261029.pdf</code>（591 页）梳理：基础并行、GEMM、Attention、CuTe、低精度矩阵乘、量化注意力均已映射到上述主题。CuTe 布局白皮书译注作为布局主题的补充；工具箱、构建说明与实验汇总并入环境准备和验收，不另造一套编号。</p>
+<p>教程使用重新组织的讲解和原创图。参考资料中的特定设备实测、经验阈值和专用实现会明确标注来源与适用条件；本站没有运行过的 GPU 实验不写成实测结论。每篇完整资料会保留原文主题或 PDF 阅读器页码，便于返回原文核对。</p>
+<link rel="stylesheet" href="/css/cuda-learning.css">
+
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/CUDA/" rel="tag"># CUDA</a>
+              <a href="/tags/Triton/" rel="tag"># Triton</a>
+              <a href="/tags/TileLang/" rel="tag"># TileLang</a>
+              <a href="/tags/%E5%AD%A6%E4%B9%A0%E8%B7%AF%E7%BA%BF/" rel="tag"># 学习路线</a>
+          </div>
+
+        
+
+          <div class="post-nav">
+            <div class="post-nav-item">
+                <a href="/systems/cuda-overlap/" rel="prev" title="CUDA 性能学习（二）：从 SM 调度、warp stall 到访存优化与 TMA 流水线">
+                  <i class="fa fa-angle-left"></i> CUDA 性能学习（二）：从 SM 调度、warp stall 到访存优化与 TMA 流水线
+                </a>
+            </div>
+            <div class="post-nav-item">
+                <a href="/systems/gpu-roofline/" rel="next" title="Roofline：估算 GPU 性能上限，再用 Triton 和 TileLang 验证">
+                  Roofline：估算 GPU 性能上限，再用 Triton 和 TileLang 验证 <i class="fa fa-angle-right"></i>
+                </a>
+            </div>
+          </div>
+    </footer>
+  </article>
+</div>
+
+
+
+
+
+
+</div>
+  </main>
+
+  <footer class="footer">
+    <div class="footer-inner">
+
+  <div class="copyright">
+    &copy; 2023 – 
+    <span itemprop="copyrightYear">2026</span>
+    <span class="with-love">
+      <i class="fa fa-code"></i>
+    </span>
+    <span class="author" itemprop="copyrightHolder">wulinze</span>
+  </div>
+  <div class="powered-by">由 <a href="https://hexo.io/" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.js.org/pisces/" rel="noopener" target="_blank">NexT.Pisces</a> 强力驱动
+  </div>
+
+    </div>
+  </footer>
+
+  
+  <div class="toggle sidebar-toggle" role="button">
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+  </div>
+  <div class="back-to-top" role="button" aria-label="返回顶部">
+    <i class="fa fa-arrow-up fa-lg"></i>
+    <span>0%</span>
+  </div>
+
+<noscript>
+  <div class="noscript-warning">Theme NexT works best with JavaScript enabled</div>
+</noscript>
+<script src="/js/reading-guide.js" defer></script>
+
+</body>
+</html>

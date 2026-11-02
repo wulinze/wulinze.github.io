@@ -188,7 +188,7 @@
   <nav class="site-state">
       <div class="site-state-item site-state-posts">
         <a href="/archives/">
-          <span class="site-state-item-count">65</span>
+          <span class="site-state-item-count">67</span>
           <span class="site-state-item-name">日志</span>
         </a>
       </div>
@@ -198,7 +198,7 @@
       </div>
       <div class="site-state-item site-state-tags">
           <a href="/tags/">
-        <span class="site-state-item-count">63</span>
+        <span class="site-state-item-count">67</span>
         <span class="site-state-item-name">标签</span></a>
       </div>
   </nav>
@@ -282,6 +282,7 @@
     
     
     <div class="post-body" itemprop="articleBody"><h2 id="阅读路线与术语入口" tabindex="-1">阅读路线与术语入口</h2>
+<p>后续学习按主题整理在 <a href="/systems/gpu-learning-path/">GPU 算子学习路线</a>。当前可以继续读 <a href="/systems/gpu-roofline/">Roofline 与 Triton／TileLang 实验</a>，把这里的性能判断接到实际练习。</p>
 <p><a href="/systems/cuda-basics/">第一篇：CUDA 基础与 GPU 物理／逻辑结构</a> 解释了“任务在哪里执行、数据在哪里”。第二篇接着问：<strong>SM 里面如何调度？线程为什么等？怎样让等待期间仍然有工作可做？</strong></p>
 <p>术语先分成三类：<strong>bound 是瓶颈判断，warp 状态是某一时刻发生了什么，指标是如何统计这些现象</strong>。先读下面三张表，再沿 <strong>SM 结构 → 指令流转 → 瓶颈判断 → 驻留与调度 → tiling → overlap 实现</strong> 阅读。不要用一个指标直接替代瓶颈结论。</p>
 <h3 id="A.-瓶颈分类：bound-到底被什么限制" tabindex="-1">A. 瓶颈分类：bound 到底被什么限制</h3>
@@ -1259,6 +1260,9 @@
                 </a>
             </div>
             <div class="post-nav-item">
+                <a href="/systems/gpu-learning-path/" rel="next" title="GPU 算子学习路线：从性能模型到 Attention 与低精度计算">
+                  GPU 算子学习路线：从性能模型到 Attention 与低精度计算 <i class="fa fa-angle-right"></i>
+                </a>
             </div>
           </div>
     </footer>
