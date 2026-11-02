@@ -1,0 +1,646 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width">
+<meta name="theme-color" content="#10151b"><meta name="generator" content="Hexo 8.1.2">
+
+  <link rel="mask-icon" href="/images/avatar.svg" color="#10151b">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+
+<link rel="stylesheet" href="/assets/fontawesome/css/all.min.css">
+
+<script class="next-config" data-name="main" type="application/json">{"hostname":"wulinze.github.io","root":"/","images":"/images","scheme":"Pisces","darkmode":false,"version":"8.29.1","exturl":false,"sidebar":{"position":"left","width_expanded":300,"width_dual_column":272,"display":"post","padding":18,"offset":12},"hljswrap":true,"codeblock":{"theme":{"light":"github-dark","dark":"github-dark"},"prism":{"light":"prism","dark":"prism-dark"},"copy_button":{"enable":true,"style":"flat"},"fold":{"enable":false,"height":500},"language":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"mediumzoom":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"stickytabs":false,"motion":{"enable":false,"async":false,"duration":200,"transition":{"menu_item":"fadeInDown","post_block":"fadeIn","post_header":"fadeInDown","post_body":"fadeInDown","coll_header":"fadeInLeft","sidebar":"fadeInUp"}},"i18n":{"placeholder":"搜索...","empty":"没有找到任何搜索结果：${query}","hits_time":"找到 ${hits} 个搜索结果（用时 ${time} 毫秒）","hits":"找到 ${hits} 个搜索结果"},"path":"/search.xml","localsearch":{"enable":true,"top_n_per_article":2,"unescape":true,"preload":false}}</script><script src="/js/config.js" defer></script>
+
+    <meta name="description" content="对应 LeetCUDA 归约原语一章，用交互逐轮解释 shuffle、block 汇合、跨 block 归约与浮点误差，并提供 CUDA、Triton、TileLang 完整 demo 和练习。">
+<meta property="og:type" content="article">
+<meta property="og:title" content="CUDA 算子学习（四）：归约与点积——从 warp 到全局结果">
+<meta property="og:url" content="https://wulinze.github.io/llm/cuda-reduction/">
+<meta property="og:site_name" content="Wu&#39;s Blog">
+<meta property="og:description" content="对应 LeetCUDA 归约原语一章，用交互逐轮解释 shuffle、block 汇合、跨 block 归约与浮点误差，并提供 CUDA、Triton、TileLang 完整 demo 和练习。">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://wulinze.github.io/images/gpu-reduction/reduction-tree.svg">
+<meta property="og:image" content="https://wulinze.github.io/images/gpu-reduction/result-ownership.svg">
+<meta property="og:image" content="https://wulinze.github.io/images/gpu-reduction/reduction-hierarchy.svg">
+<meta property="og:image" content="https://wulinze.github.io/images/gpu-reduction/global-merge.svg">
+<meta property="article:published_time" content="2026-11-02T08:20:00.000Z">
+<meta property="article:modified_time" content="2026-11-02T08:20:00.000Z">
+<meta property="article:author" content="wulinze">
+<meta property="article:tag" content="CUDA">
+<meta property="article:tag" content="TileLang">
+<meta property="article:tag" content="Triton">
+<meta property="article:tag" content="归约">
+<meta property="article:tag" content="算子学习">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://wulinze.github.io/images/gpu-reduction/reduction-tree.svg">
+
+
+<link rel="canonical" href="https://wulinze.github.io/llm/cuda-reduction/">
+
+
+<script class="next-config" data-name="page" type="application/json">{"sidebar":"","isHome":false,"isPost":true,"lang":"zh-CN","comments":true,"permalink":"https://wulinze.github.io/llm/cuda-reduction/","path":"/llm/cuda-reduction/","title":"CUDA 算子学习（四）：归约与点积——从 warp 到全局结果"}</script>
+
+<script class="next-config" data-name="calendar" type="application/json">""</script>
+<title>CUDA 算子学习（四）：归约与点积——从 warp 到全局结果 | Wu's Blog</title>
+  
+
+
+
+
+
+
+
+
+  
+<script src="/js/utils.js" defer></script><script src="/js/sidebar.js" defer></script><script src="/js/next-boot.js" defer></script>
+
+  <script src="/assets/local-search/search.js" defer></script>
+<script src="/js/third-party/search/local-search.js" defer></script>
+
+
+
+
+
+
+
+  
+
+
+
+
+  
+
+  <script class="next-config" data-name="enableMath" type="application/json">true</script><link rel="stylesheet" href="/assets/katex/katex.min.css">
+
+
+<link rel="icon" type="image/svg+xml" href="/images/avatar.svg">
+<link rel="stylesheet" href="/css/palette.css">
+<link rel="stylesheet" href="/css/reading.css">
+
+  <noscript>
+    <link rel="stylesheet" href="/css/noscript.css">
+  </noscript>
+<link rel="alternate" href="/atom.xml" title="Wu's Blog" type="application/atom+xml">
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="headband"></div>
+
+  <main class="main">
+    <div class="column">
+      <header class="header" itemscope itemtype="http://schema.org/WPHeader"><div class="site-brand-container">
+  <div class="site-nav-search popup-trigger" aria-label="搜索" role="button">
+      <i class="fa fa-search fa-fw fa-lg"></i>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <i class="logo-line"></i>
+      <p class="site-title">Wu's Blog</p>
+      <i class="logo-line"></i>
+    </a>
+      <p class="site-subtitle" itemprop="description">技术分享 · 思考与实践</p>
+  </div>
+
+  <div class="site-nav-toggle" aria-label="切换导航栏" role="button">
+      <i class="fa fa-ellipsis fa-fw fa-lg"></i>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  <ul class="main-menu menu"><li class="menu-item menu-item-home"><a href="/" rel="section">首页</a></li><li class="menu-item menu-item-文章"><a href="/blog/" rel="section">文章</a></li><li class="menu-item menu-item-categories"><a href="/categories/" rel="section">分类</a></li><li class="menu-item menu-item-tags"><a href="/tags/" rel="section">标签</a></li><li class="menu-item menu-item-archives"><a href="/archives/" rel="section">归档</a></li><li class="menu-item menu-item-about"><a href="/about/" rel="section">关于</a></li>
+      <li class="menu-item menu-item-search">
+        <a role="button" class="popup-trigger">搜索
+        </a>
+      </li>
+  </ul>
+</nav>
+
+
+
+  
+  <template id="search-popup-template"><div class="search-pop-overlay">
+    <div class="popup search-popup">
+      <div class="search-header">
+        <span class="search-icon">
+          <i class="fa fa-search"></i>
+        </span>
+        <div class="search-input-container">
+          <input autocomplete="off" autocapitalize="off" maxlength="80"
+                placeholder="搜索..." spellcheck="false"
+                type="search" class="search-input">
+        </div>
+        <span class="popup-btn-close" role="button">
+          <i class="fa fa-times-circle"></i>
+        </span>
+      </div>
+      <div class="search-result-container">
+        <div class="search-result-icon">
+          <i class="fa fa-spinner fa-pulse fa-5x"></i>
+        </div>
+      </div>
+    </div>
+  </div></template>
+
+</header>
+        
+  
+  <aside class="sidebar">
+
+    <div class="sidebar-inner sidebar-nav-active sidebar-toc-active">
+      <ul class="sidebar-nav">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <div class="sidebar-panel-container">
+        <!--noindex-->
+        <div class="post-toc-wrap sidebar-panel">
+            <div class="post-toc animated"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%9C%AC%E7%AF%87%E5%9C%A8%E7%B3%BB%E5%88%97%E4%B8%AD%E7%9A%84%E4%BD%8D%E7%BD%AE"><span class="nav-text">本篇在系列中的位置</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%85%88%E5%AE%9A%E4%B9%89%E8%AE%A1%E7%AE%97%E3%80%81%E5%8F%82%E4%B8%8E%E8%80%85%E5%92%8C%E7%BB%93%E6%9E%9C%E5%BD%92%E5%B1%9E"><span class="nav-text">先定义计算、参与者和结果归属</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%95%B0%E5%AD%A6%E5%A5%91%E7%BA%A6%E4%B8%8E%E5%8D%95%E4%BD%8D%E5%85%83"><span class="nav-text">数学契约与单位元</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%8F%82%E4%B8%8E%E8%80%85%E3%80%81%E9%80%9A%E4%BF%A1%E8%8C%83%E5%9B%B4%E4%B8%8E%E5%BD%92%E7%BA%A6%E7%BB%93%E6%9E%9C"><span class="nav-text">参与者、通信范围与归约结果</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%80%A7%E8%83%BD%E4%B8%8E%E6%95%B0%E5%80%BC%E8%A7%82%E6%B5%8B%E5%88%86%E5%BC%80%E8%AE%B0%E5%BD%95"><span class="nav-text">性能与数值观测分开记录</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%8E%9F%E7%90%86%EF%BC%9A%E6%8A%8A%E9%95%BF%E4%BE%9D%E8%B5%96%E9%93%BE%E5%8F%98%E6%88%90%E6%B5%85%E6%A0%91"><span class="nav-text">原理：把长依赖链变成浅树</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Warp-%E5%86%85%EF%BC%9Adown-%E4%B8%8E-XOR-%E5%88%86%E5%88%AB%E4%BF%9D%E8%AF%81%E4%BB%80%E4%B9%88"><span class="nav-text">Warp 内：down 与 XOR 分别保证什么</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E4%BA%A4%E4%BA%92%EF%BC%9A%E9%80%90%E8%BD%AE%E7%9C%8B%E8%B0%81%E6%8B%BF%E5%88%B0%E4%BA%86%E5%93%AA%E4%BA%9B%E5%80%BC"><span class="nav-text">交互：逐轮看谁拿到了哪些值</span></a></li><li class="nav-item nav-level-3"><a class="nav-link"><span class="nav-text">warp 交换与结果归属</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#mask%E3%80%81width-%E4%B8%8E%E5%B0%BE%E9%83%A8%E7%9A%84%E6%AD%A3%E7%A1%AE%E6%80%A7%E6%9D%A1%E4%BB%B6"><span class="nav-text">mask、width 与尾部的正确性条件</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Block-%E5%86%85%EF%BC%9Ashared-%E4%BA%A4%E6%8D%A2%E7%9A%84%E6%98%AF-warp-%E7%9A%84%E9%83%A8%E5%88%86%E7%BB%93%E6%9E%9C"><span class="nav-text">Block 内：shared 交换的是 warp 的部分结果</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E8%B7%A8-block%EF%BC%9A%E5%85%88%E5%81%9A-partial%EF%BC%8C%E5%86%8D%E5%90%88%E5%B9%B6"><span class="nav-text">跨 block：先做 partial，再合并</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link"><span class="nav-text">逐层提交归约</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Dot%EF%BC%9A%E5%8F%AA%E5%9C%A8%E7%AC%AC%E4%B8%80%E5%B1%82%E5%81%9A%E4%B9%98%E6%B3%95"><span class="nav-text">Dot：只在第一层做乘法</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E4%B8%8E-Roofline-%E8%BF%9E%E8%B5%B7%E6%9D%A5%EF%BC%9A%E4%B8%8D%E8%A6%81%E6%BC%8F%E6%8E%89-partial-%E7%9A%84%E8%AF%BB%E5%86%99"><span class="nav-text">与 Roofline 连起来：不要漏掉 partial 的读写</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%8E%9F%E5%AD%90%E7%B4%AF%E5%8A%A0%EF%BC%9A%E7%AE%80%E5%8D%95%EF%BC%8C%E4%BD%86%E8%A6%81%E6%AF%94%E8%BE%83%E5%AE%8C%E6%95%B4%E6%B5%81%E7%A8%8B"><span class="nav-text">原子累加：简单，但要比较完整流程</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%B5%AE%E7%82%B9%E8%AF%AF%E5%B7%AE%EF%BC%9A%E6%A0%91%E6%9B%B4%E6%B5%85%E4%B8%8D%E7%AD%89%E4%BA%8E%E4%BB%BB%E4%BD%95%E8%BE%93%E5%85%A5%E9%83%BD%E6%9B%B4%E5%87%86%E7%A1%AE"><span class="nav-text">浮点误差：树更浅不等于任何输入都更准确</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link"><span class="nav-text">用 FP32 舍入观察相消</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%B8%8B%E8%BD%BD%E4%B8%8E%E7%8E%AF%E5%A2%83%EF%BC%9A%E5%85%88%E8%BF%90%E8%A1%8C%E7%8E%B0%E6%88%90-demo"><span class="nav-text">下载与环境：先运行现成 demo</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#CUDA-%E6%A0%B8%E5%BF%83%EF%BC%9A%E5%9B%BE%E4%B8%AD%E7%9A%84%E4%B8%89%E5%B1%82%E5%A6%82%E4%BD%95%E8%90%BD%E5%88%B0%E4%BB%A3%E7%A0%81"><span class="nav-text">CUDA 核心：图中的三层如何落到代码</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Triton%EF%BC%9A%E4%B8%80%E8%BD%AE%E4%BA%A7%E7%94%9F%E4%B8%80%E4%B8%AA-partial"><span class="nav-text">Triton：一轮产生一个 partial</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#TileLang%EF%BC%9A%E5%85%88%E6%8A%8A-fragment-%E5%85%A8%E9%83%A8%E5%88%9D%E5%A7%8B%E5%8C%96%EF%BC%8C%E5%86%8D%E6%B2%BF%E8%BD%B4%E5%BD%92%E7%BA%A6"><span class="nav-text">TileLang：先把 fragment 全部初始化，再沿轴归约</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Triton-%E4%B8%8E-TileLang-%E7%BB%83%E4%B9%A0%EF%BC%9A%E5%AE%8C%E6%88%90%E5%90%8E%E7%94%A8%E5%90%8C%E4%B8%80%E5%A5%97%E9%AA%8C%E6%94%B6"><span class="nav-text">Triton 与 TileLang 练习：完成后用同一套验收</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#Triton-T1%EF%BC%9Asum/max-%E7%9A%84%E4%B8%80%E5%B1%82%E4%B8%8E%E5%A4%9A%E5%B1%82"><span class="nav-text">Triton T1：sum&#x2F;max 的一层与多层</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Triton-T2%EF%BC%9A%E6%8A%8A-dot-%E7%9A%84%E4%B9%98%E6%B3%95%E9%99%90%E5%88%B6%E5%9C%A8%E7%AC%AC%E4%B8%80%E5%B1%82"><span class="nav-text">Triton T2：把 dot 的乘法限制在第一层</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#TileLang-L1%EF%BC%9A%E4%BF%9D%E8%AF%81-fragment-%E5%B0%BE%E9%83%A8%E4%B8%8E%E5%BD%92%E7%BA%A6%E8%BD%B4%E6%AD%A3%E7%A1%AE"><span class="nav-text">TileLang L1：保证 fragment 尾部与归约轴正确</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#TileLang-L2%EF%BC%9A%E5%A4%8D%E7%94%A8%E5%A4%9A%E5%B1%82%E8%B0%83%E5%BA%A6%E5%B9%B6%E8%A7%A3%E9%87%8A-clear"><span class="nav-text">TileLang L2：复用多层调度并解释 clear</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E7%BB%9F%E4%B8%80%E8%BF%90%E8%A1%8C%E5%85%A5%E5%8F%A3%E4%B8%8E%E9%80%9A%E8%BF%87%E6%9D%A1%E4%BB%B6"><span class="nav-text">统一运行入口与通过条件</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%80%8E%E4%B9%88%E6%B5%8B%EF%BC%9A%E7%AC%AC%E4%B8%80%E5%B1%82%E5%BE%88%E5%BF%AB%EF%BC%8C%E4%B8%8D%E4%BB%A3%E8%A1%A8%E6%95%B4%E4%B8%AA%E5%BD%92%E7%BA%A6%E5%B0%B1%E5%BF%AB"><span class="nav-text">怎么测：第一层很快，不代表整个归约就快</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%BB%8E%E6%9C%AC%E7%AF%87%E8%BF%9B%E5%85%A5%E4%B8%8B%E4%B8%80%E7%AF%87"><span class="nav-text">从本篇进入下一篇</span></a></li></ol></div>
+        </div>
+        <!--/noindex-->
+
+        <div class="site-overview-wrap sidebar-panel">
+          <div class="site-author animated" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="wulinze"
+      src="/images/avatar.svg">
+  <p class="site-author-name" itemprop="name">wulinze</p>
+  <div class="site-description" itemprop="description">wulinze 的个人主页，关注 LLM 并行方式、Cache 池化与算子学习，分享系统知识和 LeetCode 刷题记录。</div>
+</div>
+<div class="site-state-wrap animated">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+        <a href="/archives/">
+          <span class="site-state-item-count">68</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+        <span class="site-state-item-count">4</span>
+        <span class="site-state-item-name">分类</span>
+      </div>
+      <div class="site-state-item site-state-tags">
+          <a href="/tags/">
+        <span class="site-state-item-count">69</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author animated">
+      <span class="links-of-author-item">
+        <a href="https://github.com/wulinze" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;wulinze" rel="noopener me" target="_blank"><i class="fab fa-github fa-fw"></i>GitHub</a>
+      </span>
+  </div>
+
+        </div>
+      </div>
+    </div>
+
+    
+  </aside>
+
+
+    </div>
+
+    <div class="main-inner post posts-expand">
+
+
+  
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://wulinze.github.io/llm/cuda-reduction/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.svg">
+      <meta itemprop="name" content="wulinze">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Wu's Blog">
+      <meta itemprop="description" content="wulinze 的个人主页，关注 LLM 并行方式、Cache 池化与算子学习，分享系统知识和 LeetCode 刷题记录。">
+    </span>
+
+    <span hidden itemprop="post" itemscope itemtype="http://schema.org/CreativeWork">
+      <meta itemprop="name" content="CUDA 算子学习（四）：归约与点积——从 warp 到全局结果 | Wu's Blog">
+      <meta itemprop="description" content="对应 LeetCUDA 归约原语一章，用交互逐轮解释 shuffle、block 汇合、跨 block 归约与浮点误差，并提供 CUDA、Triton、TileLang 完整 demo 和练习。">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          CUDA 算子学习（四）：归约与点积——从 warp 到全局结果
+        </h1>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">发表于</span>
+
+      <time title="创建时间：2026-11-02 16:20" itemprop="dateCreated datePublished" datetime="2026-11-02T16:20:00+08:00">2026-11-02</time>
+    </span>
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-folder"></i>
+      </span>
+      <span class="post-meta-item-text">分类于</span>
+        <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+          <a href="/categories/llm-inference/" itemprop="url" rel="index"><span itemprop="name">LLM 推理</span></a>
+        </span>
+    </span>
+
+  
+</div>
+
+            <div class="post-description">对应 LeetCUDA 归约原语一章，用交互逐轮解释 shuffle、block 汇合、跨 block 归约与浮点误差，并提供 CUDA、Triton、TileLang 完整 demo 和练习。</div>
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody"><h2 id="本篇在系列中的位置" tabindex="-1">本篇在系列中的位置</h2>
+<p><a href="/llm/">LLM 算子学习</a> · <a href="/systems/gpu-learning-path/">完整编号目录</a> · 上一篇：<a href="/systems/gpu-roofline/">（三）GPU 架构与 Roofline</a></p>
+<p>这是系列的第四篇，对应 <code>leetcuda-20261029.pdf</code> 的“归约原语：Warp/Block Reduce 与 Dot”一章（PDF 阅读器第 43–51 页）。保持一章一篇、按原文顺序继续；本篇补充可独立操作的实验、完整实现，以及部分原文表述的适用条件。</p>
+<p>向量加法中，线程只写自己负责的输出。归约则是<strong>很多线程共同产生更少的结果</strong>：sum/max、点积、Softmax 的分母、RMSNorm 的平方和都需要它。难点不只有加法，而是：结果由谁持有、谁可以读谁的数据、何时可以读取、浮点运算顺序改变后怎样验证。</p>
+<p>本篇学习目标：能从输入手算每层 partial；解释 shuffle 与 shared 同步；实现不会重复写全局结果的 block reduce；跑通多层 sum/max/dot；比较原子与分层方案的完整耗时。</p>
+<p><strong>材料状态：</strong> 4 张可编辑图、3 个网页交互、CPU 模型、完整 CUDA 和 Triton／TileLang demo、独立练习入口。CPU 模型与网页演示已执行验证；当前编辑环境没有 NVIDIA CUDA GPU，GPU 代码尚未经过后端编译、设备正确性及性能实测。下面的运行结果示例是可手算的预期值，没有伪造 GPU 速度。</p>
+<h2 id="先定义计算、参与者和结果归属" tabindex="-1">先定义计算、参与者和结果归属</h2>
+<h3 id="数学契约与单位元" tabindex="-1">数学契约与单位元</h3>
+<p>本练习输入 x/y 为连续一维 float32，长度 N≥0，非空输入元素为有限数。输出是一个 float32 标量。NaN/±Inf 输入策略和非连续 stride 留到扩展题，不能在没有定义的情况下宣称都支持。</p>
+<table>
+<thead>
+<tr>
+<th>算子</th>
+<th>数学定义</th>
+<th>无效位置填什么</th>
+<th>空输入约定</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>sum</td>
+<td><code>s = Σ x[i]</code></td>
+<td>0；与任何数相加不改变它</td>
+<td>0</td>
+</tr>
+<tr>
+<td>max</td>
+<td><code>m = max(x[i])</code></td>
+<td><code>-inf</code>；不会压过有限有效值</td>
+<td><code>-inf</code>，这是本 demo 的约定</td>
+</tr>
+<tr>
+<td>dot</td>
+<td><code>d = Σ x[i]*y[i]</code></td>
+<td>先把无效乘积设为 0</td>
+<td>0</td>
+</tr>
+</tbody>
+</table>
+<p>单位元的作用是让尾部仍可参加同一个固定形状的归约。比如全负数 <code>[-7,-3,-9]</code> 的 max 应为 -3，尾部若填 0 就变成了错误的 0。<code>-FLT_MAX</code> 对“只允许有限 float”可作某些实现的哨兵；若接口允许真正的 <code>-inf</code>，则必须重新审视它是否仍符合约定。本篇直接用 <code>-inf</code>。</p>
+<h3 id="参与者、通信范围与归约结果" tabindex="-1">参与者、通信范围与归约结果</h3>
+<table>
+<thead>
+<tr>
+<th>名称</th>
+<th>范围与职责</th>
+<th>容易混淆的点</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>lane</td>
+<td>warp 内的位置，CUDA warp 通常有 lane 0…31</td>
+<td>lane 0 在每个 warp 中都有，不是整个 block 唯一线程</td>
+</tr>
+<tr>
+<td><code>tid</code></td>
+<td>block 内线程编号；本 CUDA demo 是 threadIdx.x</td>
+<td><code>tid==0</code> 才是整个一维 block 唯一写出者</td>
+</tr>
+<tr>
+<td>warp reduce</td>
+<td>warp 内多值汇合</td>
+<td>可以只让一个 lane 持有最终结果</td>
+</tr>
+<tr>
+<td>warp all-reduce</td>
+<td>warp 内所有参与 lane 都取得同一结果</td>
+<td>本篇指单 GPU 的 warp 集合操作，不是 NCCL 跨 GPU 通信</td>
+</tr>
+<tr>
+<td>block reduce</td>
+<td>多个 warp 的结果进一步汇合</td>
+<td>shuffle 本身不能跨 warp</td>
+</tr>
+<tr>
+<td>partial</td>
+<td>某一分块或阶段的中间结果</td>
+<td>dot 的 partial 已是乘积之和，后续不能再乘 y</td>
+</tr>
+<tr>
+<td>collective</td>
+<td>一组线程按约定协作的操作</td>
+<td>输入无效与线程不参与是两件事</td>
+</tr>
+</tbody>
+</table>
+<h3 id="性能与数值观测分开记录" tabindex="-1">性能与数值观测分开记录</h3>
+<p>本篇关注三类等待：读取数据及结果依赖、block 内汇合、同地址原子争用。低 AI 只是访存方向的初步假设，不能忽略小任务的启动开销和最后一层只剩很少任务的情况。更多分类见 <a href="/systems/cuda-overlap/">（二）性能分析</a>。</p>
+<p>指标分别记录：完整归约耗时（包括所有层）、各层 kernel 数量与时间、global 字节/atomic 请求、资源与 issue 情况，以及数值绝对误差和按贡献量缩放的误差。不能拿第一层的带宽代替整个标量结果的完成时间。</p>
+<h2 id="原理：把长依赖链变成浅树" tabindex="-1">原理：把长依赖链变成浅树</h2>
+<p>单个结果的求和最少需要 N−1 次有用加法。串行累加把它们接成一条链；平衡二叉树将同一层的独立加法并行执行，理想依赖深度约为 <code>ceil(log2 N)</code>。</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">输入：1 2 3 4 5 6 7 8</span><br><span class="line">第 1 层：(1+2) (3+4) (5+6) (7+8) = 3 7 11 15</span><br><span class="line">第 2 层：(3+7) (11+15)             = 10 26</span><br><span class="line">第 3 层：(10+26)                  = 36</span><br><span class="line"></span><br><span class="line">有用加法数：4+2+1 = 7</span><br><span class="line">树深度：3</span><br></pre></td></tr></table></figure>
+<p>这里的“层”不是 GPU 时钟周期。真实执行还要付出数据交换、访存、同步、指令发出等成本；每线程先累加多个元素，也会形成局部依赖链。另外，若目标是所有 lane 都得到结果，复制结果的过程可能引入更多运算，不应把单结果树的 N−1 计数直接套到 XOR all-reduce。</p>
+<figure class="cuda-diagram">
+<a href="/images/gpu-reduction/reduction-tree.svg" target="_blank" rel="noopener"><img src="/images/gpu-reduction/reduction-tree.svg" alt="8个数串行7次依赖与三层归约树的对照" loading="lazy"></a>
+<figcaption>图：减少的是依赖深度；实际成本还要看数据如何交换。<a href="/images/gpu-reduction/reduction-tree.excalidraw" download>下载 Excalidraw 原图</a></figcaption>
+</figure>
+<p>图中第一层四组加法彼此独立，第二层要等自己的两个输入，而不需要等待不相关的分支。将这张依赖图映射到 warp、shared 与 kernel 边界，就是本篇接下来的三层实现。</p>
+<h2 id="Warp-内：down-与-XOR-分别保证什么" tabindex="-1">Warp 内：down 与 XOR 分别保证什么</h2>
+<p>shuffle 让线程取得同 warp 内另一个 lane 的寄存器值。一次 shuffle 只完成一次数据交换，不会自动把 32 个值全部归约。完整 32-lane 的常见树形序列有 16、8、4、2、1 五轮。</p>
+<p><strong>down 的目标可以是 reduce-to-one。</strong> lane i 从 i+offset 取得值并累加，最后只消费 lane 0 的全和。其他 lane 的最终数不需要是全和，也不应该被当作独立输出。它是有效的归约方案，不能因为别的 lane 没有全和就称整个算法错误。</p>
+<p><strong>XOR 可构造 all-reduce。</strong> 每轮 lane i 与 <code>i XOR mask</code> 交换旧值；两者拥有的不同子集合并。W=8 时 mask 从 4 到 2 到 1，三轮后所有 lane 都持全和。第一次是同低两位的一对，第二次扩展为同最低位的四个元素，第三次合并全部八个。</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">以 lane 0 为例，初值 x0 = 1：</span><br><span class="line">mask 4：从旧 lane 4 取 x4，拥有 &#123;0,4&#125;，值 1+5=6</span><br><span class="line">mask 2：从旧 lane 2 取 &#123;2,6&#125;，拥有 &#123;0,2,4,6&#125;，值 16</span><br><span class="line">mask 1：从旧 lane 1 取 &#123;1,3,5,7&#125;，拥有全部，值 36</span><br></pre></td></tr></table></figure>
+<p>每轮必须读取<strong>上一轮快照</strong>。在 CPU 上从 lane 0 到 lane 7 依次原地更新同一个数组，会让后面的 lane 读到本轮的新值，已经不是同一个数学过程。</p>
+<figure class="cuda-diagram">
+<a href="/images/gpu-reduction/result-ownership.svg" target="_blank" rel="noopener"><img src="/images/gpu-reduction/result-ownership.svg" alt="down只消费lane0全和与xor所有lane都取得全和的归属对照" loading="lazy"></a>
+<figcaption>图：先定义谁需要最终结果，再选择交换模式。<a href="/images/gpu-reduction/result-ownership.excalidraw" download>下载 Excalidraw 原图</a></figcaption>
+</figure>
+<p>沿图看 <code>[1…8]</code>：down 终态 lane 0 是 36；XOR 终态八个 lane 都是 36。两条路径满足不同输出契约，性能要结合上下文测量，不能把“XOR 每个 lane 都有用”推成“XOR 必然比 down 快”。<a target="_blank" rel="noopener" href="https://developer.nvidia.com/blog/faster-parallel-reductions-kepler/">NVIDIA warp 归约示例</a> 同时介绍了这两种用途。</p>
+<h3 id="交互：逐轮看谁拿到了哪些值" tabindex="-1">交互：逐轮看谁拿到了哪些值</h3>
+<p>下面用 8 lane 便于手算；真实 CUDA demo 使用完整的 32-lane warp。数值面板演示算术关系，不模拟硬件时间，也不保证与任意 GPU 指令序列逐 bit 一致。</p>
+<div class="gpu-lab" data-reduction="warp">
+<h3>warp 交换与结果归属</h3>
+<div class="gpu-lab-controls">
+<label>8 个输入（英文逗号）<input value="1,2,3,4,5,6,7,8" aria-label="八个lane初值"></label>
+<label>模式<select><option value="xor">XOR：所有 lane 得到结果</option><option value="down">down：只消费 lane 0</option></select></label>
+</div>
+<div class="reduce-lanes" data-lanes></div>
+<div class="reduce-actions"><button type="button" data-next>下一轮交换</button><button type="button" data-reset>重置</button></div>
+<output aria-live="polite"></output>
+</div>
+<p>先预测 XOR 的 lane 0 三轮应是 6、16、36，再点击。切到 down 并比较终态，判断哪些位置属于该函数保证的输出。这里使用的“越过逻辑 width 后保留本 lane 值”的 down 行为，不应混同“读取一个未参加的源 lane”。</p>
+<h3 id="mask、width-与尾部的正确性条件" tabindex="-1">mask、width 与尾部的正确性条件</h3>
+<p>shuffle 的参与 mask 用来声明协作线程，width 约束逻辑子组；它们不是将缺失线程自动补零的开关。被读取的源线程必须符合该指令的参与语义。不要让部分线程先 return，再在剩余线程上照抄 full mask。</p>
+<p>本 CUDA demo 固定 256 个线程，每个 warp 都完整。输入尾部只影响线程加载的值：越界位置填单位元，线程仍到达 shuffle 和 block 屏障。随后只有 warp 0 做第二次归约时，该 warp 的 32 个线程仍全部参加。这是一种容易检查的安全前提，不是任意稀疏 mask 的通用算法。shuffle 也不提供 shared memory 所需要的内存同步语义。<a target="_blank" rel="noopener" href="https://developer.nvidia.com/blog/using-cuda-warp-level-primitives/">NVIDIA：Warp-level Primitives</a></p>
+<h2 id="Block-内：shared-交换的是-warp-的部分结果" tabindex="-1">Block 内：shared 交换的是 warp 的部分结果</h2>
+<p>256 个线程形成 8 个 warp。每个 warp 先归约，lane 0 把结果写进 <code>warp_totals[warp_id]</code>。然后必须让整个 block 到达 <code>__syncthreads()</code>，保证 warp 0 读取时，其他 warp 的结果已写好。</p>
+<p>下一步，warp 0 的前 8 个 lane 各读一个 partial，另外 24 个 lane 填单位元，再做一次完整 warp reduce。只有 <code>tid==0</code> 写出该 block 的最终结果。</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">每个 warp 的结果 → shared[0…7]</span><br><span class="line">                         ↓ 全 block 屏障</span><br><span class="line">warp 0 的输入：[p0 p1 p2 p3 p4 p5 p6 p7 0 … 0]</span><br><span class="line">                         ↓ warp reduce</span><br><span class="line">tid 0 写 partial[block_id]</span><br></pre></td></tr></table></figure>
+<p>这个 demo 只需一个线程写出，不要求全 block 都持有结果。若后续是 Softmax 除法，每个线程都需要分母，就应增加<strong>明确的 block 广播过程</strong>：结果写 shared，再经过全 block 同步后读取；或采用经过证明的每 warp 冗余归约方案。<code>__shfl_sync(...,0)</code> 只能在每个 warp 内广播，不能单独把 warp 0 的结果直接传给其他 warp。</p>
+<p>本 CUDA 版本第二次仍用 32-lane reduce，因此是“5 轮 warp 交换 + shared/屏障 + 5 轮 warp 交换”的结构，而不是固定的 9 个时钟周期。原文采用子组和冗余归约时的步骤统计也不能直接当作硬件周期。</p>
+<figure class="cuda-diagram">
+<a href="/images/gpu-reduction/reduction-hierarchy.svg" target="_blank" rel="noopener"><img src="/images/gpu-reduction/reduction-hierarchy.svg" alt="线程局部值经warp归约shared汇合再到global partial和后续kernel" loading="lazy"></a>
+<figcaption>图：每层都说明结果在哪里，以及下一层什么时候能读。<a href="/images/gpu-reduction/reduction-hierarchy.excalidraw" download>下载 Excalidraw 原图</a></figcaption>
+</figure>
+<p>图里的绿色框是 block 内同步，橙色框之间是 kernel 顺序。二者范围不同：普通 <code>__syncthreads()</code> 不会等待整个 grid。也不能让 block 0 忙等其他 block 的标志，假定所有 block 已经同时驻留；这种写法可能阻塞尚未调度的生产者。</p>
+<h2 id="跨-block：先做-partial，再合并" tabindex="-1">跨 block：先做 partial，再合并</h2>
+<p>设每个 program 处理 B 个元素，第一层输出个数 <code>G=ceil(N/B)</code>。给每个 block 一个独立的 partial 元素，避免多个 block 同写一个普通地址。下一次 kernel 在同一 stream 中读取这份 partial，再次归约；直到只剩一个元素。</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">N = 10，B = 4，x = [1,2,3,4,5,6,7,8,9,10]</span><br><span class="line">第一层：sum(1…4)=10，sum(5…8)=26，sum(9,10,0,0)=19</span><br><span class="line">partial = [10,26,19]</span><br><span class="line">第二层：sum(10,26,19,0)=55</span><br></pre></td></tr></table></figure>
+<p>“两个阶段”是最常见的结构名称，但 G 仍很大时会继续分层。本练习代码支持多层，不会假定第二个 block 永远装得下所有 partial。比如 B=256、N=65537：第一层 257 个值，第二层 2 个值，第三层才得到 1 个值。</p>
+<div class="gpu-lab" data-reduction="hierarchy">
+<h3>逐层提交归约</h3>
+<div class="gpu-lab-controls">
+<label>N（输入为 1…N）<input type="number" min="0" max="64" step="1" value="10"></label>
+<label>教学 tile 大小<select><option>2</option><option selected>4</option><option>8</option></select></label>
+</div>
+<div data-levels></div>
+<div class="reduce-actions"><button type="button" data-next>提交下一层</button><button type="button" data-reset>重置</button></div>
+<output aria-live="polite"></output>
+</div>
+<p>先用 N=10/B=4 核对图中的 <code>[10,26,19]→55</code>，再用 N=17/B=4 看为什么需要三层。交互为展示各层输入输出而缩小了 tile；真实 demo 的 block 选择为 128/256/512/1024。</p>
+<h3 id="Dot：只在第一层做乘法" tabindex="-1">Dot：只在第一层做乘法</h3>
+<p>点积先生成每个位置的贡献 <code>x[i]*y[i]</code>，后面的归约结构与 sum 相同。例如 x=[1,2,3]、y=[4,5,6]，先得到 [4,10,18]，归约结果 32。</p>
+<p>最容易写错的是复用同一个 dot kernel 处理 partial：partial 已经是某段的乘积和，第二层必须做 sum，不能再乘一次 y。两个语言参考版都把第一层的 OP 与后续层明确区分。</p>
+<h3 id="与-Roofline-连起来：不要漏掉-partial-的读写" tabindex="-1">与 Roofline 连起来：不要漏掉 partial 的读写</h3>
+<p>按一次理想读取/写出计，sum 的输入约 4N byte，dot 约 8N byte。如果第一层产生 G 个 float、第二层全部读回并写出一个 float，那么中间流量还有 <code>4G+4G+4</code>：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">sum 两层的逻辑字节：4N + 8G + 4</span><br><span class="line">dot 两层的逻辑字节：8N + 8G + 4</span><br></pre></td></tr></table></figure>
+<p>有更多层就继续加入该层 partial 的写与读；缓存会改变真实 DRAM 流量。sum 的单结果最少有 N−1 次有用加法，dot 另加 N 次乘法，通常简记约 2N FLOP；padding 和具体归约模式可能执行额外操作。因此 dot 的大 N 算术强度约为 0.25 FLOP/byte，但实际耗时还受归约依赖、启动、同步或原子争用影响。</p>
+<h2 id="原子累加：简单，但要比较完整流程" tabindex="-1">原子累加：简单，但要比较完整流程</h2>
+<p>另一种做法是先将 out 清零，每个 block 得到一个 partial 后，仅让 <code>tid==0</code> 执行一次 <code>atomicAdd(out,partial)</code>。原子操作使并发更新不会相互覆盖；不意味着浮点结果严格等于实数求和，也不保证更新顺序固定。</p>
+<figure class="cuda-diagram">
+<a href="/images/gpu-reduction/global-merge.svg" target="_blank" rel="noopener"><img src="/images/gpu-reduction/global-merge.svg" alt="每轮清零后原子累加与多层partial归约的成本和顺序对照" loading="lazy"></a>
+<figcaption>图：原子方案的清零与分层方案的后续 kernel 都属于工作成本。<a href="/images/gpu-reduction/global-merge.excalidraw" download>下载 Excalidraw 原图</a></figcaption>
+</figure>
+<p>图左边必须<strong>每次调用都清零</strong>，不能只在 benchmark 开始前清一次，否则第 2、3 次运行会把上一次结果继续加进去。图右边每个 partial 都由唯一生产者覆盖写，不需要为了求和先清空，但要保证所有有效 partial 都被写到。</p>
+<p>原子方案省去了独立合并 kernel，却增加同地址争用与初始化；分层方案增加 partial 流量与启动。N、block 数和设备不同，优劣可能变化。本 CUDA demo 支持两条路径；Triton/TileLang 基线先使用分层方案，原子版作为完成基础后再增加的实验，避免把两种机制一次混在一起。</p>
+<h2 id="浮点误差：树更浅不等于任何输入都更准确" tabindex="-1">浮点误差：树更浅不等于任何输入都更准确</h2>
+<p>浮点加法不满足实数的结合律。以 <code>A=2^25</code> 的 binary32 输入 <code>[A,1,-A,1]</code> 为例，每次加法都舍入到 FP32：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">数学精确和：2</span><br><span class="line">从左往右累加：1</span><br><span class="line">相邻成对树：(A+1) + (-A+1) → A + (-A) → 0</span><br><span class="line">先抵消大数：(A-A) + (1+1) → 2</span><br></pre></td></tr></table></figure>
+<p>这个例子说明顺序影响误差；不能把某一个顺序的正确结果推广成所有输入的定理。固定分层树减少了原子更新完成顺序带来的变化，但编译器、设备、归约布局或配置变化仍可能改变求和顺序，不能承诺跨环境 bitwise 一致。</p>
+<div class="gpu-lab" data-reduction="rounding">
+<h3>用 FP32 舍入观察相消</h3>
+<label>大数的指数（24…30）<input type="range" min="24" max="30" step="1" value="25" aria-label="大数指数"></label>
+<output aria-live="polite"></output>
+</div>
+<p>校验使用 FP64 CPU 参考，同时报告绝对误差与 <code>abs(error)/sum(abs(contribution))</code>。当正确结果接近 0，单独使用相对结果误差会失去意义。练习包采用 <code>1e-6 + 2e-6*sum_abs</code> 的保守教学容差，并打印实际误差；它不是通用的数值稳定性证明，生产算法应按精度要求设计更全面的输入分布和误差标准。max 对本篇有限输入则要求精确匹配。</p>
+<h2 id="下载与环境：先运行现成-demo" tabindex="-1">下载与环境：先运行现成 demo</h2>
+<p><a href="/downloads/gpu-reduction/gpu-reduction-lab.zip">下载完整归约实验包</a>。解压后进入目录。纯 CPU 模型只依赖 Python 标准库；GPU 代码需要 NVIDIA CUDA 环境，Triton/TileLang 需安装对应框架与 CUDA PyTorch，准备方式见 <a href="/systems/gpu-roofline/">上一篇环境说明</a>。</p>
+<table>
+<thead>
+<tr>
+<th>文件</th>
+<th>用途</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><a href="/downloads/gpu-reduction/reduction_model.py">reduction_model.py</a></td>
+<td>CPU 上打印 XOR 轮次、partial 层级及 FP32 相消例子</td>
+</tr>
+<tr>
+<td><a href="/downloads/gpu-reduction/reduction.cu">reduction.cu</a></td>
+<td>CUDA warp/block/global、sum/max/dot、受保护 float4、原子对照与校验</td>
+</tr>
+<tr>
+<td><a href="/downloads/gpu-reduction/reference_triton.py">reference_triton.py</a></td>
+<td><code>tl.sum</code> / <code>tl.max</code> 与递归 partial 合并</td>
+</tr>
+<tr>
+<td><a href="/downloads/gpu-reduction/reference_tilelang.py">reference_tilelang.py</a></td>
+<td>fragment 归约与相同的多层接口</td>
+</tr>
+<tr>
+<td><a href="/downloads/gpu-reduction/run_gpu.py">run_gpu.py</a></td>
+<td>多尺寸、多分布校验，完整流程计时与 JSON 记录</td>
+</tr>
+<tr>
+<td><a href="/downloads/gpu-reduction/student_triton.py">student_triton.py</a>、<a href="/downloads/gpu-reduction/student_tilelang.py">student_tilelang.py</a></td>
+<td>独立练习入口；未实现时明确报错</td>
+</tr>
+<tr>
+<td><a href="/downloads/gpu-reduction/README.txt">README.txt</a></td>
+<td>命令、契约、验收与验证状态</td>
+</tr>
+</tbody>
+</table>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 无 GPU 也可先观察完整中间结果。</span></span><br><span class="line">python reduction_model.py</span><br><span class="line">python reduction_model.py --self-check</span><br><span class="line"></span><br><span class="line"><span class="comment"># CUDA：在装有匹配 Toolkit 的 NVIDIA GPU 环境编译。</span></span><br><span class="line"><span class="comment"># -arch=native 需要支持该选项的 nvcc；否则改成目标设备匹配的 sm_XX。</span></span><br><span class="line">nvcc -O3 -std=c++17 -lineinfo -<span class="built_in">arch</span>=native reduction.cu -o reduction</span><br><span class="line">./reduction 1003 <span class="built_in">sum</span> two-pass</span><br><span class="line">./reduction 1003 max two-pass</span><br><span class="line">./reduction 1048576 dot two-pass</span><br><span class="line">./reduction 1048576 dot atomic</span><br><span class="line">./reduction 520 dot-vec4 two-pass</span><br><span class="line">compute-sanitizer --tool memcheck ./reduction 520 dot-vec4 two-pass</span><br></pre></td></tr></table></figure>
+<p>CUDA 程序先检查 0、1、31/32/33、127/128/129、255/256/257、520、65537，再运行指定 N。max 用全负数数据验证单位元，sum/dot 对照 FP64。原子版本每次调用都重新初始化；max 未提供原子版，会明确拒绝该组合。例子 <code>dot-vec4</code> 的向量读只在 <code>index+3&lt;N</code> 时发生，尾部逐元素受保护，避免“先越界 float4 读取，再用条件把乘积清零”的错误。</p>
+<h3 id="CUDA-核心：图中的三层如何落到代码" tabindex="-1">CUDA 核心：图中的三层如何落到代码</h3>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 完整源码中的关键顺序，THREADS 固定为 256。</span></span><br><span class="line">value = <span class="built_in">warp_reduce</span>&lt;op&gt;(value);</span><br><span class="line"><span class="keyword">if</span> (lane == <span class="number">0</span>) warp_totals[warp] = value;</span><br><span class="line">__syncthreads();</span><br><span class="line"><span class="keyword">if</span> (warp == <span class="number">0</span>) &#123;</span><br><span class="line">    value = lane &lt; THREADS / <span class="number">32</span> ? warp_totals[lane] : <span class="built_in">neutral</span>&lt;op&gt;();</span><br><span class="line">    value = <span class="built_in">warp_reduce</span>&lt;op&gt;(value);</span><br><span class="line">    <span class="keyword">if</span> (tid == <span class="number">0</span>) output[blockIdx.x] = value;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>第一行是寄存器交换；shared 写与同步对应图中的绿色汇合；最后一次写入对应橙色 partial。完整可编译程序包含输入保护、host 分配、后续层调度、错误检查与计时，不要求读者自行补这些外壳。</p>
+<details class="gpu-source"><summary>展开完整 CUDA 源码：reduction.cu</summary>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br><span class="line">92</span><br><span class="line">93</span><br><span class="line">94</span><br><span class="line">95</span><br><span class="line">96</span><br><span class="line">97</span><br><span class="line">98</span><br><span class="line">99</span><br><span class="line">100</span><br><span class="line">101</span><br><span class="line">102</span><br><span class="line">103</span><br><span class="line">104</span><br><span class="line">105</span><br><span class="line">106</span><br><span class="line">107</span><br><span class="line">108</span><br><span class="line">109</span><br><span class="line">110</span><br><span class="line">111</span><br><span class="line">112</span><br><span class="line">113</span><br><span class="line">114</span><br><span class="line">115</span><br><span class="line">116</span><br><span class="line">117</span><br><span class="line">118</span><br><span class="line">119</span><br><span class="line">120</span><br><span class="line">121</span><br><span class="line">122</span><br><span class="line">123</span><br><span class="line">124</span><br><span class="line">125</span><br><span class="line">126</span><br><span class="line">127</span><br><span class="line">128</span><br><span class="line">129</span><br><span class="line">130</span><br><span class="line">131</span><br><span class="line">132</span><br><span class="line">133</span><br><span class="line">134</span><br><span class="line">135</span><br><span class="line">136</span><br><span class="line">137</span><br><span class="line">138</span><br><span class="line">139</span><br><span class="line">140</span><br><span class="line">141</span><br><span class="line">142</span><br><span class="line">143</span><br><span class="line">144</span><br><span class="line">145</span><br><span class="line">146</span><br><span class="line">147</span><br><span class="line">148</span><br><span class="line">149</span><br><span class="line">150</span><br><span class="line">151</span><br><span class="line">152</span><br><span class="line">153</span><br><span class="line">154</span><br><span class="line">155</span><br><span class="line">156</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// Complete CUDA teaching baseline. Backend compilation/GPU execution not performed by the author.</span></span><br><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;cuda_runtime.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;math_constants.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;algorithm&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;cmath&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;cstdlib&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;iostream&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;limits&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;stdexcept&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;string&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;vector&gt;</span></span></span><br><span class="line"></span><br><span class="line"><span class="meta">#<span class="keyword">define</span> CUDA(call) do &#123; cudaError_t err = (call); <span class="keyword">if</span> (err != cudaSuccess) \</span></span><br><span class="line"><span class="meta">    throw std::runtime_error(std::string(#call) + <span class="string">&quot;: &quot;</span> + cudaGetErrorString(err)); &#125; while (0)</span></span><br><span class="line"><span class="keyword">constexpr</span> <span class="type">int</span> THREADS = <span class="number">256</span>;  <span class="comment">// Multiple of 32; every warp participates in its collective.</span></span><br><span class="line"><span class="keyword">enum</span> <span class="title class_">Op</span> &#123; SUM, MAXIMUM, DOT &#125;;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">template</span>&lt;Op op&gt; __device__ <span class="type">float</span> <span class="title">combine</span><span class="params">(<span class="type">float</span> a, <span class="type">float</span> b)</span> </span>&#123;</span><br><span class="line">    <span class="function"><span class="keyword">if</span> <span class="title">constexpr</span> <span class="params">(op == MAXIMUM)</span> <span class="keyword">return</span> <span class="title">fmaxf</span><span class="params">(a, b)</span></span>;</span><br><span class="line">    <span class="keyword">return</span> a + b;</span><br><span class="line">&#125;</span><br><span class="line"><span class="function"><span class="keyword">template</span>&lt;Op op&gt; __device__ <span class="type">float</span> <span class="title">neutral</span><span class="params">()</span> </span>&#123;</span><br><span class="line">    <span class="function"><span class="keyword">if</span> <span class="title">constexpr</span> <span class="params">(op == MAXIMUM)</span> <span class="keyword">return</span> -CUDART_INF_F</span>;</span><br><span class="line">    <span class="keyword">return</span> <span class="number">0.0f</span>;</span><br><span class="line">&#125;</span><br><span class="line"><span class="function"><span class="keyword">template</span>&lt;Op op&gt; __device__ <span class="type">float</span> <span class="title">warp_reduce</span><span class="params">(<span class="type">float</span> value)</span> </span>&#123;</span><br><span class="line">    <span class="keyword">for</span> (<span class="type">int</span> offset = <span class="number">16</span>; offset; offset &gt;&gt;= <span class="number">1</span>) &#123;</span><br><span class="line">        <span class="type">float</span> other = __shfl_down_sync(<span class="number">0xffffffffu</span>, value, offset);</span><br><span class="line">        value = <span class="built_in">combine</span>&lt;op&gt;(value, other);</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> value;  <span class="comment">// Only lane 0 is consumed as the warp&#x27;s complete reduction.</span></span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">template</span>&lt;Op op, <span class="type">bool</span> vec4 </span>= <span class="literal">false</span>, <span class="type">bool</span> atomic = <span class="literal">false</span>&gt;</span><br><span class="line">__global__ <span class="type">void</span> <span class="built_in">reduce_stage</span>(<span class="type">const</span> <span class="type">float</span>* x, <span class="type">const</span> <span class="type">float</span>* y, <span class="type">float</span>* output, <span class="type">int</span> n) &#123;</span><br><span class="line">    __shared__ <span class="type">float</span> warp_totals[THREADS / <span class="number">32</span>];</span><br><span class="line">    <span class="type">int</span> tid = threadIdx.x, lane = tid &amp; <span class="number">31</span>, warp = tid &gt;&gt; <span class="number">5</span>;</span><br><span class="line">    <span class="type">int</span> index = (blockIdx.x * THREADS + tid) * (vec4 ? <span class="number">4</span> : <span class="number">1</span>);</span><br><span class="line">    <span class="type">float</span> value = <span class="built_in">neutral</span>&lt;op&gt;();</span><br><span class="line">    <span class="function"><span class="keyword">if</span> <span class="title">constexpr</span> <span class="params">(vec4)</span> </span>&#123;</span><br><span class="line">        <span class="comment">// Valid only for DOT. Base pointers from cudaMalloc; index is a multiple of 4.</span></span><br><span class="line">        <span class="keyword">if</span> (index + <span class="number">3</span> &lt; n) &#123;</span><br><span class="line">            float4 a = *<span class="keyword">reinterpret_cast</span>&lt;<span class="type">const</span> float4*&gt;(x + index);</span><br><span class="line">            float4 b = *<span class="keyword">reinterpret_cast</span>&lt;<span class="type">const</span> float4*&gt;(y + index);</span><br><span class="line">            value = a.x*b.x + a.y*b.y + a.z*b.z + a.w*b.w;</span><br><span class="line">        &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">            <span class="keyword">for</span> (<span class="type">int</span> j = <span class="number">0</span>; j &lt; <span class="number">4</span>; ++j)</span><br><span class="line">                <span class="keyword">if</span> (index + j &lt; n) value += x[index+j] * y[index+j];</span><br><span class="line">        &#125;</span><br><span class="line">    &#125; <span class="keyword">else</span> <span class="keyword">if</span> (index &lt; n) &#123;</span><br><span class="line">        <span class="keyword">if</span> <span class="keyword">constexpr</span> (op == DOT) value = x[index] * y[index];</span><br><span class="line">        <span class="keyword">else</span> value = x[index];</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="comment">// Do not return early for an input tail: every launched warp is full.</span></span><br><span class="line">    value = <span class="built_in">warp_reduce</span>&lt;op&gt;(value);</span><br><span class="line">    <span class="keyword">if</span> (lane == <span class="number">0</span>) warp_totals[warp] = value;</span><br><span class="line">    __syncthreads();</span><br><span class="line">    <span class="keyword">if</span> (warp == <span class="number">0</span>) &#123;</span><br><span class="line">        value = lane &lt; THREADS / <span class="number">32</span> ? warp_totals[lane] : <span class="built_in">neutral</span>&lt;op&gt;();</span><br><span class="line">        value = <span class="built_in">warp_reduce</span>&lt;op&gt;(value);</span><br><span class="line">        <span class="keyword">if</span> (tid == <span class="number">0</span>) &#123;</span><br><span class="line">            <span class="function"><span class="keyword">if</span> <span class="title">constexpr</span> <span class="params">(atomic)</span> <span class="title">atomicAdd</span><span class="params">(output, value)</span></span>;</span><br><span class="line">            <span class="keyword">else</span> output[blockIdx.x] = value;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">struct</span> <span class="title class_">Buffers</span> &#123;</span><br><span class="line">    <span class="type">float</span> *x=<span class="literal">nullptr</span>, *y=<span class="literal">nullptr</span>, *a=<span class="literal">nullptr</span>, *b=<span class="literal">nullptr</span>, *out=<span class="literal">nullptr</span>;</span><br><span class="line">    <span class="function"><span class="keyword">explicit</span> <span class="title">Buffers</span><span class="params">(<span class="type">int</span> n)</span> </span>&#123;</span><br><span class="line">        <span class="keyword">auto</span> alloc=[](<span class="type">float</span>** p, <span class="type">size_t</span> count) &#123; <span class="built_in">CUDA</span>(<span class="built_in">cudaMalloc</span>(p, std::<span class="built_in">max</span>(<span class="built_in">size_t</span>(<span class="number">1</span>), count)*<span class="keyword">sizeof</span>(<span class="type">float</span>))); &#125;;</span><br><span class="line">        <span class="built_in">alloc</span>(&amp;x,n); <span class="built_in">alloc</span>(&amp;y,n); <span class="built_in">alloc</span>(&amp;a,(n+THREADS<span class="number">-1</span>)/THREADS); <span class="built_in">alloc</span>(&amp;b,(n+THREADS<span class="number">-1</span>)/THREADS); <span class="built_in">alloc</span>(&amp;out,<span class="number">1</span>);</span><br><span class="line">    &#125;</span><br><span class="line">    ~<span class="built_in">Buffers</span>() &#123; <span class="built_in">cudaFree</span>(x); <span class="built_in">cudaFree</span>(y); <span class="built_in">cudaFree</span>(a); <span class="built_in">cudaFree</span>(b); <span class="built_in">cudaFree</span>(out); &#125;</span><br><span class="line">&#125;;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="type">void</span> <span class="title">launch</span><span class="params">(Buffers&amp; b, <span class="type">int</span> n, Op op, <span class="type">bool</span> vec4, <span class="type">bool</span> atomic)</span> </span>&#123;</span><br><span class="line">    <span class="keyword">if</span> (n == <span class="number">0</span>) &#123;</span><br><span class="line">        <span class="type">float</span> identity = op == MAXIMUM ? -std::numeric_limits&lt;<span class="type">float</span>&gt;::<span class="built_in">infinity</span>() : <span class="number">0.0f</span>;</span><br><span class="line">        <span class="built_in">CUDA</span>(<span class="built_in">cudaMemcpy</span>(b.out,&amp;identity,<span class="keyword">sizeof</span>(<span class="type">float</span>),cudaMemcpyHostToDevice));</span><br><span class="line">        <span class="keyword">return</span>;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="type">int</span> groups = (n + THREADS*(vec4?<span class="number">4</span>:<span class="number">1</span>)<span class="number">-1</span>)/(THREADS*(vec4?<span class="number">4</span>:<span class="number">1</span>));</span><br><span class="line">    <span class="type">float</span>* dst = atomic || groups==<span class="number">1</span> ? b.out : b.a;</span><br><span class="line">    <span class="keyword">if</span> (atomic) <span class="built_in">CUDA</span>(<span class="built_in">cudaMemsetAsync</span>(b.out,<span class="number">0</span>,<span class="keyword">sizeof</span>(<span class="type">float</span>))); <span class="comment">// Included in timed workflow.</span></span><br><span class="line">    <span class="keyword">if</span> (op == MAXIMUM) reduce_stage&lt;MAXIMUM&gt;&lt;&lt;&lt;groups,THREADS&gt;&gt;&gt;(b.x,b.y,dst,n);</span><br><span class="line">    <span class="keyword">else</span> <span class="keyword">if</span> (op == SUM) &#123;</span><br><span class="line">        <span class="keyword">if</span> (atomic) reduce_stage&lt;SUM,<span class="literal">false</span>,<span class="literal">true</span>&gt;&lt;&lt;&lt;groups,THREADS&gt;&gt;&gt;(b.x,b.y,dst,n);</span><br><span class="line">        <span class="keyword">else</span> reduce_stage&lt;SUM&gt;&lt;&lt;&lt;groups,THREADS&gt;&gt;&gt;(b.x,b.y,dst,n);</span><br><span class="line">    &#125; <span class="keyword">else</span> <span class="keyword">if</span> (vec4) &#123;</span><br><span class="line">        <span class="keyword">if</span> (atomic) reduce_stage&lt;DOT,<span class="literal">true</span>,<span class="literal">true</span>&gt;&lt;&lt;&lt;groups,THREADS&gt;&gt;&gt;(b.x,b.y,dst,n);</span><br><span class="line">        <span class="keyword">else</span> reduce_stage&lt;DOT,<span class="literal">true</span>&gt;&lt;&lt;&lt;groups,THREADS&gt;&gt;&gt;(b.x,b.y,dst,n);</span><br><span class="line">    &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">        <span class="keyword">if</span> (atomic) reduce_stage&lt;DOT,<span class="literal">false</span>,<span class="literal">true</span>&gt;&lt;&lt;&lt;groups,THREADS&gt;&gt;&gt;(b.x,b.y,dst,n);</span><br><span class="line">        <span class="keyword">else</span> reduce_stage&lt;DOT&gt;&lt;&lt;&lt;groups,THREADS&gt;&gt;&gt;(b.x,b.y,dst,n);</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="built_in">CUDA</span>(<span class="built_in">cudaGetLastError</span>());</span><br><span class="line">    <span class="keyword">if</span> (atomic) <span class="keyword">return</span>;</span><br><span class="line">    <span class="keyword">while</span> (groups &gt; <span class="number">1</span>) &#123;</span><br><span class="line">        <span class="type">const</span> <span class="type">float</span>* src=dst;</span><br><span class="line">        <span class="type">int</span> length=groups; groups=(length+THREADS<span class="number">-1</span>)/THREADS;</span><br><span class="line">        dst=groups==<span class="number">1</span> ? b.out : (src==b.a ? b.b : b.a);</span><br><span class="line">        <span class="keyword">if</span> (op==MAXIMUM) reduce_stage&lt;MAXIMUM&gt;&lt;&lt;&lt;groups,THREADS&gt;&gt;&gt;(src,src,dst,length);</span><br><span class="line">        <span class="keyword">else</span> reduce_stage&lt;SUM&gt;&lt;&lt;&lt;groups,THREADS&gt;&gt;&gt;(src,src,dst,length); <span class="comment">// DOT partials must be summed.</span></span><br><span class="line">        <span class="built_in">CUDA</span>(<span class="built_in">cudaGetLastError</span>());</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="type">void</span> <span class="title">run_case</span><span class="params">(<span class="type">int</span> n, Op op, <span class="type">bool</span> vec4, <span class="type">bool</span> atomic, <span class="type">bool</span> timing)</span> </span>&#123;</span><br><span class="line">    <span class="function">std::vector&lt;<span class="type">float</span>&gt; <span class="title">x</span><span class="params">(n)</span>, <span class="title">y</span><span class="params">(n)</span></span>;</span><br><span class="line">    <span class="type">double</span> ref=op==MAXIMUM ? -std::numeric_limits&lt;<span class="type">double</span>&gt;::<span class="built_in">infinity</span>() : <span class="number">0.0</span>, magnitude=<span class="number">0.0</span>;</span><br><span class="line">    <span class="keyword">for</span>(<span class="type">int</span> i=<span class="number">0</span>;i&lt;n;++i) &#123;</span><br><span class="line">        x[i]=op==MAXIMUM ? <span class="number">-1.0f</span>-<span class="built_in">float</span>(i%<span class="number">29</span>)/<span class="number">29</span> : <span class="built_in">float</span>((i%<span class="number">23</span>)<span class="number">-11</span>)/<span class="number">11</span>;</span><br><span class="line">        y[i]=<span class="built_in">float</span>((i%<span class="number">19</span>)<span class="number">-9</span>)/<span class="number">9</span>;</span><br><span class="line">        <span class="type">double</span> v=op==DOT ? <span class="type">double</span>(x[i])*<span class="type">double</span>(y[i]) : x[i];</span><br><span class="line">        <span class="keyword">if</span>(op==MAXIMUM) ref=std::<span class="built_in">max</span>(ref,v); <span class="keyword">else</span> ref+=v;</span><br><span class="line">        magnitude+=std::<span class="built_in">abs</span>(v);</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="function">Buffers <span class="title">b</span><span class="params">(n)</span></span>;</span><br><span class="line">    <span class="keyword">if</span>(n) &#123; <span class="built_in">CUDA</span>(<span class="built_in">cudaMemcpy</span>(b.x,x.<span class="built_in">data</span>(),n*<span class="keyword">sizeof</span>(<span class="type">float</span>),cudaMemcpyHostToDevice)); <span class="built_in">CUDA</span>(<span class="built_in">cudaMemcpy</span>(b.y,y.<span class="built_in">data</span>(),n*<span class="keyword">sizeof</span>(<span class="type">float</span>),cudaMemcpyHostToDevice)); &#125;</span><br><span class="line">    <span class="type">float</span> got;</span><br><span class="line">    <span class="keyword">for</span>(<span class="type">int</span> repeat=<span class="number">0</span>;repeat&lt;<span class="number">2</span>;++repeat) &#123;</span><br><span class="line">        <span class="built_in">launch</span>(b,n,op,vec4,atomic);</span><br><span class="line">        <span class="built_in">CUDA</span>(<span class="built_in">cudaMemcpy</span>(&amp;got,b.out,<span class="keyword">sizeof</span>(<span class="type">float</span>),cudaMemcpyDeviceToHost));</span><br><span class="line">        <span class="type">bool</span> ok=op==MAXIMUM ? <span class="type">double</span>(got)==ref : std::<span class="built_in">isfinite</span>(got) &amp;&amp; std::<span class="built_in">abs</span>(<span class="type">double</span>(got)-ref)&lt;=<span class="number">1e-6</span><span class="number">+2e-6</span>*magnitude;</span><br><span class="line">        <span class="keyword">if</span>(!ok) <span class="keyword">throw</span> std::<span class="built_in">runtime_error</span>(<span class="string">&quot;numerical validation failed for n=&quot;</span>+std::<span class="built_in">to_string</span>(n));</span><br><span class="line">    &#125;</span><br><span class="line">    std::cout&lt;&lt;<span class="string">&quot;PASS n=&quot;</span>&lt;&lt;n&lt;&lt;<span class="string">&quot; result=&quot;</span>&lt;&lt;got&lt;&lt;<span class="string">&quot; fp64_ref=&quot;</span>&lt;&lt;ref;</span><br><span class="line">    <span class="keyword">if</span>(timing &amp;&amp; n) &#123;</span><br><span class="line">        <span class="keyword">for</span>(<span class="type">int</span> i=<span class="number">0</span>;i&lt;<span class="number">5</span>;++i) <span class="built_in">launch</span>(b,n,op,vec4,atomic);</span><br><span class="line">        <span class="built_in">CUDA</span>(<span class="built_in">cudaDeviceSynchronize</span>());</span><br><span class="line">        cudaEvent_t start,end; <span class="built_in">CUDA</span>(<span class="built_in">cudaEventCreate</span>(&amp;start)); <span class="built_in">CUDA</span>(<span class="built_in">cudaEventCreate</span>(&amp;end));</span><br><span class="line">        <span class="built_in">CUDA</span>(<span class="built_in">cudaEventRecord</span>(start));</span><br><span class="line">        <span class="keyword">for</span>(<span class="type">int</span> i=<span class="number">0</span>;i&lt;<span class="number">50</span>;++i) <span class="built_in">launch</span>(b,n,op,vec4,atomic);</span><br><span class="line">        <span class="built_in">CUDA</span>(<span class="built_in">cudaEventRecord</span>(end)); <span class="built_in">CUDA</span>(<span class="built_in">cudaEventSynchronize</span>(end));</span><br><span class="line">        <span class="type">float</span> ms; <span class="built_in">CUDA</span>(<span class="built_in">cudaEventElapsedTime</span>(&amp;ms,start,end));</span><br><span class="line">        <span class="built_in">CUDA</span>(<span class="built_in">cudaEventDestroy</span>(start)); <span class="built_in">CUDA</span>(<span class="built_in">cudaEventDestroy</span>(end));</span><br><span class="line">        std::cout&lt;&lt;<span class="string">&quot; complete_workflow_ms=&quot;</span>&lt;&lt;ms/<span class="number">50</span>;</span><br><span class="line">    &#125;</span><br><span class="line">    std::cout&lt;&lt;<span class="string">&#x27;\n&#x27;</span>;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="type">int</span> <span class="title">main</span><span class="params">(<span class="type">int</span> argc,<span class="type">char</span>** argv)</span> </span>&#123;</span><br><span class="line">    <span class="keyword">try</span> &#123;</span><br><span class="line">        <span class="type">int</span> n=argc&gt;<span class="number">1</span> ? std::<span class="built_in">stoi</span>(argv[<span class="number">1</span>]) : <span class="number">1003</span>;</span><br><span class="line">        std::string name=argc&gt;<span class="number">2</span> ? argv[<span class="number">2</span>] : <span class="string">&quot;sum&quot;</span>, method=argc&gt;<span class="number">3</span> ? argv[<span class="number">3</span>] : <span class="string">&quot;two-pass&quot;</span>;</span><br><span class="line">        <span class="keyword">if</span>(<span class="built_in">n</span>&lt;<span class="number">0</span> || n&gt;(<span class="number">1</span>&lt;&lt;<span class="number">26</span>)) <span class="keyword">throw</span> std::<span class="built_in">invalid_argument</span>(<span class="string">&quot;n must be in [0,2^26]&quot;</span>);</span><br><span class="line">        <span class="keyword">if</span>(name!=<span class="string">&quot;sum&quot;</span> &amp;&amp; name!=<span class="string">&quot;max&quot;</span> &amp;&amp; name!=<span class="string">&quot;dot&quot;</span> &amp;&amp; name!=<span class="string">&quot;dot-vec4&quot;</span>) <span class="keyword">throw</span> std::<span class="built_in">invalid_argument</span>(<span class="string">&quot;operation: sum|max|dot|dot-vec4&quot;</span>);</span><br><span class="line">        <span class="keyword">if</span>(method!=<span class="string">&quot;two-pass&quot;</span> &amp;&amp; method!=<span class="string">&quot;atomic&quot;</span>) <span class="keyword">throw</span> std::<span class="built_in">invalid_argument</span>(<span class="string">&quot;method: two-pass|atomic&quot;</span>);</span><br><span class="line">        Op op=name==<span class="string">&quot;max&quot;</span> ? MAXIMUM : name==<span class="string">&quot;sum&quot;</span> ? SUM : DOT;</span><br><span class="line">        <span class="type">bool</span> atomic=method==<span class="string">&quot;atomic&quot;</span>, vec4=name==<span class="string">&quot;dot-vec4&quot;</span>;</span><br><span class="line">        <span class="keyword">if</span>(atomic &amp;&amp; op==MAXIMUM) <span class="keyword">throw</span> std::<span class="built_in">invalid_argument</span>(<span class="string">&quot;atomic demo supports sum/dot, not max&quot;</span>);</span><br><span class="line">        <span class="keyword">for</span>(<span class="type">int</span> size : &#123;<span class="number">0</span>,<span class="number">1</span>,<span class="number">31</span>,<span class="number">32</span>,<span class="number">33</span>,<span class="number">127</span>,<span class="number">128</span>,<span class="number">129</span>,<span class="number">255</span>,<span class="number">256</span>,<span class="number">257</span>,<span class="number">520</span>,<span class="number">65537</span>&#125;) <span class="built_in">run_case</span>(size,op,vec4,atomic,<span class="literal">false</span>);</span><br><span class="line">        <span class="built_in">run_case</span>(n,op,vec4,atomic,<span class="literal">true</span>);</span><br><span class="line">    &#125; <span class="keyword">catch</span>(<span class="type">const</span> std::exception&amp; e) &#123; std::cerr&lt;&lt;e.<span class="built_in">what</span>()&lt;&lt;<span class="string">&#x27;\n&#x27;</span>; <span class="keyword">return</span> <span class="number">1</span>; &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+</details>
+<h3 id="Triton：一轮产生一个-partial" tabindex="-1">Triton：一轮产生一个 partial</h3>
+<p><code>tl.sum</code>/<code>tl.max</code> 表达逻辑轴上的归约；具体 warp/线程布局由编译器决定，不保证严格对应上面的手写 CUDA 指令数。使用 <code>tl.arange</code> 的 BLOCK 是逻辑元素数，workers 才用于 num_warps。<a target="_blank" rel="noopener" href="https://triton-lang.org/main/python-api/generated/triton.language.sum.html">Triton sum API</a></p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br></pre></td><td class="code"><pre><span class="line"><span class="string">&quot;&quot;&quot;Hierarchical float32 sum/max/dot; no global atomic accumulator.&quot;&quot;&quot;</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">import</span> torch</span><br><span class="line"><span class="keyword">import</span> triton</span><br><span class="line"><span class="keyword">import</span> triton.language <span class="keyword">as</span> tl</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="meta">@triton.jit</span></span><br><span class="line"><span class="keyword">def</span> <span class="title function_">reduce_tiles</span>(<span class="params">X, Y, Out, N: tl.constexpr, BLOCK: tl.constexpr, OP: tl.constexpr</span>):</span><br><span class="line">    offsets = tl.program_id(<span class="number">0</span>) * BLOCK + tl.arange(<span class="number">0</span>, BLOCK)</span><br><span class="line">    <span class="keyword">if</span> OP == <span class="number">1</span>:</span><br><span class="line">        values = tl.load(X + offsets, offsets &lt; N, other=-<span class="built_in">float</span>(<span class="string">&quot;inf&quot;</span>))</span><br><span class="line">        total = tl.<span class="built_in">max</span>(values, axis=<span class="number">0</span>)</span><br><span class="line">    <span class="keyword">else</span>:</span><br><span class="line">        values = tl.load(X + offsets, offsets &lt; N, other=<span class="number">0.0</span>)</span><br><span class="line">        <span class="keyword">if</span> OP == <span class="number">2</span>:</span><br><span class="line">            values *= tl.load(Y + offsets, offsets &lt; N, other=<span class="number">0.0</span>)</span><br><span class="line">        total = tl.<span class="built_in">sum</span>(values, axis=<span class="number">0</span>)</span><br><span class="line">    tl.store(Out + tl.program_id(<span class="number">0</span>), total)</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="keyword">def</span> <span class="title function_">prepare</span>(<span class="params">n: <span class="built_in">int</span>, block: <span class="built_in">int</span>, workers: <span class="built_in">int</span>, operation: <span class="built_in">str</span></span>):</span><br><span class="line">    <span class="string">&quot;&quot;&quot;Allocate partial buffers once and return launch(x, y, out[1]).&quot;&quot;&quot;</span></span><br><span class="line">    op = &#123;<span class="string">&quot;sum&quot;</span>: <span class="number">0</span>, <span class="string">&quot;max&quot;</span>: <span class="number">1</span>, <span class="string">&quot;dot&quot;</span>: <span class="number">2</span>&#125;[operation]</span><br><span class="line">    lengths, partials = [], []</span><br><span class="line">    length = n</span><br><span class="line">    <span class="keyword">while</span> length &gt; <span class="number">0</span>:</span><br><span class="line">        lengths.append(length)</span><br><span class="line">        count = triton.cdiv(length, block)</span><br><span class="line">        <span class="keyword">if</span> count == <span class="number">1</span>:</span><br><span class="line">            <span class="keyword">break</span></span><br><span class="line">        partials.append(torch.empty(count, device=<span class="string">&quot;cuda&quot;</span>, dtype=torch.float32))</span><br><span class="line">        length = count</span><br><span class="line"></span><br><span class="line">    <span class="keyword">def</span> <span class="title function_">launch</span>(<span class="params">x, y, out</span>):</span><br><span class="line">        <span class="keyword">if</span> n == <span class="number">0</span>:</span><br><span class="line">            out.fill_(-<span class="built_in">float</span>(<span class="string">&quot;inf&quot;</span>) <span class="keyword">if</span> op == <span class="number">1</span> <span class="keyword">else</span> <span class="number">0.0</span>)</span><br><span class="line">            <span class="keyword">return</span></span><br><span class="line">        source = x</span><br><span class="line">        <span class="keyword">for</span> level, count <span class="keyword">in</span> <span class="built_in">enumerate</span>(lengths):</span><br><span class="line">            target = partials[level] <span class="keyword">if</span> level &lt; <span class="built_in">len</span>(partials) <span class="keyword">else</span> out</span><br><span class="line">            current_op = op <span class="keyword">if</span> level == <span class="number">0</span> <span class="keyword">else</span> (<span class="number">1</span> <span class="keyword">if</span> op == <span class="number">1</span> <span class="keyword">else</span> <span class="number">0</span>)</span><br><span class="line">            reduce_tiles[(triton.cdiv(count, block),)](source, y, target, count, block, current_op, num_warps=workers)</span><br><span class="line">            source = target</span><br><span class="line"></span><br><span class="line">    launch.partials = partials</span><br><span class="line">    <span class="keyword">return</span> launch</span><br></pre></td></tr></table></figure>
+<h3 id="TileLang：先把-fragment-全部初始化，再沿轴归约" tabindex="-1">TileLang：先把 fragment 全部初始化，再沿轴归约</h3>
+<p>这里使用 <code>[1,BLOCK]</code> 的 fragment，沿 dim=1 归约成 <code>[1]</code>。尾部的每个位置都赋单位元，没有残留的未初始化值。每个 tile 是独立归约，故使用 <code>clear=True</code>；如果之后改成在循环里跨 tile 累加，必须重新安排初始化和累积语义，不能照抄清零策略。<a target="_blank" rel="noopener" href="https://tilelang.com/autoapi/tilelang/language/reduce_op/index.html">TileLang reduction API</a></p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br></pre></td><td class="code"><pre><span class="line"><span class="string">&quot;&quot;&quot;Fragment-based hierarchical reduction with explicit neutral values.&quot;&quot;&quot;</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">import</span> tilelang</span><br><span class="line"><span class="keyword">import</span> tilelang.language <span class="keyword">as</span> T</span><br><span class="line"><span class="keyword">import</span> torch</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="meta">@tilelang.jit</span></span><br><span class="line"><span class="keyword">def</span> <span class="title function_">make_reduce</span>(<span class="params">n: <span class="built_in">int</span>, block: <span class="built_in">int</span>, threads: <span class="built_in">int</span>, op: <span class="built_in">int</span></span>):</span><br><span class="line">    groups = (n + block - <span class="number">1</span>) // block</span><br><span class="line"></span><br><span class="line"><span class="meta">    @T.prim_func</span></span><br><span class="line">    <span class="keyword">def</span> <span class="title function_">reduce_tiles</span>(<span class="params">X: T.Tensor(<span class="params">(<span class="params">n,</span>), <span class="string">&quot;float32&quot;</span></span>), Y: T.Tensor(<span class="params">(<span class="params">n,</span>), <span class="string">&quot;float32&quot;</span></span>), Out: T.Tensor(<span class="params">(<span class="params">groups,</span>), <span class="string">&quot;float32&quot;</span></span>)</span>):</span><br><span class="line">        <span class="keyword">with</span> T.Kernel(groups, threads=threads) <span class="keyword">as</span> pid:</span><br><span class="line">            values = T.alloc_fragment((<span class="number">1</span>, block), <span class="string">&quot;float32&quot;</span>)</span><br><span class="line">            total = T.alloc_fragment((<span class="number">1</span>,), <span class="string">&quot;float32&quot;</span>)</span><br><span class="line">            <span class="keyword">for</span> j <span class="keyword">in</span> T.Parallel(block):</span><br><span class="line">                offset = pid * block + j</span><br><span class="line">                <span class="keyword">if</span> offset &lt; n:</span><br><span class="line">                    <span class="keyword">if</span> op == <span class="number">2</span>:</span><br><span class="line">                        values[<span class="number">0</span>, j] = X[offset] * Y[offset]</span><br><span class="line">                    <span class="keyword">else</span>:</span><br><span class="line">                        values[<span class="number">0</span>, j] = X[offset]</span><br><span class="line">                <span class="keyword">else</span>:</span><br><span class="line">                    <span class="keyword">if</span> op == <span class="number">1</span>:</span><br><span class="line">                        values[<span class="number">0</span>, j] = -T.infinity(<span class="string">&quot;float32&quot;</span>)</span><br><span class="line">                    <span class="keyword">else</span>:</span><br><span class="line">                        values[<span class="number">0</span>, j] = <span class="number">0.0</span></span><br><span class="line">            <span class="keyword">if</span> op == <span class="number">1</span>:</span><br><span class="line">                T.reduce_max(values, total, dim=<span class="number">1</span>, clear=<span class="literal">True</span>)</span><br><span class="line">            <span class="keyword">else</span>:</span><br><span class="line">                T.reduce_sum(values, total, dim=<span class="number">1</span>, clear=<span class="literal">True</span>)</span><br><span class="line">            <span class="keyword">for</span> i <span class="keyword">in</span> T.Parallel(<span class="number">1</span>):</span><br><span class="line">                Out[pid] = total[i]</span><br><span class="line"></span><br><span class="line">    <span class="keyword">return</span> reduce_tiles</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="keyword">def</span> <span class="title function_">prepare</span>(<span class="params">n: <span class="built_in">int</span>, block: <span class="built_in">int</span>, workers: <span class="built_in">int</span>, operation: <span class="built_in">str</span></span>):</span><br><span class="line">    <span class="string">&quot;&quot;&quot;Create all levels before timing; y is only used for the first dot stage.&quot;&quot;&quot;</span></span><br><span class="line">    op = &#123;<span class="string">&quot;sum&quot;</span>: <span class="number">0</span>, <span class="string">&quot;max&quot;</span>: <span class="number">1</span>, <span class="string">&quot;dot&quot;</span>: <span class="number">2</span>&#125;[operation]</span><br><span class="line">    kernels, partials = [], []</span><br><span class="line">    length = n</span><br><span class="line">    <span class="keyword">while</span> length &gt; <span class="number">0</span>:</span><br><span class="line">        current_op = op <span class="keyword">if</span> <span class="keyword">not</span> kernels <span class="keyword">else</span> (<span class="number">1</span> <span class="keyword">if</span> op == <span class="number">1</span> <span class="keyword">else</span> <span class="number">0</span>)</span><br><span class="line">        kernels.append(make_reduce(length, block, workers, current_op))</span><br><span class="line">        count = (length + block - <span class="number">1</span>) // block</span><br><span class="line">        <span class="keyword">if</span> count == <span class="number">1</span>:</span><br><span class="line">            <span class="keyword">break</span></span><br><span class="line">        partials.append(torch.empty(count, device=<span class="string">&quot;cuda&quot;</span>, dtype=torch.float32))</span><br><span class="line">        length = count</span><br><span class="line"></span><br><span class="line">    <span class="keyword">def</span> <span class="title function_">launch</span>(<span class="params">x, y, out</span>):</span><br><span class="line">        <span class="keyword">if</span> n == <span class="number">0</span>:</span><br><span class="line">            out.fill_(-<span class="built_in">float</span>(<span class="string">&quot;inf&quot;</span>) <span class="keyword">if</span> op == <span class="number">1</span> <span class="keyword">else</span> <span class="number">0.0</span>)</span><br><span class="line">            <span class="keyword">return</span></span><br><span class="line">        source = x</span><br><span class="line">        <span class="keyword">for</span> level, kernel <span class="keyword">in</span> <span class="built_in">enumerate</span>(kernels):</span><br><span class="line">            target = partials[level] <span class="keyword">if</span> level &lt; <span class="built_in">len</span>(partials) <span class="keyword">else</span> out</span><br><span class="line">            kernel(source, y <span class="keyword">if</span> level == <span class="number">0</span> <span class="keyword">else</span> source, target)</span><br><span class="line">            source = target</span><br><span class="line"></span><br><span class="line">    launch.partials = partials</span><br><span class="line">    <span class="keyword">return</span> launch</span><br></pre></td></tr></table></figure>
+<p>两个版本都预分配 partial，运行时按同一 stream 顺序提交各层；dot 只有第一层乘 x/y。n=0 在 host 路径将输出设为单位元，不发起空的归约 grid。输出初始化本身仍可能触发设备操作，所以不把空输入当作 GPU kernel 性能用例。</p>
+<h2 id="Triton-与-TileLang-练习：完成后用同一套验收" tabindex="-1">Triton 与 TileLang 练习：完成后用同一套验收</h2>
+<h3 id="Triton-T1：sum/max-的一层与多层" tabindex="-1">Triton T1：sum/max 的一层与多层</h3>
+<p>在 <code>student_triton.py</code> 实现 <code>prepare(n,block,workers,operation)</code>，返回 <code>launch(x,y,out)</code>，out 的形状固定为 <code>(1,)</code>。先让每个 program 写一个 partial，再用设备上的后续 kernel 汇合；partial 缓冲在 prepare 中分配。禁止用 CPU 求和、<code>.item()</code> 或 PyTorch reduction 代替学生实现。</p>
+<p>提示：load 的默认值随操作变化；每个 program 只向 <code>partial[pid]</code> 写一次；即使 N=BLOCK²+1，也要继续归约到一个标量。N=0 单独按接口定义处理。</p>
+<h3 id="Triton-T2：把-dot-的乘法限制在第一层" tabindex="-1">Triton T2：把 dot 的乘法限制在第一层</h3>
+<p>第一层计算 x*y 再求和，第二层开始只对 partial 求和。用 x=[1,2,3]、y=[4,5,6] 验证 32；再用全 1 输入，任意 N 的 sum/dot 应为 N，可快速发现重复累加或遗漏。</p>
+<p>进阶实验：保持数学语义不变，只改变 BLOCK/num_warps 或每线程数据量，记录完整归约时间。若加入原子版，清零必须进入每次调用和计时范围，再对照同一个两阶段基线。</p>
+<h3 id="TileLang-L1：保证-fragment-尾部与归约轴正确" tabindex="-1">TileLang L1：保证 fragment 尾部与归约轴正确</h3>
+<p>在 <code>student_tilelang.py</code> 实现相同接口。先使用 <code>(1,BLOCK)</code> 与 <code>dim=1</code>，明确所有有效/无效元素的来源。workers 表示 threads，不是 BLOCK；用 threads=128/BLOCK=256 开始，再调整。</p>
+<p>提示：全负数 max 最容易抓出错用 0 的问题。改变输出 fragment 形状时，重新核对被消掉的维度，不能只改一个 <code>dim</code> 数字。每层 output 长度是 <code>ceil(input_length/BLOCK)</code>。</p>
+<h3 id="TileLang-L2：复用多层调度并解释-clear" tabindex="-1">TileLang L2：复用多层调度并解释 clear</h3>
+<p>实现 dot 首层与 sum 后续层；后续 kernel 的 tensor 形状要和当前 partial 长度一致。解释为何本代码每轮 <code>clear=True</code> 正确，而“在一个循环里想累加多个 tile 的结果”不能每轮把累加器清掉。</p>
+<p>进阶实验：导出生成代码，观察归约布局与 shared 同步；分别调整 BLOCK 与 threads，再解释哪种改变影响并行工作、哪种改变影响线程协作。不能只用“看起来用了 shuffle”判定实现已经最快。</p>
+<h3 id="统一运行入口与通过条件" tabindex="-1">统一运行入口与通过条件</h3>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 先跑完整参考；在各自安装好框架的环境中运行。</span></span><br><span class="line">python run_gpu.py --backend triton --operation <span class="built_in">sum</span> --mode check</span><br><span class="line">python run_gpu.py --backend triton --operation max --mode check</span><br><span class="line">python run_gpu.py --backend triton --operation dot --mode check</span><br><span class="line">python run_gpu.py --backend tilelang --operation <span class="built_in">sum</span> --mode check</span><br><span class="line">python run_gpu.py --backend tilelang --operation max --mode check</span><br><span class="line">python run_gpu.py --backend tilelang --operation dot --mode check</span><br><span class="line"></span><br><span class="line"><span class="comment"># 做完练习后，用相同测试检查自己的实现。</span></span><br><span class="line">python run_gpu.py --backend triton --impl student --operation dot --mode check</span><br><span class="line">python run_gpu.py --backend tilelang --impl student --operation max --mode check</span><br><span class="line"></span><br><span class="line"><span class="comment"># 每种后端都重复检查 sum / max / dot，再测完整流程。</span></span><br><span class="line">python run_gpu.py --backend triton --operation dot --mode bench --n 1048576 --output triton-dot.json</span><br><span class="line">python run_gpu.py --backend tilelang --operation dot --mode bench --n 1048576 --output tilelang-dot.json</span><br></pre></td></tr></table></figure>
+<p>检查模式覆盖空输入、warp 和 block 边界、520、BLOCK²+1 及指定长度；每个尺寸有随机、全 1、全负、交替正负四种分布。每个测试重复调用两次，检查结果和输入未被修改；部分和较小时会一起输出，方便定位错误层。</p>
+<table>
+<thead>
+<tr>
+<th>验收</th>
+<th>需要证明什么</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>覆盖</td>
+<td>每个输入恰好贡献一次；每个 partial 有唯一写出者</td>
+</tr>
+<tr>
+<td>边界</td>
+<td>无效输入填正确单位元；所有 collective 参与条件合法</td>
+</tr>
+<tr>
+<td>多层</td>
+<td>BLOCK²+1 能继续合并，dot 后续不重复乘 y</td>
+</tr>
+<tr>
+<td>数值</td>
+<td>FP64 参考、绝对误差、贡献量缩放误差分别记录</td>
+</tr>
+<tr>
+<td>重复调用</td>
+<td>不遗留旧结果，不依赖未初始化 partial，不修改输入</td>
+</tr>
+<tr>
+<td>性能</td>
+<td>比较完整结果完成时间，包含原子清零或所有合并层</td>
+</tr>
+</tbody>
+</table>
+<h2 id="怎么测：第一层很快，不代表整个归约就快" tabindex="-1">怎么测：第一层很快，不代表整个归约就快</h2>
+<p>Python 计时器在编译、分配、校验后预热 10 次；取 7 组，每组 50 次<strong>完整 launch 函数</strong>，报告各组均值的中位数/min/max。多层 kernel 全部在区间内；CUDA demo 则预热 5 次、取连续 50 次完整流程的平均值。两种计时统计不同，不直接拼成同一张速度排名。</p>
+<p>工作集会重复使用，未显式清 cache；小 kernel 的 event 区间可能包含提交空档。输出的 input_GB/s 只按输入字节除以整体时间，用于参考，不包含所有 partial 流量，也不是 DRAM 实测带宽。</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">nsys profile --trace=cuda,nvtx --output=reduce-timeline \</span><br><span class="line">  python run_gpu.py --backend triton --operation dot --mode bench --n 1048576</span><br><span class="line"></span><br><span class="line">ncu --list-sections</span><br><span class="line">ncu --kernel-name regex:reduce_tiles \</span><br><span class="line">  --section LaunchStats --section SchedulerStats --section MemoryWorkloadAnalysis \</span><br><span class="line">  --output=reduce-report \</span><br><span class="line">  python run_gpu.py --backend triton --operation dot --mode profile --n 65537</span><br></pre></td></tr></table></figure>
+<p>profile 模式包含两次完整校验调用和一次额外调用，每次可能有多个归约层；上面刻意没有硬编码某一 launch 编号。先从 kernel grid/输入长度识别第一层与合并层，再按需要缩小采样范围。不要只比较某层的 ncu 耗时就宣称端到端加速。<a target="_blank" rel="noopener" href="https://docs.nvidia.com/nsight-compute/ProfilingGuide/">Nsight Compute Profiling Guide</a></p>
+<p>按现象选择下一步：第一层流量大且吞吐已高，先减少无效访问；第一层很快但总时间偏高，检查后续小 kernel 和提交；原子方案随 block 数增大变慢，查同地址争用与清零成本；加大 tile 后变慢，核对寄存器、并行任务数与局部依赖。每次主要改一个因素，没有固定“某版本必须胜出”的结论。</p>
+<h2 id="从本篇进入下一篇" tabindex="-1">从本篇进入下一篇</h2>
+<p>你现在应能解释：一次 shuffle 为什么不够；down 与 XOR 的结果契约为何不同；为什么 lane 0 不能代替 tid 0；shared 屏障为何不能同步 grid；dot 的第二层为何变成 sum；数值正确为何不能只用 bitwise 比较。</p>
+<p>下一篇按原文顺序是 <strong>（五）向量化访存与原子操作</strong>，专门展开合并访问、单线程宽访存、地址对齐、尾部保护与直方图争用。本篇已经用安全的 dot-vec4 和原子对照建立入口，后续仍保持一章一篇。</p>
+<p><a href="/llm/">返回 LLM 算子学习栏目</a> · <a href="/systems/gpu-learning-path/">返回完整编号目录</a></p>
+<link rel="stylesheet" href="/css/cuda-learning.css">
+<link rel="stylesheet" href="/css/gpu-roofline.css">
+<link rel="stylesheet" href="/css/gpu-reduction.css">
+<script defer src="/js/gpu-reduction.js"></script>
+
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/CUDA/" rel="tag"># CUDA</a>
+              <a href="/tags/%E7%AE%97%E5%AD%90%E5%AD%A6%E4%B9%A0/" rel="tag"># 算子学习</a>
+              <a href="/tags/%E5%BD%92%E7%BA%A6/" rel="tag"># 归约</a>
+              <a href="/tags/Triton/" rel="tag"># Triton</a>
+              <a href="/tags/TileLang/" rel="tag"># TileLang</a>
+          </div>
+
+        
+
+          <div class="post-nav">
+            <div class="post-nav-item">
+                <a href="/systems/gpu-roofline/" rel="prev" title="CUDA 算子学习（三）：GPU 架构与 Roofline——估算 GPU 性能上限，再用 Triton 和 TileLang 验证">
+                  <i class="fa fa-angle-left"></i> CUDA 算子学习（三）：GPU 架构与 Roofline——估算 GPU 性能上限，再用 Triton 和 TileLang 验证
+                </a>
+            </div>
+            <div class="post-nav-item">
+            </div>
+          </div>
+    </footer>
+  </article>
+</div>
+
+
+
+
+
+
+</div>
+  </main>
+
+  <footer class="footer">
+    <div class="footer-inner">
+
+  <div class="copyright">
+    &copy; 2023 – 
+    <span itemprop="copyrightYear">2026</span>
+    <span class="with-love">
+      <i class="fa fa-code"></i>
+    </span>
+    <span class="author" itemprop="copyrightHolder">wulinze</span>
+  </div>
+  <div class="powered-by">由 <a href="https://hexo.io/" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.js.org/pisces/" rel="noopener" target="_blank">NexT.Pisces</a> 强力驱动
+  </div>
+
+    </div>
+  </footer>
+
+  
+  <div class="toggle sidebar-toggle" role="button">
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+  </div>
+  <div class="back-to-top" role="button" aria-label="返回顶部">
+    <i class="fa fa-arrow-up fa-lg"></i>
+    <span>0%</span>
+  </div>
+
+<noscript>
+  <div class="noscript-warning">Theme NexT works best with JavaScript enabled</div>
+</noscript>
+<script src="/js/reading-guide.js" defer></script>
+
+</body>
+</html>

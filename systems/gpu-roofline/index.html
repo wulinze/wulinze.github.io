@@ -17,7 +17,7 @@
 
     <meta name="description" content="从字节账、运算量和时间下界理解 Roofline，结合手绘图、交互模型、完整向量算子 demo 和两种语言的练习建立性能分析习惯。">
 <meta property="og:type" content="article">
-<meta property="og:title" content="Roofline：估算 GPU 性能上限，再用 Triton 和 TileLang 验证">
+<meta property="og:title" content="CUDA 算子学习（三）：GPU 架构与 Roofline——估算 GPU 性能上限，再用 Triton 和 TileLang 验证">
 <meta property="og:url" content="https://wulinze.github.io/systems/gpu-roofline/">
 <meta property="og:site_name" content="Wu&#39;s Blog">
 <meta property="og:description" content="从字节账、运算量和时间下界理解 Roofline，结合手绘图、交互模型、完整向量算子 demo 和两种语言的练习建立性能分析习惯。">
@@ -41,10 +41,10 @@
 <link rel="canonical" href="https://wulinze.github.io/systems/gpu-roofline/">
 
 
-<script class="next-config" data-name="page" type="application/json">{"sidebar":"","isHome":false,"isPost":true,"lang":"zh-CN","comments":true,"permalink":"https://wulinze.github.io/systems/gpu-roofline/","path":"/systems/gpu-roofline/","title":"Roofline：估算 GPU 性能上限，再用 Triton 和 TileLang 验证"}</script>
+<script class="next-config" data-name="page" type="application/json">{"sidebar":"","isHome":false,"isPost":true,"lang":"zh-CN","comments":true,"permalink":"https://wulinze.github.io/systems/gpu-roofline/","path":"/systems/gpu-roofline/","title":"CUDA 算子学习（三）：GPU 架构与 Roofline——估算 GPU 性能上限，再用 Triton 和 TileLang 验证"}</script>
 
 <script class="next-config" data-name="calendar" type="application/json">""</script>
-<title>Roofline：估算 GPU 性能上限，再用 Triton 和 TileLang 验证 | Wu's Blog</title>
+<title>CUDA 算子学习（三）：GPU 架构与 Roofline——估算 GPU 性能上限，再用 Triton 和 TileLang 验证 | Wu's Blog</title>
   
 
 
@@ -181,7 +181,7 @@
   <nav class="site-state">
       <div class="site-state-item site-state-posts">
         <a href="/archives/">
-          <span class="site-state-item-count">67</span>
+          <span class="site-state-item-count">68</span>
           <span class="site-state-item-name">日志</span>
         </a>
       </div>
@@ -191,7 +191,7 @@
       </div>
       <div class="site-state-item site-state-tags">
           <a href="/tags/">
-        <span class="site-state-item-count">67</span>
+        <span class="site-state-item-count">69</span>
         <span class="site-state-item-name">标签</span></a>
       </div>
   </nav>
@@ -236,12 +236,12 @@
     </span>
 
     <span hidden itemprop="post" itemscope itemtype="http://schema.org/CreativeWork">
-      <meta itemprop="name" content="Roofline：估算 GPU 性能上限，再用 Triton 和 TileLang 验证 | Wu's Blog">
+      <meta itemprop="name" content="CUDA 算子学习（三）：GPU 架构与 Roofline——估算 GPU 性能上限，再用 Triton 和 TileLang 验证 | Wu's Blog">
       <meta itemprop="description" content="从字节账、运算量和时间下界理解 Roofline，结合手绘图、交互模型、完整向量算子 demo 和两种语言的练习建立性能分析习惯。">
     </span>
       <header class="post-header">
         <h1 class="post-title" itemprop="name headline">
-          Roofline：估算 GPU 性能上限，再用 Triton 和 TileLang 验证
+          CUDA 算子学习（三）：GPU 架构与 Roofline——估算 GPU 性能上限，再用 Triton 和 TileLang 验证
         </h1>
 
         <div class="post-meta-container">
@@ -260,7 +260,7 @@
       </span>
       <span class="post-meta-item-text">分类于</span>
         <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-          <a href="/categories/systems/" itemprop="url" rel="index"><span itemprop="name">系统知识</span></a>
+          <a href="/categories/llm-inference/" itemprop="url" rel="index"><span itemprop="name">LLM 推理</span></a>
         </span>
     </span>
 
@@ -276,7 +276,7 @@
     
     <div class="post-body" itemprop="articleBody"><h2 id="学完以后，要能独立完成什么" tabindex="-1">学完以后，要能独立完成什么</h2>
 <p>你已经知道 <a href="/systems/cuda-basics/">GPU 的结构与内存层级</a>，也看过 <a href="/systems/cuda-overlap/">SM 调度、warp stall 和优化流程</a>。现在接着解决一个具体问题：<strong>写 kernel 之前，怎样估计这份工作至少要多长时间；测得很慢之后，怎样判断下一步该查什么？</strong></p>
-<p>本文根据 <code>leetcuda-20261029.pdf</code> 的“GPU 架构、执行模型与 Roofline”主题重新组织（PDF 阅读器第 34–42 页）。保留其从机器资源走向算术强度的主线，补充流量口径、缓存条件与实测验证，使用新的例子和图。完整后续主题见 <a href="/systems/gpu-learning-path/">GPU 算子学习路线</a>，文章标题不使用原书编号。</p>
+<p>本文根据 <code>leetcuda-20261029.pdf</code> 的“GPU 架构、执行模型与 Roofline”主题重新组织（PDF 阅读器第 34–42 页）。保留其从机器资源走向算术强度的主线，补充流量口径、缓存条件与实测验证，使用新的例子和图。完整后续主题见 <a href="/systems/gpu-learning-path/">GPU 算子学习路线</a>，博客编号接续已有的（一）基础、（二）性能分析；本篇为（三），对应原文第二章。</p>
 <p>完成本篇后，你应能：</p>
 <ul>
 <li>对向量加法、GEMV、GEMM 写出运算量和<strong>声明假设后的</strong>字节账。</li>
@@ -618,7 +618,7 @@
 </ul>
 <h2 id="学习记录与接下来的方向" tabindex="-1">学习记录与接下来的方向</h2>
 <figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">对象：GPU、驱动、框架版本、dtype、N、BLOCK、workers、buffers</span><br><span class="line">语义：add 或 axpy；输出是否预分配；允许误差</span><br><span class="line">预测：F / Q 的口径，选择的 P / BW，预计哪条屋顶更低</span><br><span class="line">正确性：测试尺寸、最大误差、输入是否改变</span><br><span class="line">测量：计时设置、耗时统计、工作集、profiler 设置</span><br><span class="line">解释：哪些证据支持预测，哪些证据与预测不符</span><br><span class="line">下一轮：只修改一个主要因素，写出预期与反证条件</span><br></pre></td></tr></table></figure>
-<p>下一步的主题是<strong>归约与点积</strong>：当很多线程必须共同产生一个结果时，向量加法里彼此独立的写回不再成立。需要学习 warp 内交换、block 内合并、跨 block 两阶段计算及浮点求和误差。相关任务已经列在 <a href="/systems/gpu-learning-path/">学习路线</a> 中，后续资料完成后从那里进入。</p>
+<p>下一篇：<a href="/llm/cuda-reduction/">（四）归约与点积：从 warp 到全局结果</a>。它对应原文下一章，继续学习 warp 内交换、block 内合并、跨 block 归约与浮点求和误差。</p>
 <link rel="stylesheet" href="/css/cuda-learning.css">
 <link rel="stylesheet" href="/css/gpu-roofline.css">
 <script defer src="/js/gpu-roofline.js"></script>
@@ -633,20 +633,23 @@
           <div class="post-tags">
               <a href="/tags/CUDA/" rel="tag"># CUDA</a>
               <a href="/tags/%E5%9F%BA%E7%A1%80%E5%AD%A6%E4%B9%A0/" rel="tag"># 基础学习</a>
-              <a href="/tags/Roofline/" rel="tag"># Roofline</a>
               <a href="/tags/Triton/" rel="tag"># Triton</a>
               <a href="/tags/TileLang/" rel="tag"># TileLang</a>
+              <a href="/tags/Roofline/" rel="tag"># Roofline</a>
           </div>
 
         
 
           <div class="post-nav">
             <div class="post-nav-item">
-                <a href="/systems/gpu-learning-path/" rel="prev" title="GPU 算子学习路线：从性能模型到 Attention 与低精度计算">
-                  <i class="fa fa-angle-left"></i> GPU 算子学习路线：从性能模型到 Attention 与低精度计算
+                <a href="/systems/gpu-learning-path/" rel="prev" title="CUDA 算子学习目录：按章阅读、逐篇实践">
+                  <i class="fa fa-angle-left"></i> CUDA 算子学习目录：按章阅读、逐篇实践
                 </a>
             </div>
             <div class="post-nav-item">
+                <a href="/llm/cuda-reduction/" rel="next" title="CUDA 算子学习（四）：归约与点积——从 warp 到全局结果">
+                  CUDA 算子学习（四）：归约与点积——从 warp 到全局结果 <i class="fa fa-angle-right"></i>
+                </a>
             </div>
           </div>
     </footer>
