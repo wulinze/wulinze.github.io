@@ -10,7 +10,21 @@
   <rights>All rights reserved 2026, wulinze</rights>
   <subtitle>技术分享 · 思考与实践</subtitle>
   <title>Wu's Blog</title>
-  <updated>2026-11-01T04:00:00.000Z</updated>
+  <updated>2026-11-02T04:03:33.000Z</updated>
+  <entry>
+    <author>
+      <name>wulinze</name>
+    </author>
+    <category term="系统知识" scheme="https://wulinze.github.io/categories/systems/"/>
+    <category term="CUDA" scheme="https://wulinze.github.io/tags/CUDA/"/>
+    <category term="基础学习" scheme="https://wulinze.github.io/tags/%E5%9F%BA%E7%A1%80%E5%AD%A6%E4%B9%A0/"/>
+    <id>https://wulinze.github.io/systems/cuda-basics/</id>
+    <link href="https://wulinze.github.io/systems/cuda-basics/"/>
+    <published>2026-11-02T04:03:33.000Z</published>
+    <summary>用七张 Excalidraw 手绘图、可交互小实验与 CUDA demo，讲清线程组织、内存位置、同步及向量加法。</summary>
+    <title>CUDA 基础学习笔记：从一次向量加法理解执行与内存</title>
+    <updated>2026-11-02T04:03:33.000Z</updated>
+  </entry>
   <entry>
     <author>
       <name>wulinze</name>
@@ -35,21 +49,6 @@
     </author>
     <category term="LeetCode 刷题" scheme="https://wulinze.github.io/categories/leetcode/"/>
     <category term="C++" scheme="https://wulinze.github.io/tags/cpp/"/>
-    <category term="滑动窗口" scheme="https://wulinze.github.io/tags/%E6%BB%91%E5%8A%A8%E7%AA%97%E5%8F%A3/"/>
-    <category term="双指针" scheme="https://wulinze.github.io/tags/%E5%8F%8C%E6%8C%87%E9%92%88/"/>
-    <id>https://wulinze.github.io/2025/10/28/1004.%E6%9C%80%E5%A4%A7%E8%BF%9E%E7%BB%AD1%E7%9A%84%E4%B8%AA%E6%95%B0III/</id>
-    <link href="https://wulinze.github.io/2025/10/28/1004.%E6%9C%80%E5%A4%A7%E8%BF%9E%E7%BB%AD1%E7%9A%84%E4%B8%AA%E6%95%B0III/"/>
-    <published>2025-10-27T16:00:00.000Z</published>
-    <summary>通过滑动窗口维护最多包含 K 个零的区间，求最长连续一的长度。</summary>
-    <title>最大连续 1 的个数 III</title>
-    <updated>2025-10-27T16:00:00.000Z</updated>
-  </entry>
-  <entry>
-    <author>
-      <name>wulinze</name>
-    </author>
-    <category term="LeetCode 刷题" scheme="https://wulinze.github.io/categories/leetcode/"/>
-    <category term="C++" scheme="https://wulinze.github.io/tags/cpp/"/>
     <category term="动态规划" scheme="https://wulinze.github.io/tags/%E5%8A%A8%E6%80%81%E8%A7%84%E5%88%92/"/>
     <category term="背包问题" scheme="https://wulinze.github.io/tags/%E8%83%8C%E5%8C%85%E9%97%AE%E9%A2%98/"/>
     <id>https://wulinze.github.io/2025/10/28/1049.%20%E6%9C%80%E5%90%8E%E4%B8%80%E5%9D%97%E7%9F%B3%E5%A4%B4%E7%9A%84%E9%87%8D%E9%87%8F%20II/</id>
@@ -67,11 +66,11 @@
     <category term="C++" scheme="https://wulinze.github.io/tags/cpp/"/>
     <category term="滑动窗口" scheme="https://wulinze.github.io/tags/%E6%BB%91%E5%8A%A8%E7%AA%97%E5%8F%A3/"/>
     <category term="双指针" scheme="https://wulinze.github.io/tags/%E5%8F%8C%E6%8C%87%E9%92%88/"/>
-    <id>https://wulinze.github.io/2025/10/28/1208.%E5%B0%BD%E5%8F%AF%E8%83%BD%E4%BD%BF%E5%AD%97%E7%AC%A6%E4%B8%B2%E7%9B%B8%E7%AD%89/</id>
-    <link href="https://wulinze.github.io/2025/10/28/1208.%E5%B0%BD%E5%8F%AF%E8%83%BD%E4%BD%BF%E5%AD%97%E7%AC%A6%E4%B8%B2%E7%9B%B8%E7%AD%89/"/>
+    <id>https://wulinze.github.io/2025/10/28/1004.%E6%9C%80%E5%A4%A7%E8%BF%9E%E7%BB%AD1%E7%9A%84%E4%B8%AA%E6%95%B0III/</id>
+    <link href="https://wulinze.github.io/2025/10/28/1004.%E6%9C%80%E5%A4%A7%E8%BF%9E%E7%BB%AD1%E7%9A%84%E4%B8%AA%E6%95%B0III/"/>
     <published>2025-10-27T16:00:00.000Z</published>
-    <summary>用双指针维护字符转换开销，寻找预算内可变为相同字符串的最长子串。</summary>
-    <title>尽可能使字符串相等</title>
+    <summary>通过滑动窗口维护最多包含 K 个零的区间，求最长连续一的长度。</summary>
+    <title>最大连续 1 的个数 III</title>
     <updated>2025-10-27T16:00:00.000Z</updated>
   </entry>
   <entry>
@@ -95,6 +94,21 @@
     </author>
     <category term="LeetCode 刷题" scheme="https://wulinze.github.io/categories/leetcode/"/>
     <category term="C++" scheme="https://wulinze.github.io/tags/cpp/"/>
+    <category term="滑动窗口" scheme="https://wulinze.github.io/tags/%E6%BB%91%E5%8A%A8%E7%AA%97%E5%8F%A3/"/>
+    <category term="双指针" scheme="https://wulinze.github.io/tags/%E5%8F%8C%E6%8C%87%E9%92%88/"/>
+    <id>https://wulinze.github.io/2025/10/28/1208.%E5%B0%BD%E5%8F%AF%E8%83%BD%E4%BD%BF%E5%AD%97%E7%AC%A6%E4%B8%B2%E7%9B%B8%E7%AD%89/</id>
+    <link href="https://wulinze.github.io/2025/10/28/1208.%E5%B0%BD%E5%8F%AF%E8%83%BD%E4%BD%BF%E5%AD%97%E7%AC%A6%E4%B8%B2%E7%9B%B8%E7%AD%89/"/>
+    <published>2025-10-27T16:00:00.000Z</published>
+    <summary>用双指针维护字符转换开销，寻找预算内可变为相同字符串的最长子串。</summary>
+    <title>尽可能使字符串相等</title>
+    <updated>2025-10-27T16:00:00.000Z</updated>
+  </entry>
+  <entry>
+    <author>
+      <name>wulinze</name>
+    </author>
+    <category term="LeetCode 刷题" scheme="https://wulinze.github.io/categories/leetcode/"/>
+    <category term="C++" scheme="https://wulinze.github.io/tags/cpp/"/>
     <category term="哈希表" scheme="https://wulinze.github.io/tags/%E5%93%88%E5%B8%8C%E8%A1%A8/"/>
     <category term="排序" scheme="https://wulinze.github.io/tags/%E6%8E%92%E5%BA%8F/"/>
     <id>https://wulinze.github.io/2025/10/28/1711.%E5%A4%A7%E9%A4%90%E8%AE%A1%E6%95%B0/</id>
@@ -102,6 +116,21 @@
     <published>2025-10-27T16:00:00.000Z</published>
     <summary>排序后用哈希表记录已有餐品，统计美味程度之和为二的幂的组合。</summary>
     <title>大餐计数</title>
+    <updated>2025-10-27T16:00:00.000Z</updated>
+  </entry>
+  <entry>
+    <author>
+      <name>wulinze</name>
+    </author>
+    <category term="LeetCode 刷题" scheme="https://wulinze.github.io/categories/leetcode/"/>
+    <category term="C++" scheme="https://wulinze.github.io/tags/cpp/"/>
+    <category term="数学" scheme="https://wulinze.github.io/tags/%E6%95%B0%E5%AD%A6/"/>
+    <category term="模拟" scheme="https://wulinze.github.io/tags/%E6%A8%A1%E6%8B%9F/"/>
+    <id>https://wulinze.github.io/2025/10/28/1806%E8%BF%98%E5%8E%9F%E6%8E%92%E5%88%97%E7%9A%84%E6%9C%80%E5%B0%8F%E6%93%8D%E4%BD%9C%E6%AC%A1%E6%95%B0/</id>
+    <link href="https://wulinze.github.io/2025/10/28/1806%E8%BF%98%E5%8E%9F%E6%8E%92%E5%88%97%E7%9A%84%E6%9C%80%E5%B0%8F%E6%93%8D%E4%BD%9C%E6%AC%A1%E6%95%B0/"/>
+    <published>2025-10-27T16:00:00.000Z</published>
+    <summary>分析排列下标的模运算变换，求恢复原排列所需的最少操作次数。</summary>
+    <title>还原排列的最小操作次数</title>
     <updated>2025-10-27T16:00:00.000Z</updated>
   </entry>
   <entry>
@@ -118,21 +147,6 @@
     <published>2025-10-27T16:00:00.000Z</published>
     <summary>将目标数组映射为位置序列，把子序列匹配转化为 LIS，并用贪心与二分查找求解。</summary>
     <title>得到的子序列最少操作次数</title>
-    <updated>2025-10-27T16:00:00.000Z</updated>
-  </entry>
-  <entry>
-    <author>
-      <name>wulinze</name>
-    </author>
-    <category term="LeetCode 刷题" scheme="https://wulinze.github.io/categories/leetcode/"/>
-    <category term="C++" scheme="https://wulinze.github.io/tags/cpp/"/>
-    <category term="数学" scheme="https://wulinze.github.io/tags/%E6%95%B0%E5%AD%A6/"/>
-    <category term="模拟" scheme="https://wulinze.github.io/tags/%E6%A8%A1%E6%8B%9F/"/>
-    <id>https://wulinze.github.io/2025/10/28/1806%E8%BF%98%E5%8E%9F%E6%8E%92%E5%88%97%E7%9A%84%E6%9C%80%E5%B0%8F%E6%93%8D%E4%BD%9C%E6%AC%A1%E6%95%B0/</id>
-    <link href="https://wulinze.github.io/2025/10/28/1806%E8%BF%98%E5%8E%9F%E6%8E%92%E5%88%97%E7%9A%84%E6%9C%80%E5%B0%8F%E6%93%8D%E4%BD%9C%E6%AC%A1%E6%95%B0/"/>
-    <published>2025-10-27T16:00:00.000Z</published>
-    <summary>分析排列下标的模运算变换，求恢复原排列所需的最少操作次数。</summary>
-    <title>还原排列的最小操作次数</title>
     <updated>2025-10-27T16:00:00.000Z</updated>
   </entry>
   <entry>
@@ -185,36 +199,6 @@
     </author>
     <category term="LeetCode 刷题" scheme="https://wulinze.github.io/categories/leetcode/"/>
     <category term="C++" scheme="https://wulinze.github.io/tags/cpp/"/>
-    <category term="二叉树" scheme="https://wulinze.github.io/tags/%E4%BA%8C%E5%8F%89%E6%A0%91/"/>
-    <category term="递归" scheme="https://wulinze.github.io/tags/%E9%80%92%E5%BD%92/"/>
-    <id>https://wulinze.github.io/2025/10/28/236.%20%E4%BA%8C%E5%8F%89%E6%A0%91%E7%9A%84%E6%9C%80%E8%BF%91%E5%85%AC%E5%85%B1%E7%A5%96%E5%85%88/</id>
-    <link href="https://wulinze.github.io/2025/10/28/236.%20%E4%BA%8C%E5%8F%89%E6%A0%91%E7%9A%84%E6%9C%80%E8%BF%91%E5%85%AC%E5%85%B1%E7%A5%96%E5%85%88/"/>
-    <published>2025-10-27T16:00:00.000Z</published>
-    <summary>根据节点在左右子树中的分布，分析二叉树最近公共祖先的递归求解。</summary>
-    <title>二叉树的最近公共祖先</title>
-    <updated>2025-10-27T16:00:00.000Z</updated>
-  </entry>
-  <entry>
-    <author>
-      <name>wulinze</name>
-    </author>
-    <category term="LeetCode 刷题" scheme="https://wulinze.github.io/categories/leetcode/"/>
-    <category term="C++" scheme="https://wulinze.github.io/tags/cpp/"/>
-    <category term="贪心" scheme="https://wulinze.github.io/tags/%E8%B4%AA%E5%BF%83/"/>
-    <category term="计数" scheme="https://wulinze.github.io/tags/%E8%AE%A1%E6%95%B0/"/>
-    <id>https://wulinze.github.io/2025/10/28/1846.%E5%87%8F%E5%B0%8F%E5%92%8C%E9%87%8D%E6%96%B0%E6%8E%92%E5%88%97%E6%95%B0%E7%BB%84%E5%90%8E%E7%9A%84%E6%9C%80%E5%A4%A7%E5%85%83%E7%B4%A0/</id>
-    <link href="https://wulinze.github.io/2025/10/28/1846.%E5%87%8F%E5%B0%8F%E5%92%8C%E9%87%8D%E6%96%B0%E6%8E%92%E5%88%97%E6%95%B0%E7%BB%84%E5%90%8E%E7%9A%84%E6%9C%80%E5%A4%A7%E5%85%83%E7%B4%A0/"/>
-    <published>2025-10-27T16:00:00.000Z</published>
-    <summary>从排序方案出发，用计数和缺失位置分析减小、重排后可达到的最大元素。</summary>
-    <title>减小和重新排列数组后的最大元素</title>
-    <updated>2025-10-27T16:00:00.000Z</updated>
-  </entry>
-  <entry>
-    <author>
-      <name>wulinze</name>
-    </author>
-    <category term="LeetCode 刷题" scheme="https://wulinze.github.io/categories/leetcode/"/>
-    <category term="C++" scheme="https://wulinze.github.io/tags/cpp/"/>
     <category term="排序" scheme="https://wulinze.github.io/tags/%E6%8E%92%E5%BA%8F/"/>
     <category term="贪心" scheme="https://wulinze.github.io/tags/%E8%B4%AA%E5%BF%83/"/>
     <id>https://wulinze.github.io/2025/10/28/1996.%E6%B8%B8%E6%88%8F%E4%B8%AD%E7%9A%84%E5%BC%B1%E8%A7%92%E8%89%B2/</id>
@@ -222,37 +206,6 @@
     <published>2025-10-27T16:00:00.000Z</published>
     <summary>按攻击与防御的不同方向排序，再遍历最大防御值来统计弱角色。</summary>
     <title>游戏中的弱角色</title>
-    <updated>2025-10-27T16:00:00.000Z</updated>
-  </entry>
-  <entry>
-    <author>
-      <name>wulinze</name>
-    </author>
-    <category term="LeetCode 刷题" scheme="https://wulinze.github.io/categories/leetcode/"/>
-    <category term="C++" scheme="https://wulinze.github.io/tags/cpp/"/>
-    <category term="排序" scheme="https://wulinze.github.io/tags/%E6%8E%92%E5%BA%8F/"/>
-    <category term="计数" scheme="https://wulinze.github.io/tags/%E8%AE%A1%E6%95%B0/"/>
-    <id>https://wulinze.github.io/2025/10/28/274.H%E6%8C%87%E6%95%B0/</id>
-    <link href="https://wulinze.github.io/2025/10/28/274.H%E6%8C%87%E6%95%B0/"/>
-    <published>2025-10-27T16:00:00.000Z</published>
-    <summary>从按引用次数排序入手，再用计数优化 H 指数的计算。</summary>
-    <title>H 指数</title>
-    <updated>2025-10-27T16:00:00.000Z</updated>
-  </entry>
-  <entry>
-    <author>
-      <name>wulinze</name>
-    </author>
-    <category term="LeetCode 刷题" scheme="https://wulinze.github.io/categories/leetcode/"/>
-    <category term="C++" scheme="https://wulinze.github.io/tags/cpp/"/>
-    <category term="双指针" scheme="https://wulinze.github.io/tags/%E5%8F%8C%E6%8C%87%E9%92%88/"/>
-    <category term="二分查找" scheme="https://wulinze.github.io/tags/%E4%BA%8C%E5%88%86%E6%9F%A5%E6%89%BE/"/>
-    <category term="位运算" scheme="https://wulinze.github.io/tags/%E4%BD%8D%E8%BF%90%E7%AE%97/"/>
-    <id>https://wulinze.github.io/2025/10/28/287.%E5%AF%BB%E6%89%BE%E9%87%8D%E5%A4%8D%E6%95%B0/</id>
-    <link href="https://wulinze.github.io/2025/10/28/287.%E5%AF%BB%E6%89%BE%E9%87%8D%E5%A4%8D%E6%95%B0/"/>
-    <published>2025-10-27T16:00:00.000Z</published>
-    <summary>记录二分计数、二进制标记与快慢指针判环三种寻找重复数的思路。</summary>
-    <title>寻找重复数</title>
     <updated>2025-10-27T16:00:00.000Z</updated>
   </entry>
   <entry>
@@ -276,12 +229,58 @@
     </author>
     <category term="LeetCode 刷题" scheme="https://wulinze.github.io/categories/leetcode/"/>
     <category term="C++" scheme="https://wulinze.github.io/tags/cpp/"/>
+    <category term="排序" scheme="https://wulinze.github.io/tags/%E6%8E%92%E5%BA%8F/"/>
+    <category term="计数" scheme="https://wulinze.github.io/tags/%E8%AE%A1%E6%95%B0/"/>
+    <id>https://wulinze.github.io/2025/10/28/274.H%E6%8C%87%E6%95%B0/</id>
+    <link href="https://wulinze.github.io/2025/10/28/274.H%E6%8C%87%E6%95%B0/"/>
+    <published>2025-10-27T16:00:00.000Z</published>
+    <summary>从按引用次数排序入手，再用计数优化 H 指数的计算。</summary>
+    <title>H 指数</title>
+    <updated>2025-10-27T16:00:00.000Z</updated>
+  </entry>
+  <entry>
+    <author>
+      <name>wulinze</name>
+    </author>
+    <category term="LeetCode 刷题" scheme="https://wulinze.github.io/categories/leetcode/"/>
+    <category term="C++" scheme="https://wulinze.github.io/tags/cpp/"/>
     <category term="二分查找" scheme="https://wulinze.github.io/tags/%E4%BA%8C%E5%88%86%E6%9F%A5%E6%89%BE/"/>
     <id>https://wulinze.github.io/2025/10/28/275.H%E6%8C%87%E6%95%B0II/</id>
     <link href="https://wulinze.github.io/2025/10/28/275.H%E6%8C%87%E6%95%B0II/"/>
     <published>2025-10-27T16:00:00.000Z</published>
     <summary>利用引用次数已有序的条件，通过二分查找求 H 指数。</summary>
     <title>H 指数 II</title>
+    <updated>2025-10-27T16:00:00.000Z</updated>
+  </entry>
+  <entry>
+    <author>
+      <name>wulinze</name>
+    </author>
+    <category term="LeetCode 刷题" scheme="https://wulinze.github.io/categories/leetcode/"/>
+    <category term="C++" scheme="https://wulinze.github.io/tags/cpp/"/>
+    <category term="二叉树" scheme="https://wulinze.github.io/tags/%E4%BA%8C%E5%8F%89%E6%A0%91/"/>
+    <category term="递归" scheme="https://wulinze.github.io/tags/%E9%80%92%E5%BD%92/"/>
+    <id>https://wulinze.github.io/2025/10/28/236.%20%E4%BA%8C%E5%8F%89%E6%A0%91%E7%9A%84%E6%9C%80%E8%BF%91%E5%85%AC%E5%85%B1%E7%A5%96%E5%85%88/</id>
+    <link href="https://wulinze.github.io/2025/10/28/236.%20%E4%BA%8C%E5%8F%89%E6%A0%91%E7%9A%84%E6%9C%80%E8%BF%91%E5%85%AC%E5%85%B1%E7%A5%96%E5%85%88/"/>
+    <published>2025-10-27T16:00:00.000Z</published>
+    <summary>根据节点在左右子树中的分布，分析二叉树最近公共祖先的递归求解。</summary>
+    <title>二叉树的最近公共祖先</title>
+    <updated>2025-10-27T16:00:00.000Z</updated>
+  </entry>
+  <entry>
+    <author>
+      <name>wulinze</name>
+    </author>
+    <category term="LeetCode 刷题" scheme="https://wulinze.github.io/categories/leetcode/"/>
+    <category term="C++" scheme="https://wulinze.github.io/tags/cpp/"/>
+    <category term="双指针" scheme="https://wulinze.github.io/tags/%E5%8F%8C%E6%8C%87%E9%92%88/"/>
+    <category term="二分查找" scheme="https://wulinze.github.io/tags/%E4%BA%8C%E5%88%86%E6%9F%A5%E6%89%BE/"/>
+    <category term="位运算" scheme="https://wulinze.github.io/tags/%E4%BD%8D%E8%BF%90%E7%AE%97/"/>
+    <id>https://wulinze.github.io/2025/10/28/287.%E5%AF%BB%E6%89%BE%E9%87%8D%E5%A4%8D%E6%95%B0/</id>
+    <link href="https://wulinze.github.io/2025/10/28/287.%E5%AF%BB%E6%89%BE%E9%87%8D%E5%A4%8D%E6%95%B0/"/>
+    <published>2025-10-27T16:00:00.000Z</published>
+    <summary>记录二分计数、二进制标记与快慢指针判环三种寻找重复数的思路。</summary>
+    <title>寻找重复数</title>
     <updated>2025-10-27T16:00:00.000Z</updated>
   </entry>
   <entry>
