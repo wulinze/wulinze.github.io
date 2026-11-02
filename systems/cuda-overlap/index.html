@@ -22,13 +22,16 @@
 <meta property="og:site_name" content="Wu&#39;s Blog">
 <meta property="og:description" content="先分清性能术语与 SM 内部管线，再用手绘图、交互模型和完整 CUDA demo 理解 occupancy、延迟隐藏、合并访存、tiling、向量化及 TMA。">
 <meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://wulinze.github.io/images/cuda-overlap/09-sm-components.svg">
 <meta property="og:image" content="https://wulinze.github.io/images/cuda-overlap/01-sm-pipelines.svg">
 <meta property="og:image" content="https://wulinze.github.io/images/cuda-overlap/02-issue-flow.svg">
 <meta property="og:image" content="https://wulinze.github.io/images/cuda-overlap/03-bottlenecks.svg">
 <meta property="og:image" content="https://wulinze.github.io/images/cuda-overlap/04-occupancy.svg">
 <meta property="og:image" content="https://wulinze.github.io/images/cuda-overlap/05-memory-overlap.svg">
 <meta property="og:image" content="https://wulinze.github.io/images/cuda-overlap/06-access-and-tiling.svg">
+<meta property="og:image" content="https://wulinze.github.io/images/cuda-overlap/10-tiling-walkthrough.svg">
 <meta property="og:image" content="https://wulinze.github.io/images/cuda-overlap/07-double-buffer.svg">
+<meta property="og:image" content="https://wulinze.github.io/images/cuda-overlap/11-overlap-slots.svg">
 <meta property="og:image" content="https://wulinze.github.io/images/cuda-overlap/08-tma.svg">
 <meta property="article:published_time" content="2026-11-02T05:35:00.000Z">
 <meta property="article:modified_time" content="2026-11-02T05:35:00.000Z">
@@ -37,7 +40,7 @@
 <meta property="article:tag" content="GPU 性能">
 <meta property="article:tag" content="基础学习">
 <meta name="twitter:card" content="summary">
-<meta name="twitter:image" content="https://wulinze.github.io/images/cuda-overlap/01-sm-pipelines.svg">
+<meta name="twitter:image" content="https://wulinze.github.io/images/cuda-overlap/09-sm-components.svg">
 
 
 <link rel="canonical" href="https://wulinze.github.io/systems/cuda-overlap/">
@@ -168,7 +171,7 @@
       <div class="sidebar-panel-container">
         <!--noindex-->
         <div class="post-toc-wrap sidebar-panel">
-            <div class="post-toc animated"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E9%98%85%E8%AF%BB%E8%B7%AF%E7%BA%BF%E4%B8%8E%E6%9C%AF%E8%AF%AD%E5%85%A5%E5%8F%A3"><span class="nav-text">阅读路线与术语入口</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#1.-%E5%85%88%E6%94%BE%E5%A4%A7%E4%B8%80%E4%B8%AA-SM%EF%BC%9A%E8%B0%81%E4%BF%9D%E5%AD%98%E7%8A%B6%E6%80%81%EF%BC%8C%E8%B0%81%E8%B0%83%E5%BA%A6%EF%BC%8C%E8%B0%81%E8%AE%A1%E7%AE%97"><span class="nav-text">1. 先放大一个 SM：谁保存状态，谁调度，谁计算</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#1.1-%E7%9C%8B%E6%87%82%E5%9B%BE%E9%87%8C%E7%9A%84%E9%83%A8%E4%BB%B6"><span class="nav-text">1.1 看懂图里的部件</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#1.2-%E4%B8%80%E6%9D%A1-load-%E2%86%92-FMA-%E2%86%92-store-%E6%80%8E%E6%A0%B7%E8%B5%B0%E5%AE%8C"><span class="nav-text">1.2 一条 load → FMA → store 怎样走完</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#1.3-%E8%AE%A1%E7%AE%97%E7%AE%A1%E7%BA%BF%E5%92%8C%E8%AE%BF%E5%AD%98%E7%AE%A1%E7%BA%BF%E5%A6%82%E4%BD%95%E6%8E%92%E9%98%9F"><span class="nav-text">1.3 计算管线和访存管线如何排队</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#2.-memory-bound%E3%80%81compute-bound%E3%80%81latency-bound-%E6%80%8E%E4%B9%88%E5%88%A4%E6%96%AD"><span class="nav-text">2. memory-bound、compute-bound、latency-bound 怎么判断</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#2.1-%E5%85%88%E9%97%AE%E2%80%9C%E6%BB%A1%E4%BA%86%E2%80%9D%EF%BC%8C%E8%BF%98%E6%98%AF%E2%80%9C%E6%B2%A1%E6%B4%BB%E5%8F%AF%E5%8F%91%E2%80%9D"><span class="nav-text">2.1 先问“满了”，还是“没活可发”</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2.2-%E7%94%A8%E4%B8%80%E4%B8%AA%E6%9C%89%E8%BE%B9%E7%95%8C%E7%9A%84%E5%90%9E%E5%90%90%E5%85%AC%E5%BC%8F%E4%BC%B0%E7%AE%97"><span class="nav-text">2.2 用一个有边界的吞吐公式估算</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#3.-warp-stall-%E4%B8%8E%E6%9B%B4%E5%A4%9A-resident-warp%EF%BC%9A%E6%80%8E%E6%A0%B7%E9%9A%90%E8%97%8F%E7%AD%89%E5%BE%85"><span class="nav-text">3. warp stall 与更多 resident warp：怎样隐藏等待</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#3.1-resident%E3%80%81eligible%E3%80%81issued-%E6%98%AF%E4%B8%89%E4%B8%AA%E5%B1%82%E6%AC%A1"><span class="nav-text">3.1 resident、eligible、issued 是三个层次</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#3.2-%E4%B8%80%E4%B8%AA%E8%83%BD%E6%89%8B%E7%AE%97%E7%9A%84%E8%B0%83%E5%BA%A6%E6%A8%A1%E5%9E%8B"><span class="nav-text">3.2 一个能手算的调度模型</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#3.3-%E4%B8%BA%E4%BB%80%E4%B9%88%E5%8A%A0-warp-%E4%B9%9F%E5%8F%AF%E8%83%BD%E6%B2%A1%E7%94%A8"><span class="nav-text">3.3 为什么加 warp 也可能没用</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#4.-SM-occupancy%EF%BC%9A%E8%B5%84%E6%BA%90%E8%A3%85%E5%BE%97%E4%B8%8B%E5%A4%9A%E5%B0%91-warp"><span class="nav-text">4. SM occupancy：资源装得下多少 warp</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#4.1-%E4%BB%8E-block-%E6%95%B0%E6%8E%A8%E5%88%B0-warp-%E6%95%B0"><span class="nav-text">4.1 从 block 数推到 warp 数</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#4.2-%E6%9F%A5%E8%AF%A2%E5%BD%93%E5%89%8D-GPU-%E7%9A%84%E7%9C%9F%E5%AE%9E%E5%AE%B9%E9%87%8F"><span class="nav-text">4.2 查询当前 GPU 的真实容量</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#5.-%E5%AF%B9%E7%85%A7%E5%AD%98%E5%82%A8%E5%B1%82%E7%BA%A7%EF%BC%9A%E8%AF%A5%E5%87%8F%E5%B0%91%E6%90%AC%E8%BF%90%EF%BC%8C%E8%BF%98%E6%98%AF%E6%8A%8A%E6%90%AC%E8%BF%90%E6%8F%90%E5%89%8D"><span class="nav-text">5. 对照存储层级：该减少搬运，还是把搬运提前</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#6.-%E4%B8%89%E7%A7%8D%E5%9F%BA%E7%A1%80%E4%BC%98%E5%8C%96%EF%BC%9A%E5%90%88%E5%B9%B6%E8%AE%BF%E5%AD%98%E3%80%81tiling%E3%80%81%E5%90%91%E9%87%8F%E5%8C%96"><span class="nav-text">6. 三种基础优化：合并访存、tiling、向量化</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#6.1-%E5%90%88%E5%B9%B6%E8%AE%BF%E5%AD%98%EF%BC%9A%E5%85%88%E7%9C%8B%E5%90%8C%E4%B8%80%E6%9D%A1%E6%8C%87%E4%BB%A4%E4%B8%AD%E7%9B%B8%E9%82%BB%E7%BA%BF%E7%A8%8B%E7%9A%84%E5%9C%B0%E5%9D%80"><span class="nav-text">6.1 合并访存：先看同一条指令中相邻线程的地址</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#6.2-tiling%EF%BC%9A%E5%88%86%E5%9D%97%E4%B9%8B%E5%90%8E%EF%BC%8C%E8%A6%81%E8%AF%B4%E6%98%8E%E6%95%B0%E6%8D%AE%E8%A2%AB%E8%B0%81%E5%A4%8D%E7%94%A8"><span class="nav-text">6.2 tiling：分块之后，要说明数据被谁复用</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#6.3-%E5%90%91%E9%87%8F%E5%8C%96%EF%BC%9A%E6%94%B9%E5%8F%98%E5%8D%95%E4%B8%AA%E7%BA%BF%E7%A8%8B%E7%9A%84%E4%B8%80%E6%AC%A1%E8%AE%BF%E9%97%AE%E5%AE%BD%E5%BA%A6"><span class="nav-text">6.3 向量化：改变单个线程的一次访问宽度</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#6.4-%E5%AE%8C%E6%95%B4%E6%BA%90%E7%A0%81%E4%B8%8E%E8%BF%90%E8%A1%8C%E6%96%B9%E5%BC%8F"><span class="nav-text">6.4 完整源码与运行方式</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#7.-%E4%BB%8E%E5%90%8C%E6%AD%A5-tiling-%E8%B5%B0%E5%88%B0%E5%8F%8C%E7%BC%93%E5%86%B2%EF%BC%9A%E8%AE%A1%E7%AE%97%E5%BD%93%E5%89%8D%E5%9D%97%EF%BC%8C%E6%90%AC%E4%B8%8B%E4%B8%80%E5%9D%97"><span class="nav-text">7. 从同步 tiling 走到双缓冲：计算当前块，搬下一块</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#7.1-buffer-%E7%94%9F%E5%91%BD%E5%91%A8%E6%9C%9F%E6%AF%94%E2%80%9C%E7%94%A8%E4%BA%86-async%E2%80%9D%E6%9B%B4%E9%87%8D%E8%A6%81"><span class="nav-text">7.1 buffer 生命周期比“用了 async”更重要</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#7.2-%E4%B8%BA%E4%BB%80%E4%B9%88%E7%90%86%E6%83%B3%E6%97%B6%E9%97%B4%E4%BB%8E%E7%9B%B8%E5%8A%A0%E5%8F%98%E6%88%90%E5%8F%96-max"><span class="nav-text">7.2 为什么理想时间从相加变成取 max</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#7.3-cp.async-%E4%B8%8E-pipeline-API-%E7%9A%84%E8%A7%92%E8%89%B2"><span class="nav-text">7.3 cp.async 与 pipeline API 的角色</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#8.-TMA%EF%BC%9A%E6%8A%8A%E4%B8%80%E5%9D%97-tensor-%E7%9A%84%E6%90%AC%E8%BF%90%E4%BA%A4%E7%BB%99%E4%B8%93%E9%97%A8%E6%9C%BA%E5%88%B6"><span class="nav-text">8. TMA：把一块 tensor 的搬运交给专门机制</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#8.1-%E5%AE%83%E6%8E%A5%E5%9C%A8%E5%93%AA%E4%B8%80%E5%B1%82%EF%BC%8C%E6%9B%BF%E4%BD%A0%E5%81%9A%E4%BB%80%E4%B9%88"><span class="nav-text">8.1 它接在哪一层，替你做什么</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#8.2-%E7%94%A8%E4%B8%80%E4%B8%AA%E4%BA%8C%E7%BB%B4-tile-%E7%90%86%E8%A7%A3-descriptor-%E5%92%8C%E5%AE%8C%E6%88%90%E4%BF%A1%E5%8F%B7"><span class="nav-text">8.2 用一个二维 tile 理解 descriptor 和完成信号</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#8.3-%E5%9B%9B%E4%B8%AA%E9%9C%80%E8%A6%81%E5%8D%95%E7%8B%AC%E6%A3%80%E6%9F%A5%E7%9A%84%E6%AD%A3%E7%A1%AE%E6%80%A7%E6%9D%A1%E4%BB%B6"><span class="nav-text">8.3 四个需要单独检查的正确性条件</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#8.4-warp-specialization-%E4%B8%BA%E4%BD%95%E5%8F%AF%E8%83%BD%E9%99%8D%E4%BD%8E-occupancy-%E5%8D%B4%E6%9B%B4%E5%BF%AB"><span class="nav-text">8.4 warp specialization 为何可能降低 occupancy 却更快</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#9.-%E6%80%8E%E6%A0%B7%E7%94%A8-profiler-%E6%8A%8A%E8%BF%99%E4%BA%9B%E5%88%A4%E6%96%AD%E8%BF%9E%E8%B5%B7%E6%9D%A5"><span class="nav-text">9. 怎样用 profiler 把这些判断连起来</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#10.-%E6%A3%80%E6%9F%A5%E8%87%AA%E5%B7%B1%E6%98%AF%E5%90%A6%E7%90%86%E8%A7%A3"><span class="nav-text">10. 检查自己是否理解</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%AE%98%E6%96%B9%E8%B5%84%E6%96%99%E4%B8%8E%E5%90%8E%E7%BB%AD%E5%AD%A6%E4%B9%A0"><span class="nav-text">官方资料与后续学习</span></a></li></ol></div>
+            <div class="post-toc animated"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E9%98%85%E8%AF%BB%E8%B7%AF%E7%BA%BF%E4%B8%8E%E6%9C%AF%E8%AF%AD%E5%85%A5%E5%8F%A3"><span class="nav-text">阅读路线与术语入口</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#A.-%E7%93%B6%E9%A2%88%E5%88%86%E7%B1%BB%EF%BC%9Abound-%E5%88%B0%E5%BA%95%E8%A2%AB%E4%BB%80%E4%B9%88%E9%99%90%E5%88%B6"><span class="nav-text">A. 瓶颈分类：bound 到底被什么限制</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#B.-warp-%E7%8A%B6%E6%80%81%EF%BC%9A%E9%A9%BB%E7%95%99%E3%80%81%E5%B0%B1%E7%BB%AA%E5%92%8C%E5%8F%91%E5%87%BA%E4%B8%8D%E6%98%AF%E4%B8%80%E4%BB%B6%E4%BA%8B"><span class="nav-text">B. warp 状态：驻留、就绪和发出不是一件事</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#C.-%E7%9B%B8%E5%85%B3%E6%8C%87%E6%A0%87%EF%BC%9A%E6%AF%8F%E4%B8%AA%E6%95%B0%E5%AD%97%E7%9A%84%E5%8D%95%E4%BD%8D%E5%92%8C%E7%BB%9F%E8%AE%A1%E8%8C%83%E5%9B%B4%E6%98%AF%E4%BB%80%E4%B9%88"><span class="nav-text">C. 相关指标：每个数字的单位和统计范围是什么</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#1.-%E5%85%88%E6%94%BE%E5%A4%A7%E4%B8%80%E4%B8%AA-SM%EF%BC%9A%E8%B0%81%E4%BF%9D%E5%AD%98%E7%8A%B6%E6%80%81%EF%BC%8C%E8%B0%81%E8%B0%83%E5%BA%A6%EF%BC%8C%E8%B0%81%E8%AE%A1%E7%AE%97"><span class="nav-text">1. 先放大一个 SM：谁保存状态，谁调度，谁计算</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#1.1-%E5%85%88%E7%9C%8B%E7%BB%84%E6%88%90%EF%BC%9A%E5%93%AA%E4%BA%9B%E9%83%A8%E4%BB%B6%E5%B1%9E%E4%BA%8E%E5%AD%90%E5%88%86%E5%8C%BA%EF%BC%8C%E5%93%AA%E4%BA%9B%E7%94%B1%E6%95%B4%E4%B8%AA-SM-%E5%85%B1%E4%BA%AB"><span class="nav-text">1.1 先看组成：哪些部件属于子分区，哪些由整个 SM 共享</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#1.2-%E5%86%8D%E7%9C%8B%E8%BF%99%E4%BA%9B%E9%83%A8%E4%BB%B6%E5%A6%82%E4%BD%95%E5%B7%A5%E4%BD%9C"><span class="nav-text">1.2 再看这些部件如何工作</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#1.3-%E4%B8%80%E6%9D%A1-load-%E2%86%92-FMA-%E2%86%92-store-%E6%80%8E%E6%A0%B7%E8%B5%B0%E5%AE%8C"><span class="nav-text">1.3 一条 load → FMA → store 怎样走完</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#1.4-%E8%AE%A1%E7%AE%97%E7%AE%A1%E7%BA%BF%E5%92%8C%E8%AE%BF%E5%AD%98%E7%AE%A1%E7%BA%BF%E5%A6%82%E4%BD%95%E6%8E%92%E9%98%9F"><span class="nav-text">1.4 计算管线和访存管线如何排队</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#2.-memory-bound%E3%80%81compute-bound%E3%80%81latency-bound-%E6%80%8E%E4%B9%88%E5%88%A4%E6%96%AD"><span class="nav-text">2. memory-bound、compute-bound、latency-bound 怎么判断</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#2.1-%E5%85%88%E9%97%AE%E2%80%9C%E6%BB%A1%E4%BA%86%E2%80%9D%EF%BC%8C%E8%BF%98%E6%98%AF%E2%80%9C%E6%B2%A1%E6%B4%BB%E5%8F%AF%E5%8F%91%E2%80%9D"><span class="nav-text">2.1 先问“满了”，还是“没活可发”</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2.2-%E7%94%A8%E4%B8%80%E4%B8%AA%E6%9C%89%E8%BE%B9%E7%95%8C%E7%9A%84%E5%90%9E%E5%90%90%E5%85%AC%E5%BC%8F%E4%BC%B0%E7%AE%97"><span class="nav-text">2.2 用一个有边界的吞吐公式估算</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#3.-warp-stall-%E4%B8%8E%E6%9B%B4%E5%A4%9A-resident-warp%EF%BC%9A%E6%80%8E%E6%A0%B7%E9%9A%90%E8%97%8F%E7%AD%89%E5%BE%85"><span class="nav-text">3. warp stall 与更多 resident warp：怎样隐藏等待</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#3.1-resident%E3%80%81eligible%E3%80%81issued-%E6%98%AF%E4%B8%89%E4%B8%AA%E5%B1%82%E6%AC%A1"><span class="nav-text">3.1 resident、eligible、issued 是三个层次</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#3.2-%E4%B8%80%E4%B8%AA%E8%83%BD%E6%89%8B%E7%AE%97%E7%9A%84%E8%B0%83%E5%BA%A6%E6%A8%A1%E5%9E%8B"><span class="nav-text">3.2 一个能手算的调度模型</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#3.3-%E4%B8%BA%E4%BB%80%E4%B9%88%E5%8A%A0-warp-%E4%B9%9F%E5%8F%AF%E8%83%BD%E6%B2%A1%E7%94%A8"><span class="nav-text">3.3 为什么加 warp 也可能没用</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#4.-SM-occupancy%EF%BC%9A%E8%B5%84%E6%BA%90%E8%A3%85%E5%BE%97%E4%B8%8B%E5%A4%9A%E5%B0%91-warp"><span class="nav-text">4. SM occupancy：资源装得下多少 warp</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#4.1-%E4%BB%8E-block-%E6%95%B0%E6%8E%A8%E5%88%B0-warp-%E6%95%B0"><span class="nav-text">4.1 从 block 数推到 warp 数</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#4.2-%E6%9F%A5%E8%AF%A2%E5%BD%93%E5%89%8D-GPU-%E7%9A%84%E7%9C%9F%E5%AE%9E%E5%AE%B9%E9%87%8F"><span class="nav-text">4.2 查询当前 GPU 的真实容量</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#5.-%E5%AF%B9%E7%85%A7%E5%AD%98%E5%82%A8%E5%B1%82%E7%BA%A7%EF%BC%9A%E8%AF%A5%E5%87%8F%E5%B0%91%E6%90%AC%E8%BF%90%EF%BC%8C%E8%BF%98%E6%98%AF%E6%8A%8A%E6%90%AC%E8%BF%90%E6%8F%90%E5%89%8D"><span class="nav-text">5. 对照存储层级：该减少搬运，还是把搬运提前</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#6.-%E4%B8%89%E7%A7%8D%E5%9F%BA%E7%A1%80%E4%BC%98%E5%8C%96%EF%BC%9A%E5%90%88%E5%B9%B6%E8%AE%BF%E5%AD%98%E3%80%81tiling%E3%80%81%E5%90%91%E9%87%8F%E5%8C%96"><span class="nav-text">6. 三种基础优化：合并访存、tiling、向量化</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#6.1-%E5%90%88%E5%B9%B6%E8%AE%BF%E5%AD%98%EF%BC%9A%E5%85%88%E7%9C%8B%E5%90%8C%E4%B8%80%E6%9D%A1%E6%8C%87%E4%BB%A4%E4%B8%AD%E7%9B%B8%E9%82%BB%E7%BA%BF%E7%A8%8B%E7%9A%84%E5%9C%B0%E5%9D%80"><span class="nav-text">6.1 合并访存：先看同一条指令中相邻线程的地址</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#6.2-tiling%EF%BC%9A%E5%88%86%E5%9D%97%E4%B9%8B%E5%90%8E%EF%BC%8C%E8%A6%81%E8%AF%B4%E6%98%8E%E6%95%B0%E6%8D%AE%E8%A2%AB%E8%B0%81%E5%A4%8D%E7%94%A8"><span class="nav-text">6.2 tiling：分块之后，要说明数据被谁复用</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#%E4%BB%8E%E5%9B%BE%E4%B8%8A%E7%9A%84-tile-%E8%B5%B0%E5%88%B0-matmul_tiled-%E7%9A%84%E7%BA%BF%E7%A8%8B%E7%B4%A2%E5%BC%95"><span class="nav-text">从图上的 tile 走到 matmul_tiled 的线程索引</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#6.3-%E5%90%91%E9%87%8F%E5%8C%96%EF%BC%9A%E6%94%B9%E5%8F%98%E5%8D%95%E4%B8%AA%E7%BA%BF%E7%A8%8B%E7%9A%84%E4%B8%80%E6%AC%A1%E8%AE%BF%E9%97%AE%E5%AE%BD%E5%BA%A6"><span class="nav-text">6.3 向量化：改变单个线程的一次访问宽度</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#6.4-%E5%AE%8C%E6%95%B4%E6%BA%90%E7%A0%81%E4%B8%8E%E8%BF%90%E8%A1%8C%E6%96%B9%E5%BC%8F"><span class="nav-text">6.4 完整源码与运行方式</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#7.-%E4%BB%8E%E5%90%8C%E6%AD%A5-tiling-%E8%B5%B0%E5%88%B0%E5%8F%8C%E7%BC%93%E5%86%B2%EF%BC%9A%E8%AE%A1%E7%AE%97%E5%BD%93%E5%89%8D%E5%9D%97%EF%BC%8C%E6%90%AC%E4%B8%8B%E4%B8%80%E5%9D%97"><span class="nav-text">7. 从同步 tiling 走到双缓冲：计算当前块，搬下一块</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#7.1-buffer-%E7%94%9F%E5%91%BD%E5%91%A8%E6%9C%9F%E6%AF%94%E2%80%9C%E7%94%A8%E4%BA%86-async%E2%80%9D%E6%9B%B4%E9%87%8D%E8%A6%81"><span class="nav-text">7.1 buffer 生命周期比“用了 async”更重要</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#7.2-%E4%B8%BA%E4%BB%80%E4%B9%88%E7%90%86%E6%83%B3%E6%97%B6%E9%97%B4%E4%BB%8E%E7%9B%B8%E5%8A%A0%E5%8F%98%E6%88%90%E5%8F%96-max"><span class="nav-text">7.2 为什么理想时间从相加变成取 max</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#7.3-cp.async-%E4%B8%8E-pipeline-API-%E7%9A%84%E8%A7%92%E8%89%B2"><span class="nav-text">7.3 cp.async 与 pipeline API 的角色</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#7.4-%E5%AF%B9%E5%BA%94%E5%88%B0%E5%AE%8C%E6%95%B4-overlap.cu%EF%BC%9A%E4%B8%8D%E5%8F%AA%E5%81%9C%E5%9C%A8%E4%BC%AA%E4%BB%A3%E7%A0%81"><span class="nav-text">7.4 对应到完整 overlap.cu：不只停在伪代码</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#8.-TMA%EF%BC%9A%E6%8A%8A%E4%B8%80%E5%9D%97-tensor-%E7%9A%84%E6%90%AC%E8%BF%90%E4%BA%A4%E7%BB%99%E4%B8%93%E9%97%A8%E6%9C%BA%E5%88%B6"><span class="nav-text">8. TMA：把一块 tensor 的搬运交给专门机制</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#8.1-%E5%AE%83%E6%8E%A5%E5%9C%A8%E5%93%AA%E4%B8%80%E5%B1%82%EF%BC%8C%E6%9B%BF%E4%BD%A0%E5%81%9A%E4%BB%80%E4%B9%88"><span class="nav-text">8.1 它接在哪一层，替你做什么</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#8.2-%E7%94%A8%E4%B8%80%E4%B8%AA%E4%BA%8C%E7%BB%B4-tile-%E7%90%86%E8%A7%A3-descriptor-%E5%92%8C%E5%AE%8C%E6%88%90%E4%BF%A1%E5%8F%B7"><span class="nav-text">8.2 用一个二维 tile 理解 descriptor 和完成信号</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#8.3-%E5%9B%9B%E4%B8%AA%E9%9C%80%E8%A6%81%E5%8D%95%E7%8B%AC%E6%A3%80%E6%9F%A5%E7%9A%84%E6%AD%A3%E7%A1%AE%E6%80%A7%E6%9D%A1%E4%BB%B6"><span class="nav-text">8.3 四个需要单独检查的正确性条件</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#8.4-warp-specialization-%E4%B8%BA%E4%BD%95%E5%8F%AF%E8%83%BD%E9%99%8D%E4%BD%8E-occupancy-%E5%8D%B4%E6%9B%B4%E5%BF%AB"><span class="nav-text">8.4 warp specialization 为何可能降低 occupancy 却更快</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#9.-%E6%80%8E%E6%A0%B7%E7%94%A8-profiler-%E6%8A%8A%E8%BF%99%E4%BA%9B%E5%88%A4%E6%96%AD%E8%BF%9E%E8%B5%B7%E6%9D%A5"><span class="nav-text">9. 怎样用 profiler 把这些判断连起来</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#10.-%E6%A3%80%E6%9F%A5%E8%87%AA%E5%B7%B1%E6%98%AF%E5%90%A6%E7%90%86%E8%A7%A3"><span class="nav-text">10. 检查自己是否理解</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%AE%98%E6%96%B9%E8%B5%84%E6%96%99%E4%B8%8E%E5%90%8E%E7%BB%AD%E5%AD%A6%E4%B9%A0"><span class="nav-text">官方资料与后续学习</span></a></li></ol></div>
         </div>
         <!--/noindex-->
 
@@ -278,88 +281,249 @@
     
     <div class="post-body" itemprop="articleBody"><h2 id="阅读路线与术语入口" tabindex="-1">阅读路线与术语入口</h2>
 <p><a href="/systems/cuda-basics/">第一篇：CUDA 基础与 GPU 物理／逻辑结构</a> 解释了“任务在哪里执行、数据在哪里”。第二篇接着问：<strong>SM 里面如何调度？线程为什么等？怎样让等待期间仍然有工作可做？</strong></p>
-<p>先认识下表，再沿 <strong>SM 结构 → 一条指令的流转 → 瓶颈判断 → resident warp 与 occupancy → 分层优化 → 异步流水线与 TMA</strong> 阅读。最后附 Nsight Compute 的观察方法。不要第一次就记住所有 API。</p>
+<p>术语先分成三类：<strong>bound 是瓶颈判断，warp 状态是某一时刻发生了什么，指标是如何统计这些现象</strong>。先读下面三张表，再沿 <strong>SM 结构 → 指令流转 → 瓶颈判断 → 驻留与调度 → tiling → overlap 实现</strong> 阅读。不要用一个指标直接替代瓶颈结论。</p>
+<h3 id="A.-瓶颈分类：bound-到底被什么限制" tabindex="-1">A. 瓶颈分类：bound 到底被什么限制</h3>
+<p><code>bound</code> 的意思是“受某种限制约束”，讨论时必须说清对象：整个程序、某个 kernel，还是其中一个阶段。这里先区分<strong>工作能否持续供应</strong>与<strong>服务吞吐是否已饱和</strong>。</p>
 <table>
 <thead>
 <tr>
-<th>术语</th>
-<th>本篇使用的含义</th>
-<th>首先排除的混淆</th>
+<th>分类</th>
+<th>限制是什么</th>
+<th>如何建立判断</th>
+<th>不能直接推出什么</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>compute-bound，计算吞吐受限</td>
+<td>某类算术执行管线的处理能力</td>
+<td>独立工作充足，相关计算通路接近可持续吞吐，减少对应计算能改善耗时</td>
+<td>有很多乘加就一定算力饱和；某条管线满就代表所有单元都满</td>
+</tr>
+<tr>
+<td>memory-bound，访存受限</td>
+<td>广义指数据访问限制进度</td>
+<td>继续定位内存层和机制：HBM/L2/shared，带宽、依赖或访问效率</td>
+<td>不能只凭这个标签决定加 warp；Roofline 中该词常采用“带宽受限”的狭义含义</td>
+</tr>
+<tr>
+<td>bandwidth-bound，带宽受限</td>
+<td>某条数据通路单位时间能服务的字节数</td>
+<td>相关层接近有效可持续带宽，流量与运行时间对应</td>
+<td>HBM 没满不代表所有访存层都没满；加在途请求不会增加已饱和带宽</td>
+</tr>
+<tr>
+<td>latency-bound，延迟受限</td>
+<td>关键依赖的等待没有被独立工作覆盖</td>
+<td>issue 存在空档，结合依赖链、eligible warp 和通路利用率寻找等待来源</td>
+<td>低带宽本身不足以证明它；算术依赖也能造成延迟受限</td>
+</tr>
+<tr>
+<td>synchronization-limited，同步限制（补充）</td>
+<td>工作等待其他参与者或某一阶段完成</td>
+<td>对照 barrier、工作不均衡及生产／消费时间线</td>
+<td>barrier 上采样多，不等于屏障指令本身执行很慢</td>
+</tr>
+<tr>
+<td>launch／host-overhead limited，提交或主机开销限制（补充）</td>
+<td>程序时间主要花在 kernel 外或大量短任务提交上</td>
+<td>看端到端 CPU/GPU 时间线和空档，改变任务粒度验证</td>
+<td>单个 kernel 内的 occupancy 通常解释不了整个程序的空闲</td>
+</tr>
+</tbody>
+</table>
+<p>这不是互斥标签的考试题。例如“访存受限”还可以细分为“HBM 带宽受限”或“地址依赖造成访存延迟受限”；同步等待也可能表现为可发出指令不足。分析时给出<strong>范围 + 机制 + 证据</strong>，例如“该 kernel 的主要等待来自连续依赖的 global load，HBM 吞吐尚未饱和”。<a target="_blank" rel="noopener" href="https://docs.nvidia.com/deeplearning/performance/dl-performance-gpu-background/">NVIDIA GPU Performance Background</a> · <a target="_blank" rel="noopener" href="https://docs.nvidia.com/nsight-compute/ComputeTriage/">Nsight Compute：Compute Triage</a></p>
+<h3 id="B.-warp-状态：驻留、就绪和发出不是一件事" tabindex="-1">B. warp 状态：驻留、就绪和发出不是一件事</h3>
+<p>以下描述的是调度域中 warp 的状态与调度事件；一个 warp 发出一条指令后仍可能继续驻留，不是沿表从上到下只走一次就退出。</p>
+<table>
+<thead>
+<tr>
+<th>状态或事件</th>
+<th>准确含义</th>
+<th>它与其他状态的关系</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>pending／尚未驻留（说明性用语）</td>
+<td>block 还未获得执行所需资源，其 warp 尚未进入相应驻留池</td>
+<td>grid 很大不等于所有 warp 都同时 resident；这里不是特定 profiler 的状态枚举</td>
+</tr>
+<tr>
+<td>resident / active，驻留</td>
+<td>warp 的执行状态及所需资源已分配在 SM 的相应调度域中</td>
+<td>包含能发出与暂时不能发出的 warp；active 不等于正在做有效计算</td>
+</tr>
+<tr>
+<td>eligible，可发出</td>
+<td>下一条指令可用、依赖已满足，相关资源允许发出</td>
+<td>是 resident 中此刻可供选择的候选；不保证马上被选中</td>
+</tr>
+<tr>
+<td>selected / issued，被选择／已发出</td>
+<td>调度器选择该 warp，并向相应通路发出指令</td>
+<td>是本次发出事件，不等于操作完成，也不释放该 warp 的全部资源</td>
+</tr>
+<tr>
+<td>not selected，未被选中</td>
+<td>本来可发出，但本次选择了其他候选</td>
+<td>通常说明还有可用候选；不应当作数据未就绪那种真 stall</td>
+</tr>
+<tr>
+<td>stalled，暂不能发出</td>
+<td>因指令、数据依赖、同步或资源条件等不能推进下一条指令</td>
+<td>它仍可能 resident；要继续看等待原因与其他 warp 是否填补空档</td>
+</tr>
+<tr>
+<td>completed，执行完成（说明性用语）</td>
+<td>该 warp 已完成其工作</td>
+<td>warp 完成与整个 block 的全部资源可回收不是同一件事；block 生命周期仍要看其余参与者</td>
+</tr>
+</tbody>
+</table>
+<p>例如一个调度域有 <code>8 resident</code>，此刻其中 <code>2 eligible</code>，本次发出了其中 1 个：另一个是未选中的候选，其余 6 个需继续定位不能发出的原因。不能把 8、2、1 都叫“正在执行的 warp”。<a target="_blank" rel="noopener" href="https://docs.nvidia.com/nsight-compute/ProfilingGuide/#hardware-model">Nsight Compute：Hardware Model 与 Scheduler Statistics</a></p>
+<h3 id="C.-相关指标：每个数字的单位和统计范围是什么" tabindex="-1">C. 相关指标：每个数字的单位和统计范围是什么</h3>
+<table>
+<thead>
+<tr>
+<th>指标／量</th>
+<th>定义与单位</th>
+<th>阅读时要核对的口径</th>
 </tr>
 </thead>
 <tbody>
 <tr>
 <td>latency，延迟</td>
-<td>从发起一个操作到所需结果可用的时间</td>
-<td>不等于单位时间处理多少数据</td>
+<td>发起到所需结果可用的间隔，常用 ns、cycle</td>
+<td>哪一种操作、哪一层，是否包含排队；cycle 换算需频率</td>
 </tr>
 <tr>
-<td>throughput，吞吐</td>
-<td>单位时间完成的工作量，如 FLOP/s、指令/s</td>
-<td>高吞吐不保证每次操作延迟都短</td>
+<td>kernel duration，执行耗时</td>
+<td>一次 kernel 的时间，常用 μs、ms</td>
+<td>是否含 host 开销；event 计时与 profiler 采集的条件是否一致</td>
+</tr>
+<tr>
+<td>throughput，吞吐率</td>
+<td>工作量 / 时间，如 FLOP/s、指令/s</td>
+<td>数据精度、指令种类、有效工作与实际执行工作是否一致</td>
 </tr>
 <tr>
 <td>bandwidth，带宽</td>
-<td>单位时间传输的字节数，常用 GB/s</td>
-<td>要说明是 HBM、L2、shared 还是 PCIe</td>
+<td>字节 / 时间，如 GB/s</td>
+<td>HBM、L2、shared、PCIe 分别看；逻辑有效字节不等于真实事务字节</td>
 </tr>
 <tr>
-<td>compute-bound，计算受限</td>
-<td>在本篇的吞吐模型中，目标计算管线能力限制速度</td>
-<td>代码有乘法，不代表已算力饱和</td>
+<td>arithmetic intensity，算术强度 I</td>
+<td>FLOP / 跨所选层的 byte</td>
+<td>哪一层的流量，是否计写回、缓存复用、尾块和额外搬运</td>
 </tr>
 <tr>
-<td>memory-bound，访存受限</td>
-<td>广义指访存限制性能；Roofline 中通常特指带宽限制一侧</td>
-<td>要继续区分带宽不足还是等待数据</td>
+<td>theoretical occupancy，理论占用率</td>
+<td>资源与启动配置允许的驻留 warp 数 / SM warp 上限</td>
+<td>容量估计；看寄存器、shared、线程和 block 等限制</td>
 </tr>
 <tr>
-<td>bandwidth-bound，带宽受限</td>
-<td>某层数据通路已接近其可持续吞吐，搬运量成为限制</td>
-<td>增加等待中的线程不增加硬件带宽</td>
+<td>achieved occupancy，实际占用率</td>
+<td>运行中观测的 active warp 相对上限的统计</td>
+<td>时间与 SM 聚合口径、尾部和不均衡；不等于计算单元利用率</td>
 </tr>
 <tr>
-<td>latency-bound，延迟受限</td>
-<td>独立工作不足，关键依赖的等待暴露出来</td>
-<td>算术依赖也会造成延迟受限，不限于内存</td>
+<td>active / eligible warps，活跃／可发 warp 数</td>
+<td>调度域中相应状态的数量，常见为每周期平均</td>
+<td><code>sm</code> 与 <code>smsp</code> 范围不同，平均值可以是小数；不能与瞬时整数快照直接相减解释所有周期</td>
 </tr>
 <tr>
-<td>resident / active warp，驻留 warp</td>
-<td>状态和资源已在 SM 中占有位置的 warp</td>
-<td>驻留不等于此刻能发指令</td>
+<td>issue activity，发出活跃程度</td>
+<td>有指令发出的周期比例或具体发出率</td>
+<td>具体指标的分母和单位；不能把它等同所有计算管线利用率</td>
 </tr>
 <tr>
-<td>eligible warp，可发出 warp</td>
-<td>下一条指令已具备发出条件的 warp</td>
-<td>可发出也可能未被选中</td>
+<td>pipe utilization，管线利用率</td>
+<td>相应通路活动或吞吐相对基准的比例</td>
+<td>哪个通路、哪种峰值与统计窗口；不等于 occupancy</td>
 </tr>
 <tr>
-<td>issued，已发出</td>
-<td>调度器选择并发出了某条指令</td>
-<td>发出不等于结果已经完成</td>
+<td>cache hit rate，缓存命中率</td>
+<td>按该指标定义统计的命中请求／sector 等比例</td>
+<td>请求还是 sector、哪层缓存；高命中率仍可能受该层吞吐或延迟限制</td>
 </tr>
 <tr>
-<td>occupancy，占用率</td>
-<td>驻留 warp 数相对该 SM 的 warp 容量上限的比例</td>
-<td>不等于计算单元利用率、有效 lane 比例或 GPU 忙碌率</td>
-</tr>
-<tr>
-<td>overlap，重叠</td>
-<td>两件独立工作在时间上有交叠</td>
-<td>async 返回早，不自动产生重叠</td>
-</tr>
-<tr>
-<td>tile / stage</td>
-<td>tile 是数据分块；stage 是流水线中的缓冲与同步阶段</td>
-<td>数据块大小与流水级数是两种参数</td>
+<td>stall samples，等待样本</td>
+<td>采样到某类 warp 等待状态的数量或比例</td>
+<td>是样本不是直接累计耗时；同周期其他 warp 可能在工作，不能简单相加当总停机时间</td>
 </tr>
 </tbody>
 </table>
-<p>这些标签不是一套永远互斥的分类。例如一个访存受限 kernel 可以因为 HBM 带宽饱和而慢，也可以因为依赖链长、带宽尚未用满而慢。文献中的 memory-bound 有时采用狭义含义，阅读时要看它是否采用 Roofline 的吞吐假设。<a target="_blank" rel="noopener" href="https://docs.nvidia.com/deeplearning/performance/dl-performance-gpu-background/">NVIDIA GPU Performance Background</a></p>
-<p>本文配有 <strong>8 张可编辑手绘图、5 个浏览器概念实验、4 份完整 CUDA 程序</strong>。图中的队列是功能示意，不是特定 GPU 的精确电路图；模拟时间单位不对应真实 GPU 周期。资料核对日期：2026-11-02。本机与当前可访问的计算环境均无可用 CUDA GPU／<code>nvcc</code>，CUDA 源码尚未编译和 GPU 实跑；不提供虚构测速数据。</p>
+<p><code>long scoreboard</code>、<code>short scoreboard</code>、<code>barrier</code>、<code>LG/MIO throttle</code> 是帮助定位等待机制的原因名称；相关采样指标统计这些现象。它们不是另一组与 compute-bound 并列的最终结论。第 9 节再将指标和优化动作对应起来。<a target="_blank" rel="noopener" href="https://docs.nvidia.com/nsight-compute/ProfilingGuide/">Nsight Compute：Metrics 与 Warp Sampling</a></p>
+<p>后文出现的 <strong>tile</strong> 是数据分块，<strong>slot/buffer</strong> 是存放块的空间，<strong>stage</strong> 是流水线中的缓冲与同步阶段，<strong>overlap</strong> 是独立工作在时间上重叠。这些是实现机制，不放进 bound 或 warp 状态表。第 6、7 节会让同一组数据从原理图走到代码与实验。</p>
+<p>本文配有 <strong>11 张可编辑手绘图、6 个浏览器概念实验、5 份完整 CUDA 程序</strong>。图中的队列是功能示意，不是特定 GPU 的精确电路图；模拟时间单位不对应真实 GPU 周期。资料核对日期：2026-11-02。本机与当前可访问的计算环境均无可用 CUDA GPU／<code>nvcc</code>，CUDA 源码尚未编译和 GPU 实跑；不提供虚构测速数据。</p>
 <p><a href="/downloads/cuda-overlap/cuda-overlap-demos.zip">下载全部源码与 Makefile</a> · <a href="/downloads/cuda-overlap/README.txt">编译、校验和计时说明</a></p>
 <h2 id="1.-先放大一个-SM：谁保存状态，谁调度，谁计算" tabindex="-1">1. 先放大一个 SM：谁保存状态，谁调度，谁计算</h2>
-<h3 id="1.1-看懂图里的部件" tabindex="-1">1.1 看懂图里的部件</h3>
+<h3 id="1.1-先看组成：哪些部件属于子分区，哪些由整个-SM-共享" tabindex="-1">1.1 先看组成：哪些部件属于子分区，哪些由整个 SM 共享</h3>
+<p>下面先画<strong>包含和共享关系</strong>，下一张图再画指令流。外层绿框是一个 SM；内层是子分区，其中只把一个子分区展开。紫色是保存线程值的寄存器，橙色表示计算或依赖条件，蓝色表示调度／访存相关部件；连线只突出部分主要联系，不是完整端口布线。</p>
+<figure class="cuda-diagram">
+<a href="/images/cuda-overlap/09-sm-components.svg" target="_blank" rel="noopener"><img src="/images/cuda-overlap/09-sm-components.svg" alt="一个 SM 内的多个子分区，每个子分区包含 warp 状态、调度、寄存器与执行资源，共享 SM 级 L1 和 shared" loading="lazy"></a>
+<figcaption>SM 组成图：先读包含关系，再看部件如何相互提供数据、指令和就绪条件。 <a href="/images/cuda-overlap/09-sm-components.svg" target="_blank" rel="noopener">放大看图</a> · <a href="/images/cuda-overlap/09-sm-components.excalidraw" download>下载 Excalidraw 原图</a></figcaption>
+</figure>
+<table>
+<thead>
+<tr>
+<th>组件或层级</th>
+<th>保存什么／做什么</th>
+<th>依赖哪些其他部件</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>SM 子分区（SMSP）</td>
+<td>一个局部调度与执行域，管理一组驻留 warp</td>
+<td>block 已获准在这个 SM 驻留；warp 的调度受本域资源约束</td>
+</tr>
+<tr>
+<td>warp 执行状态与指令获取</td>
+<td>记录执行位置、活跃线程等，提供下一条候选指令</td>
+<td>需要取到指令并满足解码等条件；它不保存全部数组数据</td>
+</tr>
+<tr>
+<td>warp scheduler／dispatch</td>
+<td>选择满足条件的指令，发往适合的执行通路</td>
+<td>候选指令可用、依赖解除、目标通路允许接收</td>
+</tr>
+<tr>
+<td>register file，寄存器文件</td>
+<td>保存线程操作数、地址值、累加器等活跃值</td>
+<td>算术和地址计算读取它；计算或 load 的结果使目标值就绪</td>
+</tr>
+<tr>
+<td>scoreboard 等依赖控制</td>
+<td>跟踪未完成操作与相关依赖</td>
+<td>根据操作完成情况更新；向调度控制提供是否可推进的条件</td>
+</tr>
+<tr>
+<td>FP／INT／SFU／Tensor 等计算资源</td>
+<td>按指令类型执行浮点、整数、特殊函数或张量运算</td>
+<td>需要输入操作数和通路容量；各类型不能随意互换</td>
+</tr>
+<tr>
+<td>load/store 单元与访存通路</td>
+<td>形成地址、组织请求，执行 load/store</td>
+<td>地址与 store 数据就绪、请求入口和下游容量可用；load 返回又解除计算依赖</td>
+</tr>
+<tr>
+<td>SM 级 L1／shared 存储</td>
+<td>缓存数据或存放程序管理的 shared 对象</td>
+<td>接收各子分区的相关访问；物理共享不代表所有 block 的 shared 数组互相可见</td>
+</tr>
+<tr>
+<td>SM 外互连、L2、内存控制器</td>
+<td>为需要下一级服务的访问提供数据路径</td>
+<td>缓存策略、命中、请求竞争和内存容量；它们不属于某个线程私有资源</td>
+</tr>
+</tbody>
+</table>
+<p>可以把依赖记成四种关系：<strong>包含</strong>（SM 有子分区）、<strong>资源分配</strong>（线程用寄存器、block 用 shared）、<strong>数据流</strong>（load 返回值供 FMA 使用）、<strong>调度条件</strong>（值就绪且目标通路可接收）。一个 block 的线程在同一个 SM 上，并不意味着它的所有 warp 必须归同一个子分区调度；不要把 block 框与 SMSP 框画成一一对应。</p>
+<p>这里采用 <a target="_blank" rel="noopener" href="https://docs.nvidia.com/nsight-compute/ProfilingGuide/#hardware-model">Nsight Compute 通用 SM 硬件模型</a> 的分组方式。具体功能单元数量、共享方式与通路随架构变化；图中的四个子分区不是要求程序员固定写四个 warp。</p>
+<h3 id="1.2-再看这些部件如何工作" tabindex="-1">1.2 再看这些部件如何工作</h3>
 <p><strong>SM（Streaming Multiprocessor，流式多处理器）</strong> 承接 block 的执行。block 获得驻留资源之后，其 warp 由 SM 内部调度。理解调度时，需要把三类东西分开：<strong>线程的状态、指令的控制、真正执行工作的通路</strong>。</p>
 <p>下图上方是 warp 状态与指令选择；中间是寄存器和指令流向；下方是计算与访存两条通路。蓝箭头表示指令／请求，绿箭头表示结果返回。带框的“队列”只表示有限的缓冲与接收能力，不表示所有架构都有同名、同深度的独立 FIFO。</p>
 <figure class="cuda-diagram">
@@ -374,7 +538,7 @@
 <li><strong>访存通路</strong>：load/store 单元处理地址与访存请求。普通 global/local 访问进入缓存／内存系统；shared 访问走对应的片上存储通路。TMA 是后文讨论的异步搬运机制，不能把它等同所有普通 load。</li>
 </ul>
 <p>现代 NVIDIA SM 常按子分区（SMSP）组织调度器、寄存器和执行资源，多个子分区共享 SM 级 L1/shared 等资源。Nsight Compute 的通用硬件图以四个子分区示意；本篇只放大一个调度域的工作方式，不把它画成“一个 SM 只有一个调度器”，也不假设一个调度器可任意挑选所有 SM 中的 warp。具体数量与执行通路应核对目标架构。<a target="_blank" rel="noopener" href="https://docs.nvidia.com/nsight-compute/ProfilingGuide/#hardware-model">Nsight Compute：Hardware Model</a></p>
-<h3 id="1.2-一条-load-→-FMA-→-store-怎样走完" tabindex="-1">1.2 一条 load → FMA → store 怎样走完</h3>
+<h3 id="1.3-一条-load-→-FMA-→-store-怎样走完" tabindex="-1">1.3 一条 load → FMA → store 怎样走完</h3>
 <p>用每线程的一小段工作跟图走：</p>
 <figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="type">float</span> x = input[i];</span><br><span class="line"><span class="type">float</span> y = <span class="built_in">fmaf</span>(x, scale, bias); <span class="comment">// FMA：一次乘法和一次加法，融合舍入</span></span><br><span class="line">output[i] = y;</span><br></pre></td></tr></table></figure>
 <p>这里假定编译器保留这些操作，<code>scale</code>、<code>bias</code> 已可用；真实机器指令还包括地址计算、边界判断等。下图是<strong>允许发生的一种执行顺序</strong>，不是固定的轮转调度策略，也没有承诺每行耗时一样。</p>
@@ -390,7 +554,7 @@
 <li>A 的 FMA 发出后还需等待计算结果可用。依赖 <code>y</code> 的 store 不能提前把未完成的结果写出；同时其他独立指令可能继续推进。</li>
 <li>store 被接收以后还要经过写入路径。它不向普通目标寄存器返回一个计算值；不能把“store 已发出”当作其他线程已经按程序要求看见它，跨线程共享结果仍需正确的同步和内存顺序。</li>
 </ol>
-<h3 id="1.3-计算管线和访存管线如何排队" tabindex="-1">1.3 计算管线和访存管线如何排队</h3>
+<h3 id="1.4-计算管线和访存管线如何排队" tabindex="-1">1.4 计算管线和访存管线如何排队</h3>
 <p><strong>管线有延迟，也有接收间隔。</strong> 假设一个教学计算管线从进入到完成需要 4 个时间单位，但每单位可以接收一条独立指令：第一条在 <code>t=0</code> 进入、<code>t=4</code> 完成，第二条可在 <code>t=1</code> 进入。它们能重叠，因为并非等第一条完全离开才能接收下一条。但若第二条依赖第一条的结果，它仍要等到结果就绪。这是吞吐和延迟的区别，不是实际 FP32 指令的固定参数。</p>
 <table>
 <thead>
@@ -557,13 +721,69 @@
 <p><a href="/downloads/cuda-overlap/tiling.cu">tiling.cu</a> 对比 naive 与 16×16 shared tiled FP32 GEMM，默认 <code>M=129,N=193,K=257</code>，故意让尺寸不整除 tile。越界输入填零，所有 block 内线程都到达两次屏障，最后只让有效线程写输出：</p>
 <figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 第一屏障：其他线程读 tile 之前，所有输入已填好。</span></span><br><span class="line">__syncthreads();</span><br><span class="line"><span class="keyword">for</span> (<span class="type">int</span> p = <span class="number">0</span>; p &lt; TILE; ++p)</span><br><span class="line">    sum += at[threadIdx.y][p] * bt[p][threadIdx.x];</span><br><span class="line"><span class="comment">// 第二屏障：覆盖旧 tile 之前，所有旧读取已结束。</span></span><br><span class="line">__syncthreads();</span><br></pre></td></tr></table></figure>
 <p>增大 tile 不总更快：shared、寄存器和线程数都可能改变 occupancy，还要考虑访问布局。本 demo 没有异步搬运；因此 <strong>tiling 本身并不等于 overlap</strong>。<a target="_blank" rel="noopener" href="https://docs.nvidia.com/cuda/cuda-c-best-practices-guide/index.html#shared-memory-in-matrix-multiplication-c-ab">CUDA Best Practices：Shared Memory in Matrix Multiplication</a></p>
+<h4 id="从图上的-tile-走到-matmul_tiled-的线程索引" tabindex="-1">从图上的 tile 走到 <code>matmul_tiled</code> 的线程索引</h4>
+<p>现在用小矩阵手算同一套实现规则。为方便展示，取 <code>M=N=K=4,T=2</code>；完整 CUDA demo 仍使用 <code>TILE=16</code>，这里只缩小数字，不改变算法。输入为：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">A = [[ 1,  2,  3,  4],    B = [[1, 0, 1, 0],</span><br><span class="line">     [ 5,  6,  7,  8],         [0, 1, 0, 1],</span><br><span class="line">     [ 9, 10, 11, 12],         [1, 1, 1, 1],</span><br><span class="line">     [13, 14, 15, 16]]         [2, 0, 0, 2]]</span><br></pre></td></tr></table></figure>
+<p>选 C 右上角的输出 tile：<code>blockIdx=(x=1,y=0)</code>。跟踪其中 <code>threadIdx=(x=0,y=1)</code>，它负责 <code>row=0*2+1=1</code>、<code>col=1*2+0=2</code>，即 <code>C[1,2]</code>。注意二维编号明确按 x、y 解释，矩阵下标按 row、col 解释。</p>
+<figure class="cuda-diagram">
+<a href="/images/cuda-overlap/10-tiling-walkthrough.svg" target="_blank" rel="noopener"><img src="/images/cuda-overlap/10-tiling-walkthrough.svg" alt="用 TILE 等于2的例子将 C[1,2] 的计算分成两轮输入 tile，第一轮增加5，第二轮增加7" loading="lazy"></a>
+<figcaption>图 6A：同一线程的 sum 跨轮保留；shared 中的 A/B tile 在每轮结束后被安全替换。 <a href="/images/cuda-overlap/10-tiling-walkthrough.svg" target="_blank" rel="noopener">放大看图</a> · <a href="/images/cuda-overlap/10-tiling-walkthrough.excalidraw" download>下载 Excalidraw 原图</a></figcaption>
+</figure>
+<table>
+<thead>
+<tr>
+<th>图中的一步</th>
+<th><code>tiling.cu</code> 对应代码</th>
+<th>跟踪的线程实际做什么</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>找到输出格子</td>
+<td><code>row = blockIdx.y*TILE + threadIdx.y</code>，<code>col = blockIdx.x*TILE + threadIdx.x</code></td>
+<td>固定负责 <code>C[1,2]</code>，不是每轮换一个输出</td>
+</tr>
+<tr>
+<td>选择本轮输入</td>
+<td><code>for (base=0; base&lt;k; base+=TILE)</code></td>
+<td>先看 K 的 0、1 项，再看 2、3 项</td>
+</tr>
+<tr>
+<td>合作装入 shared</td>
+<td><code>at[ty][tx]=a[row*k+base+tx]</code>；<code>bt[ty][tx]=b[(base+ty)*n+col]</code>（完整代码含边界检查）</td>
+<td>本线程第一轮搬 <code>A[1,0]=5</code> 和 <code>B[1,2]=0</code>；其他线程搬其余值</td>
+</tr>
+<tr>
+<td>第一道屏障</td>
+<td>填充后的 <code>__syncthreads()</code></td>
+<td>等所有 tile 元素可用，才读其他线程装入的值</td>
+</tr>
+<tr>
+<td>计算本轮贡献</td>
+<td><code>sum += at[ty][p]*bt[p][tx]</code></td>
+<td>第一轮 <code>5*1+6*0=5</code>；第二轮 <code>7*1+8*0=7</code></td>
+</tr>
+<tr>
+<td>第二道屏障</td>
+<td>内积后的 <code>__syncthreads()</code></td>
+<td>旧数据无人再读，下一轮才能覆盖它</td>
+</tr>
+<tr>
+<td>写回结果</td>
+<td>K 循环后 <code>c[row*n+col]=sum</code></td>
+<td>最终 <code>C[1,2]=12</code>；只写一次最终累加值</td>
+</tr>
+</tbody>
+</table>
+<div class="cuda-demo" data-overlap-demo="tiling"><p>启用 JavaScript 按轮推进 tile，观察输入块和 C[1,2] 的累加值。</p></div>
+<p><strong>怎么观察：</strong> 点“下一轮 K 分块”，应看到 <code>base: 0→2</code>、<code>sum: 5→12</code>。这个小实验解释数据复用与屏障的位置，不测速度。随后运行 <code>./tiling 17 19 23</code>，检查两种实现的 <code>PASS</code>，理解同样规则如何通过填零处理尾块；再用较大输入比较耗时。图中手算矩阵与程序默认生成矩阵不同，数值 12 只属于本手算例子。</p>
 <h3 id="6.3-向量化：改变单个线程的一次访问宽度" tabindex="-1">6.3 向量化：改变单个线程的一次访问宽度</h3>
 <p><code>float4</code> 表示连续四个 float，尺寸 16 byte。在编译器生成相应宽访存指令时，可以用更少的 load/store 指令完成同样字节量。它不会自动减少需要读取的数据，也不会自动把标量 FP32 算术变成 Tensor Core 运算。</p>
 <p><a href="/downloads/cuda-overlap/vectorized.cu">vectorized.cu</a> 对比 scalar copy 和 <code>float4</code> copy；两者本来都可合并访问。完整代码使用 <code>cudaMalloc</code> 返回的对齐基址，每线程循环处理一个 float4，并用标量处理末尾不足四个的元素。</p>
 <figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="type">const</span> float4* in4 = <span class="keyword">reinterpret_cast</span>&lt;<span class="type">const</span> float4*&gt;(in);</span><br><span class="line">float4* out4 = <span class="keyword">reinterpret_cast</span>&lt;float4*&gt;(out);</span><br><span class="line"><span class="keyword">for</span> (<span class="type">int</span> i = tid; i &lt; n / <span class="number">4</span>; i += stride) out4[i] = in4[i];</span><br><span class="line"><span class="keyword">if</span> (tid == <span class="number">0</span>)</span><br><span class="line">    <span class="keyword">for</span> (<span class="type">int</span> i = (n / <span class="number">4</span>) * <span class="number">4</span>; i &lt; n; ++i) out[i] = in[i];</span><br></pre></td></tr></table></figure>
 <p><code>in+1</code> 是偏移一个 float，不满足 float4 的 16-byte 对齐条件，不能强行转换后宽读。尾部也不能为了凑整而越界加载。源码使用向量类型后还应检查 SASS，确认实际指令宽度；吞吐已饱和或寄存器压力增加时，收益可能很小甚至变慢。<a target="_blank" rel="noopener" href="https://developer.nvidia.com/blog/cuda-pro-tip-increase-performance-with-vectorized-memory-access/">NVIDIA：Vectorized Memory Access</a></p>
 <h3 id="6.4-完整源码与运行方式" tabindex="-1">6.4 完整源码与运行方式</h3>
-<p>下载 ZIP 后解压，确保这些文件在同一目录。需要 NVIDIA GPU、匹配驱动、支持目标架构的 CUDA Toolkit、C++17 编译支持和 <code>make</code>。下面 <code>sm_80</code> 是示例编译目标；Hopper 可选 <code>sm_90</code>，其他硬件请使用其 Toolkit 支持的正确目标。</p>
+<p>下载 ZIP 后解压，确保这些文件在同一目录。需要 NVIDIA GPU、匹配驱动、支持目标架构的 CUDA Toolkit、C++17 编译支持和 <code>make</code>。下面 <code>sm_80</code> 是示例编译目标；Hopper 可选 <code>sm_90</code>，其他硬件请使用其 Toolkit 支持的正确目标。下载包还包含第 7.4 节的 <code>overlap.cu</code>，因此整包编译需要 CC 8.0+ 目标；只运行本节与 occupancy 示例时可以单独编译对应文件。</p>
 <figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">make ARCH=sm_80</span><br><span class="line">make check ARCH=sm_80</span><br><span class="line">./coalescing 16777216</span><br><span class="line">./vectorized 16777219</span><br><span class="line">./tiling 256 256 256</span><br><span class="line">./occupancy</span><br></pre></td></tr></table></figure>
 <p><code>make check</code> 包含 N 为 1、3、4、1027 的向量化尾部，以及 1×1 和不规则矩阵。三个计算 demo 都有 CUDA 错误检查和 CPU 参考校验，通过时打印 <code>PASS</code>；失败返回非零。计时采用 5 次 warmup、20 次重复的 CUDA event 平均值，不包含分配、CPU 参考和 host/device 拷贝。反复访问同一工作集可能命中缓存，因此打印的 effective GB/s <strong>不是 HBM 实测带宽</strong>。</p>
 <p>下面可以直接展开完整 <code>.cu</code> 文件。共用的错误检查、校验与计时在 <code>common.cuh</code>，下载包包含所有依赖。程序逻辑为本文编写；当前没有 CUDA 环境，尚不能声称编译或 GPU 结果已通过。</p>
@@ -609,6 +829,63 @@
 <p>下面是<strong>协议伪代码，不是可独立编译的 CUDA 程序</strong>：</p>
 <figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">预先提交 tile 0 到 slot 0</span><br><span class="line">for k in [0, N):</span><br><span class="line">    如果有下一块：</span><br><span class="line">        等待下一 slot 已释放</span><br><span class="line">        提交 tile k+1 的异步拷贝，并 commit</span><br><span class="line">    等待 tile k 的拷贝完成</span><br><span class="line">    用 slot k%2 计算</span><br><span class="line">    保证所有消费者已用完后，release 当前 slot</span><br></pre></td></tr></table></figure>
 <p><code>producer_acquire/commit</code> 管理提交端，<code>consumer_wait/release</code> 管理消费端。线程范围 pipeline 的 wait 不能自动替其他线程证明完成；跨线程读写需要匹配的协作和同步协议。warp 分歧还可能影响 commit/wait 的批次行为，应按所选 API 的规则保持相关操作的收敛。<a target="_blank" rel="noopener" href="https://docs.nvidia.com/cuda/cuda-programming-guide/04-special-topics/pipelines.html">CUDA Pipelines</a> · <a target="_blank" rel="noopener" href="https://docs.nvidia.com/cuda/cuda-programming-guide/03-advanced/advanced-kernel-programming.html">Advanced Kernel Programming：Asynchronous Execution Features</a></p>
+<h3 id="7.4-对应到完整-overlap.cu：不只停在伪代码" tabindex="-1">7.4 对应到完整 <code>overlap.cu</code>：不只停在伪代码</h3>
+<p><a href="/downloads/cuda-overlap/overlap.cu">下载 overlap.cu</a>。这个程序比较同步搬运与 <code>cp.async</code> 双缓冲的完整流程；它使用 CUDA C primitives（<code>&lt;cuda_pipeline.h&gt;</code>），要求 <strong>CC 8.0+ 与支持目标 GPU 的 CUDA Toolkit</strong>。它没有调用 TMA，TMA 的 descriptor／transaction barrier 留在第 8 节单独解释。</p>
+<p>为把搬运协议看清楚，计算任务采用“分块读取后进行若干轮 FMA”，不是再写一个复杂 GEMM。每块 128 个线程，每线程负责一个 <code>float4</code>，因此一个输入 tile 是 <code>128*16=2048 byte</code>。两个 shared slot 共占 4096 byte。线程读取本 tile 中下一个线程搬来的 float4，因此必须说明<strong>跨线程完成可见性</strong>；同步版与异步版计算、输出和两个 slot 的逻辑分配相同。</p>
+<figure class="cuda-diagram">
+<a href="/images/cuda-overlap/11-overlap-slots.svg" target="_blank" rel="noopener"><img src="/images/cuda-overlap/11-overlap-slots.svg" alt="将 overlap.cu 的预提交、下一块提交、当前块等待计算及释放对应到两个 shared slot" loading="lazy"></a>
+<figcaption>图 7A：按行看循环阶段，按列看同一块 shared 空间何时被覆盖。 <a href="/images/cuda-overlap/11-overlap-slots.svg" target="_blank" rel="noopener">放大看图</a> · <a href="/images/cuda-overlap/11-overlap-slots.excalidraw" download>下载 Excalidraw 原图</a></figcaption>
+</figure>
+<p>先跟踪 <code>k=0</code>：循环前提交 tile 0 到 slot 0；进入循环又提交 tile 1 到 slot 1；等 tile 0 完成后计算它，此时 tile 1 的搬运允许继续。第二道块内屏障保证 tile 0 已无人使用，下一轮才能让 tile 2 覆盖 slot 0。异步并没有移除数据依赖，只把<strong>下一块</strong>不依赖当前结果的工作提前。</p>
+<table>
+<thead>
+<tr>
+<th>协议目的</th>
+<th>实际语句</th>
+<th>对应的图与注意点</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>预填第一块</td>
+<td><code>__pipeline_memcpy_async(...)</code>，随后 <code>__pipeline_commit()</code></td>
+<td>图第一行；提交 tile 0 后还不能直接读取</td>
+</tr>
+<tr>
+<td>提前填下一块</td>
+<td>拷贝到 <code>slot[(k+1)%2][t]</code> 并 commit</td>
+<td>图中 <code>k=0</code> 搬 tile 1、<code>k=1</code> 搬 tile 2；必须保证目标 slot 的旧消费者已读完</td>
+</tr>
+<tr>
+<td>当前块完成，下一块可继续</td>
+<td>有下一块时 <code>__pipeline_wait_prior(1)</code></td>
+<td>等待除最新一批外的已提交批次；不是等待“编号为 1 的 tile”，也不是任意等一轮</td>
+</tr>
+<tr>
+<td>排空末尾</td>
+<td>没有下一块时 <code>__pipeline_wait_prior(0)</code></td>
+<td>最后一批必须完成；<code>tiles=1</code> 时同样走此分支</td>
+</tr>
+<tr>
+<td>允许跨线程读</td>
+<td>wait 后 <code>__syncthreads()</code></td>
+<td>每线程先等自己的拷贝，再集合，才能读邻居搬来的值；这道屏障不取代异步 wait</td>
+</tr>
+<tr>
+<td>安全复用</td>
+<td>计算之后再 <code>__syncthreads()</code></td>
+<td>所有消费者已用完当前 slot，未来循环才能覆盖</td>
+</tr>
+</tbody>
+</table>
+<p>这些 primitives 的 commit/wait 批次跟踪有特定的线程／warp 语义；代码中的循环和分支对整个 block 一致，不让不同线程自行跳过阶段。16-byte 搬运的两端都满足 float4 对齐，所有 tile 完整分配。本例没有“不足一个 tile 的尾部”；命令行指定每块的完整 tile 数，禁止零或负数。<a target="_blank" rel="noopener" href="https://docs.nvidia.com/cuda/cuda-programming-guide/04-special-topics/async-copies.html">CUDA：异步拷贝与预取协议</a></p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">make overlap ARCH=sm_80  <span class="comment"># 根据 GPU 与 Toolkit 改为支持的目标</span></span><br><span class="line">./overlap 1 16          <span class="comment"># 只有一块：检查初始填充和最终排空</span></span><br><span class="line">./overlap 2 16          <span class="comment"># 两块：看到两个 slot 都参与</span></span><br><span class="line">./overlap 8 1           <span class="comment"># 计算工作少，未必能遮住搬运</span></span><br><span class="line">./overlap 8 64          <span class="comment"># 增加独立计算窗口；仍需实测判断收益</span></span><br><span class="line">compute-sanitizer --tool racecheck ./overlap 3 16</span><br></pre></td></tr></table></figure>
+<p>参数依次是 <code>tiles_per_block</code> 和 <code>rounds</code>。CPU 按相同的块内邻居读取和 FMA 规则生成参考，两个版本必须先通过校验才计时。比较同一组参数的两个版本；不要把 <code>rounds=1</code> 与 <code>rounds=64</code> 的绝对耗时当同工作量加速比。计时差反映整个实现的差异，还包括指令、屏障等成本；应检查编译后的 SASS 和 profiler，不能只凭源码含 async 就宣称已成功重叠。</p>
+<p>当前仍没有 <code>nvcc</code>／GPU，本文件是完整待编译验证源码，尚无 GPU 正确性或性能实测。网页时间线是独立的教学模型，不是这个程序的 trace。</p>
+<details>
+<summary>展开完整源码：overlap.cu</summary>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&quot;common.cuh&quot;</span></span></span><br><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;cuda_pipeline.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="keyword">if</span> defined(__CUDA_ARCH__) &amp;&amp; __CUDA_ARCH__ &lt; 800</span></span><br><span class="line"><span class="meta">#<span class="keyword">error</span> <span class="string">&quot;Build overlap.cu for compute capability 8.0 or newer.&quot;</span></span></span><br><span class="line"><span class="meta">#<span class="keyword">endif</span></span></span><br><span class="line"><span class="keyword">constexpr</span> <span class="type">int</span> THREADS = <span class="number">128</span>;</span><br><span class="line"><span class="function">__host__ __device__ <span class="type">float</span> <span class="title">transform</span><span class="params">(<span class="type">float</span> x, <span class="type">int</span> rounds)</span> </span>&#123;</span><br><span class="line">    <span class="keyword">for</span> (<span class="type">int</span> r = <span class="number">0</span>; r &lt; rounds; ++r) x = <span class="built_in">fmaf</span>(x, <span class="number">1.0001f</span>, <span class="number">0.0001f</span>);</span><br><span class="line">    <span class="keyword">return</span> x;</span><br><span class="line">&#125;</span><br><span class="line"><span class="function">__host__ __device__ float4 <span class="title">compute</span><span class="params">(float4 x, <span class="type">int</span> rounds)</span> </span>&#123;</span><br><span class="line">    <span class="keyword">return</span> <span class="built_in">make_float4</span>(<span class="built_in">transform</span>(x.x, rounds), <span class="built_in">transform</span>(x.y, rounds),</span><br><span class="line">                       <span class="built_in">transform</span>(x.z, rounds), <span class="built_in">transform</span>(x.w, rounds));</span><br><span class="line">&#125;</span><br><span class="line"><span class="comment">// The baseline uses the same number of shared slots, so resource allocation is comparable.</span></span><br><span class="line"><span class="function">__global__ <span class="type">void</span> <span class="title">serial_tiles</span><span class="params">(<span class="type">const</span> float4* in, float4* out, <span class="type">int</span> tiles, <span class="type">int</span> rounds)</span> </span>&#123;</span><br><span class="line">    __shared__ float4 slot[<span class="number">2</span>][THREADS];</span><br><span class="line">    <span class="type">int</span> t = threadIdx.x;</span><br><span class="line">    <span class="keyword">for</span> (<span class="type">int</span> k = <span class="number">0</span>; k &lt; tiles; ++k) &#123;</span><br><span class="line">        <span class="type">int</span> base = (blockIdx.x * tiles + k) * THREADS;</span><br><span class="line">        slot[k % <span class="number">2</span>][t] = in[base + t];</span><br><span class="line">        __syncthreads();</span><br><span class="line">        out[base + t] = <span class="built_in">compute</span>(slot[k % <span class="number">2</span>][(t + <span class="number">1</span>) % THREADS], rounds);</span><br><span class="line">        __syncthreads();</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"><span class="function">__global__ <span class="type">void</span> <span class="title">pipelined_tiles</span><span class="params">(<span class="type">const</span> float4* in, float4* out, <span class="type">int</span> tiles, <span class="type">int</span> rounds)</span> </span>&#123;</span><br><span class="line">    __shared__ float4 slot[<span class="number">2</span>][THREADS];</span><br><span class="line">    <span class="type">int</span> t = threadIdx.x;</span><br><span class="line">    <span class="type">int</span> first = blockIdx.x * tiles * THREADS;</span><br><span class="line">    __pipeline_memcpy_async(&amp;slot[<span class="number">0</span>][t], &amp;in[first + t], <span class="keyword">sizeof</span>(float4));</span><br><span class="line">    __pipeline_commit(); <span class="comment">// Submit tile 0 before entering the loop.</span></span><br><span class="line">    <span class="keyword">for</span> (<span class="type">int</span> k = <span class="number">0</span>; k &lt; tiles; ++k) &#123;</span><br><span class="line">        <span class="type">int</span> base = (blockIdx.x * tiles + k) * THREADS;</span><br><span class="line">        <span class="keyword">if</span> (k + <span class="number">1</span> &lt; tiles) &#123;</span><br><span class="line">            __pipeline_memcpy_async(&amp;slot[(k + <span class="number">1</span>) % <span class="number">2</span>][t], &amp;in[base + THREADS + t], <span class="keyword">sizeof</span>(float4));</span><br><span class="line">            __pipeline_commit();</span><br><span class="line">            __pipeline_wait_prior(<span class="number">1</span>); <span class="comment">// Current tile complete; newest tile may still be in flight.</span></span><br><span class="line">        &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">            __pipeline_wait_prior(<span class="number">0</span>); <span class="comment">// Drain the final tile, including the tiles=1 case.</span></span><br><span class="line">        &#125;</span><br><span class="line">        __syncthreads(); <span class="comment">// Every thread has waited for its copies; allow cross-thread reads.</span></span><br><span class="line">        out[base + t] = <span class="built_in">compute</span>(slot[k % <span class="number">2</span>][(t + <span class="number">1</span>) % THREADS], rounds);</span><br><span class="line">        __syncthreads(); <span class="comment">// All consumers finished before a future iteration reuses this slot.</span></span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"><span class="function"><span class="type">int</span> <span class="title">main</span><span class="params">(<span class="type">int</span> argc, <span class="type">char</span>** argv)</span> </span>&#123;</span><br><span class="line">    <span class="keyword">if</span> (argc != <span class="number">1</span> &amp;&amp; argc != <span class="number">3</span>) &#123; std::<span class="built_in">fprintf</span>(stderr, <span class="string">&quot;Usage: overlap [tiles_per_block rounds]\n&quot;</span>); <span class="keyword">return</span> <span class="number">1</span>; &#125;</span><br><span class="line">    <span class="type">const</span> <span class="type">int</span> tiles = argc == <span class="number">3</span> ? <span class="built_in">argument</span>(argv[<span class="number">1</span>], <span class="number">64</span>) : <span class="number">8</span>;</span><br><span class="line">    <span class="type">const</span> <span class="type">int</span> rounds = argc == <span class="number">3</span> ? <span class="built_in">argument</span>(argv[<span class="number">2</span>], <span class="number">256</span>) : <span class="number">16</span>;</span><br><span class="line">    <span class="keyword">auto</span> prop = <span class="built_in">device</span>();</span><br><span class="line">    <span class="keyword">if</span> (prop.major &lt; <span class="number">8</span>) &#123; std::<span class="built_in">fprintf</span>(stderr, <span class="string">&quot;Requires CC 8.0+ for this async-copy example.\n&quot;</span>); <span class="keyword">return</span> <span class="number">1</span>; &#125;</span><br><span class="line">    <span class="type">const</span> <span class="type">int</span> blocks = prop.multiProcessorCount * <span class="number">2</span>;</span><br><span class="line">    <span class="type">const</span> <span class="type">size_t</span> count = <span class="keyword">static_cast</span>&lt;<span class="type">size_t</span>&gt;(blocks) * tiles * THREADS;</span><br><span class="line">    <span class="function">std::vector&lt;float4&gt; <span class="title">input</span><span class="params">(count)</span>, <span class="title">output</span><span class="params">(count)</span></span>;</span><br><span class="line">    <span class="function">std::vector&lt;<span class="type">float</span>&gt; <span class="title">actual</span><span class="params">(count * <span class="number">4</span>)</span>, <span class="title">expected</span><span class="params">(count * <span class="number">4</span>)</span></span>;</span><br><span class="line">    <span class="keyword">for</span> (<span class="type">size_t</span> i = <span class="number">0</span>; i &lt; count; ++i) &#123;</span><br><span class="line">        <span class="type">float</span> x = <span class="keyword">static_cast</span>&lt;<span class="type">float</span>&gt;(i % <span class="number">97</span>) / <span class="number">128.0f</span>;</span><br><span class="line">        input[i] = <span class="built_in">make_float4</span>(x, x + <span class="number">.25f</span>, x + <span class="number">.5f</span>, x + <span class="number">.75f</span>);</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">for</span> (<span class="type">size_t</span> i = <span class="number">0</span>; i &lt; count; ++i) &#123;</span><br><span class="line">        <span class="type">size_t</span> neighbor = (i / THREADS) * THREADS + (i + <span class="number">1</span>) % THREADS;</span><br><span class="line">        float4 y = <span class="built_in">compute</span>(input[neighbor], rounds);</span><br><span class="line">        expected[<span class="number">4</span>*i] = y.x; expected[<span class="number">4</span>*i<span class="number">+1</span>] = y.y; expected[<span class="number">4</span>*i<span class="number">+2</span>] = y.z; expected[<span class="number">4</span>*i<span class="number">+3</span>] = y.w;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="function">DeviceBuffer&lt;float4&gt; <span class="title">din</span><span class="params">(count)</span>, <span class="title">dout</span><span class="params">(count)</span></span>;</span><br><span class="line">    <span class="built_in">CHECK</span>(<span class="built_in">cudaMemcpy</span>(din.data, input.<span class="built_in">data</span>(), count * <span class="keyword">sizeof</span>(float4), cudaMemcpyHostToDevice));</span><br><span class="line">    <span class="keyword">for</span> (<span class="type">int</span> variant = <span class="number">0</span>; variant &lt; <span class="number">2</span>; ++variant) &#123;</span><br><span class="line">        <span class="built_in">CHECK</span>(<span class="built_in">cudaMemset</span>(dout.data, <span class="number">0xff</span>, count * <span class="keyword">sizeof</span>(float4)));</span><br><span class="line">        <span class="keyword">auto</span> launch = [&amp;] &#123;</span><br><span class="line">            <span class="keyword">if</span> (variant == <span class="number">0</span>) serial_tiles&lt;&lt;&lt;blocks, THREADS&gt;&gt;&gt;(din.data, dout.data, tiles, rounds);</span><br><span class="line">            <span class="keyword">else</span> pipelined_tiles&lt;&lt;&lt;blocks, THREADS&gt;&gt;&gt;(din.data, dout.data, tiles, rounds);</span><br><span class="line">        &#125;;</span><br><span class="line">        <span class="built_in">launch</span>(); <span class="built_in">CHECK</span>(<span class="built_in">cudaGetLastError</span>());</span><br><span class="line">        <span class="built_in">CHECK</span>(<span class="built_in">cudaMemcpy</span>(output.<span class="built_in">data</span>(), dout.data, count * <span class="keyword">sizeof</span>(float4), cudaMemcpyDeviceToHost));</span><br><span class="line">        <span class="keyword">for</span> (<span class="type">size_t</span> i = <span class="number">0</span>; i &lt; count; ++i) &#123;</span><br><span class="line">            actual[<span class="number">4</span>*i] = output[i].x; actual[<span class="number">4</span>*i<span class="number">+1</span>] = output[i].y;</span><br><span class="line">            actual[<span class="number">4</span>*i<span class="number">+2</span>] = output[i].z; actual[<span class="number">4</span>*i<span class="number">+3</span>] = output[i].w;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="built_in">validate</span>(actual, expected);</span><br><span class="line">        std::<span class="built_in">printf</span>(<span class="string">&quot;%s: %.6f ms; tiles/block=%d rounds=%d\n&quot;</span>, variant ? <span class="string">&quot;async_double_buffer&quot;</span> : <span class="string">&quot;serial&quot;</span>, <span class="built_in">measure</span>(launch), tiles, rounds);</span><br><span class="line">    &#125;</span><br><span class="line">    std::<span class="built_in">puts</span>(<span class="string">&quot;Timing compares whole implementations, not isolated overlap. Check SASS/profiling; speedup is not guaranteed.&quot;</span>);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+</details>
 <h2 id="8.-TMA：把一块-tensor-的搬运交给专门机制" tabindex="-1">8. TMA：把一块 tensor 的搬运交给专门机制</h2>
 <h3 id="8.1-它接在哪一层，替你做什么" tabindex="-1">8.1 它接在哪一层，替你做什么</h3>
 <p><strong>TMA（Tensor Memory Accelerator，张量内存加速器）</strong> 是 Hopper／CC 9.0 引入的异步搬运能力。支持 bulk 与多维 tensor 搬运，典型路径为 global↔shared；一个线程可以发起一大块数据的搬运，使其他线程继续处理独立工作。它不是新的存储层，也不是 GEMM 计算单元。</p>
