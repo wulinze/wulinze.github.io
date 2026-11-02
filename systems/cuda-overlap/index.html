@@ -33,6 +33,8 @@
 <meta property="og:image" content="https://wulinze.github.io/images/cuda-overlap/07-double-buffer.svg">
 <meta property="og:image" content="https://wulinze.github.io/images/cuda-overlap/11-overlap-slots.svg">
 <meta property="og:image" content="https://wulinze.github.io/images/cuda-overlap/08-tma.svg">
+<meta property="og:image" content="https://wulinze.github.io/images/cuda-overlap/12-analysis-flow.svg">
+<meta property="og:image" content="https://wulinze.github.io/images/cuda-overlap/13-memory-diagnosis.svg">
 <meta property="article:published_time" content="2026-11-02T05:35:00.000Z">
 <meta property="article:modified_time" content="2026-11-02T05:35:00.000Z">
 <meta property="article:author" content="wulinze">
@@ -171,7 +173,7 @@
       <div class="sidebar-panel-container">
         <!--noindex-->
         <div class="post-toc-wrap sidebar-panel">
-            <div class="post-toc animated"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E9%98%85%E8%AF%BB%E8%B7%AF%E7%BA%BF%E4%B8%8E%E6%9C%AF%E8%AF%AD%E5%85%A5%E5%8F%A3"><span class="nav-text">阅读路线与术语入口</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#A.-%E7%93%B6%E9%A2%88%E5%88%86%E7%B1%BB%EF%BC%9Abound-%E5%88%B0%E5%BA%95%E8%A2%AB%E4%BB%80%E4%B9%88%E9%99%90%E5%88%B6"><span class="nav-text">A. 瓶颈分类：bound 到底被什么限制</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#B.-warp-%E7%8A%B6%E6%80%81%EF%BC%9A%E9%A9%BB%E7%95%99%E3%80%81%E5%B0%B1%E7%BB%AA%E5%92%8C%E5%8F%91%E5%87%BA%E4%B8%8D%E6%98%AF%E4%B8%80%E4%BB%B6%E4%BA%8B"><span class="nav-text">B. warp 状态：驻留、就绪和发出不是一件事</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#C.-%E7%9B%B8%E5%85%B3%E6%8C%87%E6%A0%87%EF%BC%9A%E6%AF%8F%E4%B8%AA%E6%95%B0%E5%AD%97%E7%9A%84%E5%8D%95%E4%BD%8D%E5%92%8C%E7%BB%9F%E8%AE%A1%E8%8C%83%E5%9B%B4%E6%98%AF%E4%BB%80%E4%B9%88"><span class="nav-text">C. 相关指标：每个数字的单位和统计范围是什么</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#1.-%E5%85%88%E6%94%BE%E5%A4%A7%E4%B8%80%E4%B8%AA-SM%EF%BC%9A%E8%B0%81%E4%BF%9D%E5%AD%98%E7%8A%B6%E6%80%81%EF%BC%8C%E8%B0%81%E8%B0%83%E5%BA%A6%EF%BC%8C%E8%B0%81%E8%AE%A1%E7%AE%97"><span class="nav-text">1. 先放大一个 SM：谁保存状态，谁调度，谁计算</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#1.1-%E5%85%88%E7%9C%8B%E7%BB%84%E6%88%90%EF%BC%9A%E5%93%AA%E4%BA%9B%E9%83%A8%E4%BB%B6%E5%B1%9E%E4%BA%8E%E5%AD%90%E5%88%86%E5%8C%BA%EF%BC%8C%E5%93%AA%E4%BA%9B%E7%94%B1%E6%95%B4%E4%B8%AA-SM-%E5%85%B1%E4%BA%AB"><span class="nav-text">1.1 先看组成：哪些部件属于子分区，哪些由整个 SM 共享</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#1.2-%E5%86%8D%E7%9C%8B%E8%BF%99%E4%BA%9B%E9%83%A8%E4%BB%B6%E5%A6%82%E4%BD%95%E5%B7%A5%E4%BD%9C"><span class="nav-text">1.2 再看这些部件如何工作</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#1.3-%E4%B8%80%E6%9D%A1-load-%E2%86%92-FMA-%E2%86%92-store-%E6%80%8E%E6%A0%B7%E8%B5%B0%E5%AE%8C"><span class="nav-text">1.3 一条 load → FMA → store 怎样走完</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#1.4-%E8%AE%A1%E7%AE%97%E7%AE%A1%E7%BA%BF%E5%92%8C%E8%AE%BF%E5%AD%98%E7%AE%A1%E7%BA%BF%E5%A6%82%E4%BD%95%E6%8E%92%E9%98%9F"><span class="nav-text">1.4 计算管线和访存管线如何排队</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#2.-memory-bound%E3%80%81compute-bound%E3%80%81latency-bound-%E6%80%8E%E4%B9%88%E5%88%A4%E6%96%AD"><span class="nav-text">2. memory-bound、compute-bound、latency-bound 怎么判断</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#2.1-%E5%85%88%E9%97%AE%E2%80%9C%E6%BB%A1%E4%BA%86%E2%80%9D%EF%BC%8C%E8%BF%98%E6%98%AF%E2%80%9C%E6%B2%A1%E6%B4%BB%E5%8F%AF%E5%8F%91%E2%80%9D"><span class="nav-text">2.1 先问“满了”，还是“没活可发”</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2.2-%E7%94%A8%E4%B8%80%E4%B8%AA%E6%9C%89%E8%BE%B9%E7%95%8C%E7%9A%84%E5%90%9E%E5%90%90%E5%85%AC%E5%BC%8F%E4%BC%B0%E7%AE%97"><span class="nav-text">2.2 用一个有边界的吞吐公式估算</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#3.-warp-stall-%E4%B8%8E%E6%9B%B4%E5%A4%9A-resident-warp%EF%BC%9A%E6%80%8E%E6%A0%B7%E9%9A%90%E8%97%8F%E7%AD%89%E5%BE%85"><span class="nav-text">3. warp stall 与更多 resident warp：怎样隐藏等待</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#3.1-resident%E3%80%81eligible%E3%80%81issued-%E6%98%AF%E4%B8%89%E4%B8%AA%E5%B1%82%E6%AC%A1"><span class="nav-text">3.1 resident、eligible、issued 是三个层次</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#3.2-%E4%B8%80%E4%B8%AA%E8%83%BD%E6%89%8B%E7%AE%97%E7%9A%84%E8%B0%83%E5%BA%A6%E6%A8%A1%E5%9E%8B"><span class="nav-text">3.2 一个能手算的调度模型</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#3.3-%E4%B8%BA%E4%BB%80%E4%B9%88%E5%8A%A0-warp-%E4%B9%9F%E5%8F%AF%E8%83%BD%E6%B2%A1%E7%94%A8"><span class="nav-text">3.3 为什么加 warp 也可能没用</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#4.-SM-occupancy%EF%BC%9A%E8%B5%84%E6%BA%90%E8%A3%85%E5%BE%97%E4%B8%8B%E5%A4%9A%E5%B0%91-warp"><span class="nav-text">4. SM occupancy：资源装得下多少 warp</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#4.1-%E4%BB%8E-block-%E6%95%B0%E6%8E%A8%E5%88%B0-warp-%E6%95%B0"><span class="nav-text">4.1 从 block 数推到 warp 数</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#4.2-%E6%9F%A5%E8%AF%A2%E5%BD%93%E5%89%8D-GPU-%E7%9A%84%E7%9C%9F%E5%AE%9E%E5%AE%B9%E9%87%8F"><span class="nav-text">4.2 查询当前 GPU 的真实容量</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#5.-%E5%AF%B9%E7%85%A7%E5%AD%98%E5%82%A8%E5%B1%82%E7%BA%A7%EF%BC%9A%E8%AF%A5%E5%87%8F%E5%B0%91%E6%90%AC%E8%BF%90%EF%BC%8C%E8%BF%98%E6%98%AF%E6%8A%8A%E6%90%AC%E8%BF%90%E6%8F%90%E5%89%8D"><span class="nav-text">5. 对照存储层级：该减少搬运，还是把搬运提前</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#6.-%E4%B8%89%E7%A7%8D%E5%9F%BA%E7%A1%80%E4%BC%98%E5%8C%96%EF%BC%9A%E5%90%88%E5%B9%B6%E8%AE%BF%E5%AD%98%E3%80%81tiling%E3%80%81%E5%90%91%E9%87%8F%E5%8C%96"><span class="nav-text">6. 三种基础优化：合并访存、tiling、向量化</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#6.1-%E5%90%88%E5%B9%B6%E8%AE%BF%E5%AD%98%EF%BC%9A%E5%85%88%E7%9C%8B%E5%90%8C%E4%B8%80%E6%9D%A1%E6%8C%87%E4%BB%A4%E4%B8%AD%E7%9B%B8%E9%82%BB%E7%BA%BF%E7%A8%8B%E7%9A%84%E5%9C%B0%E5%9D%80"><span class="nav-text">6.1 合并访存：先看同一条指令中相邻线程的地址</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#6.2-tiling%EF%BC%9A%E5%88%86%E5%9D%97%E4%B9%8B%E5%90%8E%EF%BC%8C%E8%A6%81%E8%AF%B4%E6%98%8E%E6%95%B0%E6%8D%AE%E8%A2%AB%E8%B0%81%E5%A4%8D%E7%94%A8"><span class="nav-text">6.2 tiling：分块之后，要说明数据被谁复用</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#%E4%BB%8E%E5%9B%BE%E4%B8%8A%E7%9A%84-tile-%E8%B5%B0%E5%88%B0-matmul_tiled-%E7%9A%84%E7%BA%BF%E7%A8%8B%E7%B4%A2%E5%BC%95"><span class="nav-text">从图上的 tile 走到 matmul_tiled 的线程索引</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#6.3-%E5%90%91%E9%87%8F%E5%8C%96%EF%BC%9A%E6%94%B9%E5%8F%98%E5%8D%95%E4%B8%AA%E7%BA%BF%E7%A8%8B%E7%9A%84%E4%B8%80%E6%AC%A1%E8%AE%BF%E9%97%AE%E5%AE%BD%E5%BA%A6"><span class="nav-text">6.3 向量化：改变单个线程的一次访问宽度</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#6.4-%E5%AE%8C%E6%95%B4%E6%BA%90%E7%A0%81%E4%B8%8E%E8%BF%90%E8%A1%8C%E6%96%B9%E5%BC%8F"><span class="nav-text">6.4 完整源码与运行方式</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#7.-%E4%BB%8E%E5%90%8C%E6%AD%A5-tiling-%E8%B5%B0%E5%88%B0%E5%8F%8C%E7%BC%93%E5%86%B2%EF%BC%9A%E8%AE%A1%E7%AE%97%E5%BD%93%E5%89%8D%E5%9D%97%EF%BC%8C%E6%90%AC%E4%B8%8B%E4%B8%80%E5%9D%97"><span class="nav-text">7. 从同步 tiling 走到双缓冲：计算当前块，搬下一块</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#7.1-buffer-%E7%94%9F%E5%91%BD%E5%91%A8%E6%9C%9F%E6%AF%94%E2%80%9C%E7%94%A8%E4%BA%86-async%E2%80%9D%E6%9B%B4%E9%87%8D%E8%A6%81"><span class="nav-text">7.1 buffer 生命周期比“用了 async”更重要</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#7.2-%E4%B8%BA%E4%BB%80%E4%B9%88%E7%90%86%E6%83%B3%E6%97%B6%E9%97%B4%E4%BB%8E%E7%9B%B8%E5%8A%A0%E5%8F%98%E6%88%90%E5%8F%96-max"><span class="nav-text">7.2 为什么理想时间从相加变成取 max</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#7.3-cp.async-%E4%B8%8E-pipeline-API-%E7%9A%84%E8%A7%92%E8%89%B2"><span class="nav-text">7.3 cp.async 与 pipeline API 的角色</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#7.4-%E5%AF%B9%E5%BA%94%E5%88%B0%E5%AE%8C%E6%95%B4-overlap.cu%EF%BC%9A%E4%B8%8D%E5%8F%AA%E5%81%9C%E5%9C%A8%E4%BC%AA%E4%BB%A3%E7%A0%81"><span class="nav-text">7.4 对应到完整 overlap.cu：不只停在伪代码</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#8.-TMA%EF%BC%9A%E6%8A%8A%E4%B8%80%E5%9D%97-tensor-%E7%9A%84%E6%90%AC%E8%BF%90%E4%BA%A4%E7%BB%99%E4%B8%93%E9%97%A8%E6%9C%BA%E5%88%B6"><span class="nav-text">8. TMA：把一块 tensor 的搬运交给专门机制</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#8.1-%E5%AE%83%E6%8E%A5%E5%9C%A8%E5%93%AA%E4%B8%80%E5%B1%82%EF%BC%8C%E6%9B%BF%E4%BD%A0%E5%81%9A%E4%BB%80%E4%B9%88"><span class="nav-text">8.1 它接在哪一层，替你做什么</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#8.2-%E7%94%A8%E4%B8%80%E4%B8%AA%E4%BA%8C%E7%BB%B4-tile-%E7%90%86%E8%A7%A3-descriptor-%E5%92%8C%E5%AE%8C%E6%88%90%E4%BF%A1%E5%8F%B7"><span class="nav-text">8.2 用一个二维 tile 理解 descriptor 和完成信号</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#8.3-%E5%9B%9B%E4%B8%AA%E9%9C%80%E8%A6%81%E5%8D%95%E7%8B%AC%E6%A3%80%E6%9F%A5%E7%9A%84%E6%AD%A3%E7%A1%AE%E6%80%A7%E6%9D%A1%E4%BB%B6"><span class="nav-text">8.3 四个需要单独检查的正确性条件</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#8.4-warp-specialization-%E4%B8%BA%E4%BD%95%E5%8F%AF%E8%83%BD%E9%99%8D%E4%BD%8E-occupancy-%E5%8D%B4%E6%9B%B4%E5%BF%AB"><span class="nav-text">8.4 warp specialization 为何可能降低 occupancy 却更快</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#9.-%E6%80%8E%E6%A0%B7%E7%94%A8-profiler-%E6%8A%8A%E8%BF%99%E4%BA%9B%E5%88%A4%E6%96%AD%E8%BF%9E%E8%B5%B7%E6%9D%A5"><span class="nav-text">9. 怎样用 profiler 把这些判断连起来</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#10.-%E6%A3%80%E6%9F%A5%E8%87%AA%E5%B7%B1%E6%98%AF%E5%90%A6%E7%90%86%E8%A7%A3"><span class="nav-text">10. 检查自己是否理解</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%AE%98%E6%96%B9%E8%B5%84%E6%96%99%E4%B8%8E%E5%90%8E%E7%BB%AD%E5%AD%A6%E4%B9%A0"><span class="nav-text">官方资料与后续学习</span></a></li></ol></div>
+            <div class="post-toc animated"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E9%98%85%E8%AF%BB%E8%B7%AF%E7%BA%BF%E4%B8%8E%E6%9C%AF%E8%AF%AD%E5%85%A5%E5%8F%A3"><span class="nav-text">阅读路线与术语入口</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#A.-%E7%93%B6%E9%A2%88%E5%88%86%E7%B1%BB%EF%BC%9Abound-%E5%88%B0%E5%BA%95%E8%A2%AB%E4%BB%80%E4%B9%88%E9%99%90%E5%88%B6"><span class="nav-text">A. 瓶颈分类：bound 到底被什么限制</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#B.-warp-%E7%8A%B6%E6%80%81%EF%BC%9A%E9%A9%BB%E7%95%99%E3%80%81%E5%B0%B1%E7%BB%AA%E5%92%8C%E5%8F%91%E5%87%BA%E4%B8%8D%E6%98%AF%E4%B8%80%E4%BB%B6%E4%BA%8B"><span class="nav-text">B. warp 状态：驻留、就绪和发出不是一件事</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#C.-%E7%9B%B8%E5%85%B3%E6%8C%87%E6%A0%87%EF%BC%9A%E6%AF%8F%E4%B8%AA%E6%95%B0%E5%AD%97%E7%9A%84%E5%8D%95%E4%BD%8D%E5%92%8C%E7%BB%9F%E8%AE%A1%E8%8C%83%E5%9B%B4%E6%98%AF%E4%BB%80%E4%B9%88"><span class="nav-text">C. 相关指标：每个数字的单位和统计范围是什么</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#1.-%E5%85%88%E6%94%BE%E5%A4%A7%E4%B8%80%E4%B8%AA-SM%EF%BC%9A%E8%B0%81%E4%BF%9D%E5%AD%98%E7%8A%B6%E6%80%81%EF%BC%8C%E8%B0%81%E8%B0%83%E5%BA%A6%EF%BC%8C%E8%B0%81%E8%AE%A1%E7%AE%97"><span class="nav-text">1. 先放大一个 SM：谁保存状态，谁调度，谁计算</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#1.1-%E5%85%88%E7%9C%8B%E7%BB%84%E6%88%90%EF%BC%9A%E5%93%AA%E4%BA%9B%E9%83%A8%E4%BB%B6%E5%B1%9E%E4%BA%8E%E5%AD%90%E5%88%86%E5%8C%BA%EF%BC%8C%E5%93%AA%E4%BA%9B%E7%94%B1%E6%95%B4%E4%B8%AA-SM-%E5%85%B1%E4%BA%AB"><span class="nav-text">1.1 先看组成：哪些部件属于子分区，哪些由整个 SM 共享</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#1.2-%E5%86%8D%E7%9C%8B%E8%BF%99%E4%BA%9B%E9%83%A8%E4%BB%B6%E5%A6%82%E4%BD%95%E5%B7%A5%E4%BD%9C"><span class="nav-text">1.2 再看这些部件如何工作</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#1.3-%E4%B8%80%E6%9D%A1-load-%E2%86%92-FMA-%E2%86%92-store-%E6%80%8E%E6%A0%B7%E8%B5%B0%E5%AE%8C"><span class="nav-text">1.3 一条 load → FMA → store 怎样走完</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#1.4-%E8%AE%A1%E7%AE%97%E7%AE%A1%E7%BA%BF%E5%92%8C%E8%AE%BF%E5%AD%98%E7%AE%A1%E7%BA%BF%E5%A6%82%E4%BD%95%E6%8E%92%E9%98%9F"><span class="nav-text">1.4 计算管线和访存管线如何排队</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#2.-memory-bound%E3%80%81compute-bound%E3%80%81latency-bound-%E6%80%8E%E4%B9%88%E5%88%A4%E6%96%AD"><span class="nav-text">2. memory-bound、compute-bound、latency-bound 怎么判断</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#2.1-%E5%85%88%E9%97%AE%E2%80%9C%E6%BB%A1%E4%BA%86%E2%80%9D%EF%BC%8C%E8%BF%98%E6%98%AF%E2%80%9C%E6%B2%A1%E6%B4%BB%E5%8F%AF%E5%8F%91%E2%80%9D"><span class="nav-text">2.1 先问“满了”，还是“没活可发”</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2.2-%E7%94%A8%E4%B8%80%E4%B8%AA%E6%9C%89%E8%BE%B9%E7%95%8C%E7%9A%84%E5%90%9E%E5%90%90%E5%85%AC%E5%BC%8F%E4%BC%B0%E7%AE%97"><span class="nav-text">2.2 用一个有边界的吞吐公式估算</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#3.-warp-stall-%E4%B8%8E%E6%9B%B4%E5%A4%9A-resident-warp%EF%BC%9A%E6%80%8E%E6%A0%B7%E9%9A%90%E8%97%8F%E7%AD%89%E5%BE%85"><span class="nav-text">3. warp stall 与更多 resident warp：怎样隐藏等待</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#3.1-resident%E3%80%81eligible%E3%80%81issued-%E6%98%AF%E4%B8%89%E4%B8%AA%E5%B1%82%E6%AC%A1"><span class="nav-text">3.1 resident、eligible、issued 是三个层次</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#3.2-%E4%B8%80%E4%B8%AA%E8%83%BD%E6%89%8B%E7%AE%97%E7%9A%84%E8%B0%83%E5%BA%A6%E6%A8%A1%E5%9E%8B"><span class="nav-text">3.2 一个能手算的调度模型</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#3.3-%E4%B8%BA%E4%BB%80%E4%B9%88%E5%8A%A0-warp-%E4%B9%9F%E5%8F%AF%E8%83%BD%E6%B2%A1%E7%94%A8"><span class="nav-text">3.3 为什么加 warp 也可能没用</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#4.-SM-occupancy%EF%BC%9A%E8%B5%84%E6%BA%90%E8%A3%85%E5%BE%97%E4%B8%8B%E5%A4%9A%E5%B0%91-warp"><span class="nav-text">4. SM occupancy：资源装得下多少 warp</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#4.1-%E4%BB%8E-block-%E6%95%B0%E6%8E%A8%E5%88%B0-warp-%E6%95%B0"><span class="nav-text">4.1 从 block 数推到 warp 数</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#4.2-%E6%9F%A5%E8%AF%A2%E5%BD%93%E5%89%8D-GPU-%E7%9A%84%E7%9C%9F%E5%AE%9E%E5%AE%B9%E9%87%8F"><span class="nav-text">4.2 查询当前 GPU 的真实容量</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#5.-%E5%AF%B9%E7%85%A7%E5%AD%98%E5%82%A8%E5%B1%82%E7%BA%A7%EF%BC%9A%E8%AF%A5%E5%87%8F%E5%B0%91%E6%90%AC%E8%BF%90%EF%BC%8C%E8%BF%98%E6%98%AF%E6%8A%8A%E6%90%AC%E8%BF%90%E6%8F%90%E5%89%8D"><span class="nav-text">5. 对照存储层级：该减少搬运，还是把搬运提前</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#6.-%E4%B8%89%E7%A7%8D%E5%9F%BA%E7%A1%80%E4%BC%98%E5%8C%96%EF%BC%9A%E5%90%88%E5%B9%B6%E8%AE%BF%E5%AD%98%E3%80%81tiling%E3%80%81%E5%90%91%E9%87%8F%E5%8C%96"><span class="nav-text">6. 三种基础优化：合并访存、tiling、向量化</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#6.1-%E5%90%88%E5%B9%B6%E8%AE%BF%E5%AD%98%EF%BC%9A%E5%85%88%E7%9C%8B%E5%90%8C%E4%B8%80%E6%9D%A1%E6%8C%87%E4%BB%A4%E4%B8%AD%E7%9B%B8%E9%82%BB%E7%BA%BF%E7%A8%8B%E7%9A%84%E5%9C%B0%E5%9D%80"><span class="nav-text">6.1 合并访存：先看同一条指令中相邻线程的地址</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#6.2-tiling%EF%BC%9A%E5%88%86%E5%9D%97%E4%B9%8B%E5%90%8E%EF%BC%8C%E8%A6%81%E8%AF%B4%E6%98%8E%E6%95%B0%E6%8D%AE%E8%A2%AB%E8%B0%81%E5%A4%8D%E7%94%A8"><span class="nav-text">6.2 tiling：分块之后，要说明数据被谁复用</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#%E4%BB%8E%E5%9B%BE%E4%B8%8A%E7%9A%84-tile-%E8%B5%B0%E5%88%B0-matmul_tiled-%E7%9A%84%E7%BA%BF%E7%A8%8B%E7%B4%A2%E5%BC%95"><span class="nav-text">从图上的 tile 走到 matmul_tiled 的线程索引</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#6.3-%E5%90%91%E9%87%8F%E5%8C%96%EF%BC%9A%E6%94%B9%E5%8F%98%E5%8D%95%E4%B8%AA%E7%BA%BF%E7%A8%8B%E7%9A%84%E4%B8%80%E6%AC%A1%E8%AE%BF%E9%97%AE%E5%AE%BD%E5%BA%A6"><span class="nav-text">6.3 向量化：改变单个线程的一次访问宽度</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#6.4-%E5%AE%8C%E6%95%B4%E6%BA%90%E7%A0%81%E4%B8%8E%E8%BF%90%E8%A1%8C%E6%96%B9%E5%BC%8F"><span class="nav-text">6.4 完整源码与运行方式</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#7.-%E4%BB%8E%E5%90%8C%E6%AD%A5-tiling-%E8%B5%B0%E5%88%B0%E5%8F%8C%E7%BC%93%E5%86%B2%EF%BC%9A%E8%AE%A1%E7%AE%97%E5%BD%93%E5%89%8D%E5%9D%97%EF%BC%8C%E6%90%AC%E4%B8%8B%E4%B8%80%E5%9D%97"><span class="nav-text">7. 从同步 tiling 走到双缓冲：计算当前块，搬下一块</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#7.1-buffer-%E7%94%9F%E5%91%BD%E5%91%A8%E6%9C%9F%E6%AF%94%E2%80%9C%E7%94%A8%E4%BA%86-async%E2%80%9D%E6%9B%B4%E9%87%8D%E8%A6%81"><span class="nav-text">7.1 buffer 生命周期比“用了 async”更重要</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#7.2-%E4%B8%BA%E4%BB%80%E4%B9%88%E7%90%86%E6%83%B3%E6%97%B6%E9%97%B4%E4%BB%8E%E7%9B%B8%E5%8A%A0%E5%8F%98%E6%88%90%E5%8F%96-max"><span class="nav-text">7.2 为什么理想时间从相加变成取 max</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#7.3-cp.async-%E4%B8%8E-pipeline-API-%E7%9A%84%E8%A7%92%E8%89%B2"><span class="nav-text">7.3 cp.async 与 pipeline API 的角色</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#7.4-%E5%AF%B9%E5%BA%94%E5%88%B0%E5%AE%8C%E6%95%B4-overlap.cu%EF%BC%9A%E4%B8%8D%E5%8F%AA%E5%81%9C%E5%9C%A8%E4%BC%AA%E4%BB%A3%E7%A0%81"><span class="nav-text">7.4 对应到完整 overlap.cu：不只停在伪代码</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#8.-TMA%EF%BC%9A%E6%8A%8A%E4%B8%80%E5%9D%97-tensor-%E7%9A%84%E6%90%AC%E8%BF%90%E4%BA%A4%E7%BB%99%E4%B8%93%E9%97%A8%E6%9C%BA%E5%88%B6"><span class="nav-text">8. TMA：把一块 tensor 的搬运交给专门机制</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#8.1-%E5%AE%83%E6%8E%A5%E5%9C%A8%E5%93%AA%E4%B8%80%E5%B1%82%EF%BC%8C%E6%9B%BF%E4%BD%A0%E5%81%9A%E4%BB%80%E4%B9%88"><span class="nav-text">8.1 它接在哪一层，替你做什么</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#8.2-%E7%94%A8%E4%B8%80%E4%B8%AA%E4%BA%8C%E7%BB%B4-tile-%E7%90%86%E8%A7%A3-descriptor-%E5%92%8C%E5%AE%8C%E6%88%90%E4%BF%A1%E5%8F%B7"><span class="nav-text">8.2 用一个二维 tile 理解 descriptor 和完成信号</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#8.3-%E5%9B%9B%E4%B8%AA%E9%9C%80%E8%A6%81%E5%8D%95%E7%8B%AC%E6%A3%80%E6%9F%A5%E7%9A%84%E6%AD%A3%E7%A1%AE%E6%80%A7%E6%9D%A1%E4%BB%B6"><span class="nav-text">8.3 四个需要单独检查的正确性条件</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#8.4-warp-specialization-%E4%B8%BA%E4%BD%95%E5%8F%AF%E8%83%BD%E9%99%8D%E4%BD%8E-occupancy-%E5%8D%B4%E6%9B%B4%E5%BF%AB"><span class="nav-text">8.4 warp specialization 为何可能降低 occupancy 却更快</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#9.-%E6%80%A7%E8%83%BD%E5%88%86%E6%9E%90%E6%B5%81%E7%A8%8B%EF%BC%9A%E4%BB%8E%E7%97%87%E7%8A%B6%E8%B5%B0%E5%88%B0%E8%AF%81%E6%8D%AE%EF%BC%8C%E5%86%8D%E5%86%B3%E5%AE%9A%E4%BC%98%E5%8C%96"><span class="nav-text">9. 性能分析流程：从症状走到证据，再决定优化</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#9.1-%E5%85%88%E5%AE%9A%E4%BD%8D%E7%83%AD%E7%82%B9%EF%BC%8C%E7%A1%AE%E8%AE%A4%E9%87%87%E9%9B%86%E5%8F%AF%E4%BF%A1%E4%B8%94%E5%B7%A5%E4%BD%9C%E9%87%8F%E8%B6%B3%E5%A4%9F"><span class="nav-text">9.1 先定位热点，确认采集可信且工作量足够</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#9.2-%E8%AF%BB-SOL%EF%BC%9A%E5%AE%83%E6%98%AF%E5%85%A5%E5%8F%A3%EF%BC%8C%E4%B8%8D%E6%98%AF%E5%8D%A0%E7%94%A8%E7%8E%87%E6%88%96%E7%93%B6%E9%A2%88%E5%88%A4%E5%86%B3"><span class="nav-text">9.2 读 SOL：它是入口，不是占用率或瓶颈判决</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#9.3-%E5%9B%9B%E6%9D%A1%E5%88%86%E6%94%AF%E5%90%84%E8%87%AA%E8%A6%81%E5%9B%9E%E7%AD%94%E4%BB%80%E4%B9%88"><span class="nav-text">9.3 四条分支各自要回答什么</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#9.4-warp-stall-%E5%AD%97%E5%85%B8%EF%BC%9A%E5%85%88%E5%AE%9A%E4%BD%8D%E7%AD%89%E5%BE%85%E7%9A%84%E6%B6%88%E8%B4%B9%E8%80%85%EF%BC%8C%E5%86%8D%E5%9B%9E%E6%BA%AF%E7%94%9F%E4%BA%A7%E8%80%85"><span class="nav-text">9.4 warp stall 字典：先定位等待的消费者，再回溯生产者</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#9.5-occupancy-%E5%88%86%E6%94%AF%EF%BC%9A%E6%98%AF%E8%A3%85%E4%B8%8D%E4%B8%8B%EF%BC%8C%E8%BF%98%E6%98%AF%E6%B2%A1%E7%BB%99%E5%A4%9F%E4%BB%BB%E5%8A%A1"><span class="nav-text">9.5 occupancy 分支：是装不下，还是没给够任务</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#9.6-Memory-Workload%EF%BC%9A%E5%88%86%E5%B1%82%E7%9C%8B%E5%90%9E%E5%90%90%E3%80%81%E5%91%BD%E4%B8%AD%E4%B8%8E%E8%AE%BF%E9%97%AE%E6%94%BE%E5%A4%A7"><span class="nav-text">9.6 Memory Workload：分层看吞吐、命中与访问放大</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#9.7-compute-%E5%88%86%E6%94%AF%EF%BC%9A%E6%9F%A5%E2%80%9C%E5%BF%99%E7%9A%84%E6%98%AF%E8%B0%81%E2%80%9D%EF%BC%8C%E5%86%8D%E6%9F%A5%E2%80%9C%E5%BF%99%E5%BE%97%E6%98%AF%E5%90%A6%E6%9C%89%E4%BB%B7%E5%80%BC%E2%80%9D"><span class="nav-text">9.7 compute 分支：查“忙的是谁”，再查“忙得是否有价值”</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#9.8-%E6%8A%8A%E6%B5%81%E7%A8%8B%E7%9C%9F%E6%AD%A3%E7%94%A8%E5%88%B0%E6%9C%AC%E7%AF%87-demo"><span class="nav-text">9.8 把流程真正用到本篇 demo</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#9.9-%E6%AF%8F%E8%BD%AE%E4%BF%9D%E7%95%99%E4%B8%80%E6%9D%A1%E5%8F%AF%E4%BB%A5%E8%A2%AB%E5%90%A6%E8%AF%81%E7%9A%84%E8%AE%B0%E5%BD%95"><span class="nav-text">9.9 每轮保留一条可以被否证的记录</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#10.-%E6%A3%80%E6%9F%A5%E8%87%AA%E5%B7%B1%E6%98%AF%E5%90%A6%E7%90%86%E8%A7%A3"><span class="nav-text">10. 检查自己是否理解</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%AE%98%E6%96%B9%E8%B5%84%E6%96%99%E4%B8%8E%E5%90%8E%E7%BB%AD%E5%AD%A6%E4%B9%A0"><span class="nav-text">官方资料与后续学习</span></a></li></ol></div>
         </div>
         <!--/noindex-->
 
@@ -456,7 +458,7 @@
 </table>
 <p><code>long scoreboard</code>、<code>short scoreboard</code>、<code>barrier</code>、<code>LG/MIO throttle</code> 是帮助定位等待机制的原因名称；相关采样指标统计这些现象。它们不是另一组与 compute-bound 并列的最终结论。第 9 节再将指标和优化动作对应起来。<a target="_blank" rel="noopener" href="https://docs.nvidia.com/nsight-compute/ProfilingGuide/">Nsight Compute：Metrics 与 Warp Sampling</a></p>
 <p>后文出现的 <strong>tile</strong> 是数据分块，<strong>slot/buffer</strong> 是存放块的空间，<strong>stage</strong> 是流水线中的缓冲与同步阶段，<strong>overlap</strong> 是独立工作在时间上重叠。这些是实现机制，不放进 bound 或 warp 状态表。第 6、7 节会让同一组数据从原理图走到代码与实验。</p>
-<p>本文配有 <strong>11 张可编辑手绘图、6 个浏览器概念实验、5 份完整 CUDA 程序</strong>。图中的队列是功能示意，不是特定 GPU 的精确电路图；模拟时间单位不对应真实 GPU 周期。资料核对日期：2026-11-02。本机与当前可访问的计算环境均无可用 CUDA GPU／<code>nvcc</code>，CUDA 源码尚未编译和 GPU 实跑；不提供虚构测速数据。</p>
+<p>本文配有 <strong>13 张可编辑手绘图、6 个浏览器概念实验、5 份完整 CUDA 程序</strong>。图中的队列是功能示意，不是特定 GPU 的精确电路图；模拟时间单位不对应真实 GPU 周期。资料核对日期：2026-11-02。本机与当前可访问的计算环境均无可用 CUDA GPU／<code>nvcc</code>，CUDA 源码尚未编译和 GPU 实跑；不提供虚构测速数据。</p>
 <p><a href="/downloads/cuda-overlap/cuda-overlap-demos.zip">下载全部源码与 Makefile</a> · <a href="/downloads/cuda-overlap/README.txt">编译、校验和计时说明</a></p>
 <h2 id="1.-先放大一个-SM：谁保存状态，谁调度，谁计算" tabindex="-1">1. 先放大一个 SM：谁保存状态，谁调度，谁计算</h2>
 <h3 id="1.1-先看组成：哪些部件属于子分区，哪些由整个-SM-共享" tabindex="-1">1.1 先看组成：哪些部件属于子分区，哪些由整个 SM 共享</h3>
@@ -912,61 +914,273 @@
 <h3 id="8.4-warp-specialization-为何可能降低-occupancy-却更快" tabindex="-1">8.4 warp specialization 为何可能降低 occupancy 却更快</h3>
 <p>可以让生产者 warp 管搬运、消费者 warp 管计算；TMA 发起动作本身可能只需一个线程，但生产者角色还承担阶段和 buffer 协调。这样减少消费者在数据搬运和地址计算上的工作，并让两个角色处理不同 tile。</p>
 <p>代价是专门的 warp、更多 shared stage、屏障和控制状态都要资源；消费者的寄存器需求也可能高。最终应比较正确完成相同工作所需的时间，而不是要求 occupancy 数字一定上升。异步矩阵计算还可能在消费者发出之后继续使用 shared 数据，必须等相应计算完成，不能仅凭“指令已发出”就释放 slot。<a target="_blank" rel="noopener" href="https://docs.nvidia.com/cuda/hopper-tuning-guide/index.html">Hopper Tuning Guide</a></p>
-<h2 id="9.-怎样用-profiler-把这些判断连起来" tabindex="-1">9. 怎样用 profiler 把这些判断连起来</h2>
-<p>先确认结果正确，再固定输入、编译选项和 GPU 条件看耗时。端到端重叠用 Nsight Systems 看时间线；单 kernel 的管线、访存和 warp 行为用 Nsight Compute。采集本身可能改变执行，尤其多次 replay 不能直接代表原本跨 stream 的并发时间线。</p>
-<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 查看本机支持的 section；名称与可用指标依工具版本而变。</span></span><br><span class="line">ncu --list-sections</span><br><span class="line"><span class="comment"># 下列为常见 section 名称，先与上一步对照。</span></span><br><span class="line">ncu --section LaunchStats --section Occupancy --section SchedulerStats \</span><br><span class="line">    --section WarpStateStats --section MemoryWorkloadAnalysis ./tiling 256 256 256</span><br></pre></td></tr></table></figure>
+<p><a id="performance-analysis"></a></p>
+<h2 id="9.-性能分析流程：从症状走到证据，再决定优化" tabindex="-1">9. 性能分析流程：从症状走到证据，再决定优化</h2>
+<p>这一节根据学习截图中的决策树和指标字典重新整理，并对照 NVIDIA 官方指标定义补充适用范围。<strong>先找真正影响目标耗时的工作，再把“怀疑什么、怎样验证、改什么”连起来。</strong> 图中的分支是调查入口，不是只看两个百分比就能确定的结论。</p>
+<h3 id="9.1-先定位热点，确认采集可信且工作量足够" tabindex="-1">9.1 先定位热点，确认采集可信且工作量足够</h3>
+<ol>
+<li><strong>先验正确性与基线。</strong> 固定输入、GPU、编译选项、精度、时钟／功耗条件及其他负载，记录未插入重型 profiler 时的耗时。区分单 kernel 时间和端到端时间。</li>
+<li><strong>Nsight Systems 找优先级。</strong> 看 kernel、拷贝、CPU 提交和同步的时间线。总耗时高或频繁出现的 kernel 是候选，但并发 kernel 的耗时之和不等于端到端关键路径；不能仅凭汇总表的占比宣称优化它就能等比例加速应用。</li>
+<li><strong>对少数目标启动做 Nsight Compute。</strong> 使用优化编译和 <code>-lineinfo</code>，按需要采集 section。核对 replay、缓存控制、时钟控制与原始运行场景是否一致；指标矛盾时先修采集，不先改 kernel。</li>
+<li><strong>先排除工作量不足。</strong> 看 grid、block、SM 数、waves 和尾部。若独立 block 太少，GPU 天然填不满，优先考虑把独立工作展开或合理批处理，而不是直接增加 stage。若只是大量短 kernel 的提交开销，先处理任务粒度、图执行等端到端问题。</li>
+</ol>
+<p>这些前置检查解释了为什么“SM% 和 MEM% 双低”不一定是 kernel 内的访存等待：也可能是任务太小、尾部太长、提交空档或采集条件不同。<a target="_blank" rel="noopener" href="https://docs.nvidia.com/nsight-systems/AnalysisGuide/index.html">Nsight Systems：Kernel Summary</a> · <a target="_blank" rel="noopener" href="https://docs.nvidia.com/nsight-compute/ComputeTriage/">Nsight Compute：Triage Workflow</a></p>
+<h3 id="9.2-读-SOL：它是入口，不是占用率或瓶颈判决" tabindex="-1">9.2 读 SOL：它是入口，不是占用率或瓶颈判决</h3>
+<p>SOL 是 Speed Of Light 的缩写，工具用它表示相对某种峰值／可持续吞吐基准的表现。先在 <strong>SpeedOfLight</strong> 概览读 SM 和 memory 侧，再展开底层管线；不要把它与 warp occupancy、<code>nvidia-smi</code> 的 GPU utilization 混用。</p>
 <table>
 <thead>
 <tr>
-<th>观察</th>
-<th>下一步的问题</th>
-<th>不应直接下的结论</th>
+<th>观察对象</th>
+<th>常见指标或界面入口</th>
+<th>读数需要补上的含义</th>
 </tr>
 </thead>
 <tbody>
 <tr>
-<td>theoretical occupancy 低</td>
-<td>被寄存器、shared、线程还是 block 上限限制？</td>
-<td>立刻强压寄存器一定更快</td>
+<td>SM 侧概览</td>
+<td><code>sm__throughput.avg.pct_of_peak_sustained_elapsed</code></td>
+<td>不是所有计算单元“忙碌百分比”的简单平均，更不等于 occupancy；展开看由哪些通路主导</td>
 </tr>
 <tr>
-<td>active 多，eligible 少，issue 空档多</td>
-<td>等依赖、同步，还是资源入口？</td>
-<td>只要继续增大 grid 就能修复</td>
+<td>memory 侧概览</td>
+<td>SpeedOfLight 的 Memory Throughput／breakdown；某些版本提供 <code>gpu__compute_memory_throughput.avg.pct_of_peak_sustained_elapsed</code></td>
+<td>不直接等于 HBM/DRAM 带宽；继续拆 L1/TEX、L2、DRAM 和指令／请求通路</td>
 </tr>
 <tr>
-<td>long scoreboard 多</td>
-<td>哪个消费者等 L1TEX 相关结果？实际地址、命中和流量怎样？</td>
-<td>每一个样本都表示 HBM miss</td>
+<td>目标层吞吐</td>
+<td>如 <code>dram__throughput.avg.pct_of_peak_sustained_elapsed</code>，以及对应 L1/TEX、L2 的 breakdown</td>
+<td>是哪个层的哪些计数、用 active 还是 elapsed 周期作分母；不能混用口径比较</td>
 </tr>
 <tr>
-<td>short scoreboard 多</td>
-<td>哪类 MIO 结果依赖？shared 布局是否有关？</td>
-<td>一定是 shared bank conflict</td>
-</tr>
-<tr>
-<td>LG/MIO throttle 多</td>
-<td>相应队列／入口是否承压，是否有过多零碎指令？</td>
-<td>只需要更多 resident warp</td>
-</tr>
-<tr>
-<td>math pipe throttle 多</td>
-<td>某类计算通路是否已饱和、指令混合是否失衡？</td>
-<td>所有计算单元都已跑满</td>
-</tr>
-<tr>
-<td>barrier 多</td>
-<td>哪些参与者先到，谁迟到，是否有工作不均衡？</td>
-<td>barrier 语句本身消耗了全部等待时间</td>
-</tr>
-<tr>
-<td>not selected 多</td>
-<td>可发候选是否充足，发出槽是否在忙？</td>
-<td>应把它像错误一样清零</td>
+<td>指令是否发得出来</td>
+<td>Scheduler Statistics 的 active、eligible、issue activity</td>
+<td>用来区分候选不足、依赖等待和通路接收能力；与吞吐概览交叉看</td>
 </tr>
 </tbody>
 </table>
-<p>stall 样本可能记在等待结果的<strong>消费者指令</strong>上，而不是发起请求的 load 那一行；要联系源码与 SASS。总 stalled 样本比例也不等于整个 SM 空闲比例：采样到 warp A 在等的同时，warp B 仍可能工作。优先判断 issue 和相关吞吐是否存在可改善的空档，再解释原因。<a target="_blank" rel="noopener" href="https://docs.nvidia.com/nsight-compute/ProfilingGuide/">Nsight Compute Profiling Guide</a> · <a target="_blank" rel="noopener" href="https://docs.nvidia.com/nsight-compute/ComputeTriage/">Compute Triage Guide</a></p>
+<p>Nsight Compute 的 throughput 指标会取其构成计数器的峰值百分比中的最大值来表达压力，因此“某个概览很高”不意味着其覆盖的全部资源同时饱和。<code>sm__...</code> 与 <code>smsp__...</code> 的聚合范围也不同。具体指标名称和可用性按目标 GPU、工具版本查询。<a target="_blank" rel="noopener" href="https://docs.nvidia.com/nsight-compute/ProfilingGuide/#metrics-structure">Nsight Compute：Metrics Structure</a></p>
+<p>截图中的“相差 20”“双低小于 40”“双高大于 60”“DRAM 大于 70”适合作为特定实验的筛选经验，不能作为所有硬件和 kernel 的硬阈值。本篇流程图因此使用“哪侧更忙、是否接近合理可持续水平”，并要求下一步证据；未明显落入某一象限时，继续看 breakdown 和绝对耗时，不强行分类。</p>
+<figure class="cuda-diagram">
+<a href="/images/cuda-overlap/12-analysis-flow.svg" target="_blank" rel="noopener"><img src="/images/cuda-overlap/12-analysis-flow.svg" alt="性能分析从热点定位与采集验证，经任务规模和SOL分流，到内存、计算、等待及高利用分支，最终统一复测" loading="lazy"></a>
+<figcaption>图 9：调查入口与优化结论分开，每条分支最后都要验证。 <a href="/images/cuda-overlap/12-analysis-flow.svg" target="_blank" rel="noopener">放大看图</a> · <a href="/images/cuda-overlap/12-analysis-flow.excalidraw" download>下载 Excalidraw 原图</a></figcaption>
+</figure>
+<p><strong>如何沿图走：</strong> 蓝色是前置检查；橙色调查内存服务压力，紫色调查计算／指令通路，红色调查未被隐藏的等待，绿色调查是否已接近当前实现的合理上限。四条分支可以同时存在，只是每轮先处理最重要的一个。左侧绿色回线表示复测后重新分流。所有分支最后都回到正确性与同条件耗时验证，不能把绿色分支直接写成“停止优化”。</p>
+<h3 id="9.3-四条分支各自要回答什么" tabindex="-1">9.3 四条分支各自要回答什么</h3>
+<table>
+<thead>
+<tr>
+<th>概览现象</th>
+<th>首先建立的假设</th>
+<th>下一步证据与动作</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>memory 侧更忙</td>
+<td>某层搬运或请求服务成为主要限制</td>
+<td>按 9.6 看哪层吞吐高、流量为何这么大、地址是否浪费；若带宽未饱和且 issue 有空档，再转入等待分支</td>
+</tr>
+<tr>
+<td>SM／计算侧更忙</td>
+<td>某种计算或指令发出通路压力较大</td>
+<td>按 9.7 看具体 FP／INT／Tensor／特殊函数等通路，核对算法工作量与 SASS；不是一律换 MMA</td>
+</tr>
+<tr>
+<td>两侧都不忙</td>
+<td>工作供应不足或关键依赖等待暴露</td>
+<td>排除 9.1 的小任务／采集问题后，看 active、eligible、issue 与主要等待原因，再查 9.5 的驻留资源</td>
+</tr>
+<tr>
+<td>两侧都忙</td>
+<td>当前实现可能已较好利用资源，也可能有大量无效工作</td>
+<td>检查有效字节／有效 FLOP、重复计算、端到端贡献；决定是否改算法、融合或减少物化，而不是凭百分比结束</td>
+</tr>
+</tbody>
+</table>
+<p>“停止优化”的依据是：正确性成立、代表性输入下收益已小、端到端目标已满足，进一步复杂度不值得。吞吐比例下降但耗时更短也可能是好事，例如减少了多余字节或计算。<a target="_blank" rel="noopener" href="https://docs.nvidia.com/nsight-compute/ComputeTriage/">NVIDIA Compute Triage Guide</a></p>
+<h3 id="9.4-warp-stall-字典：先定位等待的消费者，再回溯生产者" tabindex="-1">9.4 warp stall 字典：先定位等待的消费者，再回溯生产者</h3>
+<p>下面列的是<strong>原因名称</strong>，不是独立的瓶颈标签。常见采样指标族为 <code>smsp__pcsamp_warps_issue_stalled_*</code>；部分平台另有仅在调度器未发出周期采样的 <code>_not_issued</code> 变体。实际后缀、可用性和含义以目标设备的指标说明为准。不要把不同采样族的比例直接混算。</p>
+<table>
+<thead>
+<tr>
+<th>原因</th>
+<th>它说明什么</th>
+<th>先补哪项证据</th>
+<th>证据成立后可尝试什么</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>wait</code></td>
+<td>等固定延迟的执行依赖</td>
+<td>对应 SASS 的生产者／消费者链，独立指令与 eligible 是否不足</td>
+<td>拆独立累加链、增加 ILP、重排独立工作；有驻留余量时再考虑更多 warp</td>
+</tr>
+<tr>
+<td><code>long_scoreboard</code></td>
+<td>等 L1TEX 相关操作的结果依赖，如 global/local/texture/surface</td>
+<td>找等待结果的指令与相关 load；看命中、流量、合并度、是否 spill</td>
+<td>先修地址与复用，再评估预取、<code>cp.async</code>／TMA 或 stage；不能直接把它解释成“在等 TMA”</td>
+</tr>
+<tr>
+<td><code>short_scoreboard</code></td>
+<td>等非 L1TEX 的 MIO 操作结果，shared 是常见来源之一</td>
+<td>是否真有 shared 依赖、bank conflict，也检查特殊函数或其他相关操作</td>
+<td>减少 shared 往返、改善布局、增加独立工作；不能仅凭名字断定 bank conflict</td>
+</tr>
+<tr>
+<td><code>math_pipe_throttle</code></td>
+<td>目标数学执行通路暂不能接收／不可用</td>
+<td>哪类 pipe 已繁忙，发出、指令混合与依赖情况</td>
+<td>若目标 pipe 饱和，减少相应工作或调整指令混合；若还有空档，查依赖与调度，不能一律加 warp</td>
+</tr>
+<tr>
+<td><code>lg_throttle</code> / <code>mio_throttle</code></td>
+<td>相应 local/global 或 MIO 入口／队列压力，名称依设备而异</td>
+<td>指令粒度、发出密度、下游服务和队列压力</td>
+<td>适当宽访存、减少冗余操作、交错独立算术／搬运，并检查副作用</td>
+</tr>
+<tr>
+<td><code>sleeping</code></td>
+<td>warp 的线程处于阻塞、让出或休眠等状态</td>
+<td>是显式 sleep、同步实现的等待，还是生产／消费不均衡；看另一角色此时在做什么</td>
+<td>调整等待策略或 producer/consumer 工作分配；必要的等待不是无条件的浪费</td>
+</tr>
+<tr>
+<td><code>barrier</code></td>
+<td>等同 CTA 的其他参与者到达相应屏障</td>
+<td>谁早到、谁晚到，是否分工不均或数据迟到</td>
+<td>先改善屏障前的工作与协作范围；只在证明依赖允许后减少屏障，不能直接删同步</td>
+</tr>
+<tr>
+<td><code>not_selected</code></td>
+<td>有可发出的候选，但本次选择了别的 warp</td>
+<td>issue 是否持续有效，相关 pipe 是否有用地工作</td>
+<td>通常无需清零；存在候选不等于整个 kernel 已无其他瓶颈</td>
+</tr>
+<tr>
+<td><code>selected</code></td>
+<td>被选择并发出指令的调度状态，不是真 stall</td>
+<td>发出的是什么指令，完成了多少有效工作</td>
+<td>用耗时和有效吞吐评价；不是无条件追求样本数量更大</td>
+</tr>
+</tbody>
+</table>
+<p>尤其注意：TMA／异步矩阵操作的等待可能体现在 transaction barrier、group wait 或其他架构相关同步状态中，必须看实际指令和协议，不能把所有异步数据等待都归成 <code>long_scoreboard</code>。也不能把 MIO“结果没好”的 scoreboard 依赖与 MIO“入口满”的 throttle 当成同一机制。<a target="_blank" rel="noopener" href="https://docs.nvidia.com/nsight-compute/ProfilingGuide/#warp-stall-reasons">Nsight Compute：Warp Stall Reasons</a> · <a target="_blank" rel="noopener" href="https://docs.nvidia.com/cuda/cuda-programming-guide/04-special-topics/async-copies.html">CUDA：异步拷贝完成机制</a></p>
+<p>采样常记在<strong>消费尚未就绪结果的指令</strong>处。例如 <code>y=fmaf(x,...)</code> 等前面的 <code>x=input[i]</code>，应沿依赖回到 load 的地址和访问模式。只把采样热点那一行代码删减，可能没有触及原因。一个 warp 的等待样本也不是整个 SM 的停机时间，其他 warp 可能正在工作。</p>
+<h3 id="9.5-occupancy-分支：是装不下，还是没给够任务" tabindex="-1">9.5 occupancy 分支：是装不下，还是没给够任务</h3>
+<p>先把两种情况分开：</p>
+<ul>
+<li><strong>理论容量就低</strong>：读 occupancy 的限制项。寄存器过多、shared 太大、线程／block 数上限等都可能限制驻留。再评估缩小 tile、减少 stage、缩短活跃值生命周期、调整 block 等候选；这些动作也可能损失复用或延迟覆盖。</li>
+<li><strong>理论容量尚可、实际偏低</strong>：回看 grid／waves、尾部、负载不均以及执行阶段。不能仅凭 achieved occupancy 低，就认定寄存器是瓶颈。</li>
+</ul>
+<p><code>__launch_bounds__</code> 是编译约束工具，不是“把指定数量 block 强行塞进 SM”的开关；压寄存器也可能引入 spill。增加 resident warp 之前，先确认有资源和足够独立工作；目标通路已经饱和时，更多驻留未必改善耗时。</p>
+<p>local load/store 非零还要区分<strong>编译器安排在线程私有 local memory 的对象</strong>与<strong>寄存器 spill</strong>。结合编译器资源／spill 报告、SASS、local 字节量和源码定位，不能仅凭 <code>LDL/STL</code> 就断定超过某个固定寄存器阈值。每线程与每 SM 的限制依架构而定。<a target="_blank" rel="noopener" href="https://docs.nvidia.com/cuda/cuda-c-best-practices-guide/index.html#occupancy">CUDA Best Practices：Occupancy 与 Registers</a></p>
+<h3 id="9.6-Memory-Workload：分层看吞吐、命中与访问放大" tabindex="-1">9.6 Memory Workload：分层看吞吐、命中与访问放大</h3>
+<p>这里有三个相互独立的问题：<strong>哪条通路忙、数据由哪层提供、有没有为有效数据付出多余请求／传输</strong>。只看命中率无法回答另外两问。</p>
+<figure class="cuda-diagram">
+<a href="/images/cuda-overlap/13-memory-diagnosis.svg" target="_blank" rel="noopener"><img src="/images/cuda-overlap/13-memory-diagnosis.svg" alt="分别检查L1/TEX、L2、DRAM的吞吐命中及访问放大，并独立检查shared bank冲突和资源限制" loading="lazy"></a>
+<figcaption>图 9A：按层归因，并将访问模式、缓存与驻留资源交叉检查。 <a href="/images/cuda-overlap/13-memory-diagnosis.svg" target="_blank" rel="noopener">放大看图</a> · <a href="/images/cuda-overlap/13-memory-diagnosis.excalidraw" download>下载 Excalidraw 原图</a></figcaption>
+</figure>
+<p>图从上往下调查 global 访问的服务层级；shared 是旁边的独立分支。每层的框都是“检查什么”，不是说每次访问必定走到最下面。L1 允许被某些访问策略绕过；TMA 等路径应按其实际指令语义分析。</p>
+<table>
+<thead>
+<tr>
+<th>层级或维度</th>
+<th>观察入口／常见例子</th>
+<th>怎样解释，下一步做什么</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>L1/TEX</td>
+<td><code>l1tex__t_sector_hit_rate.pct</code>、相关 throughput／请求表</td>
+<td>先核对缓存策略和该访问是否本来应复用。一次性流式读低命中可以正常；应复用却反复 miss 时，再考虑布局、tile 或显式 shared 复用</td>
+</tr>
+<tr>
+<td>L2</td>
+<td><code>lts__t_sector_hit_rate.pct</code>、L2 throughput、字节／sector</td>
+<td>与工作集、CTA 的实际访问顺序和重复读取对应。复用距离太长时可试调整分块／调度；高命中也可能使 L2 本身成为瓶颈</td>
+</tr>
+<tr>
+<td>DRAM</td>
+<td><code>dram__throughput.avg.pct_of_peak_sustained_elapsed</code>、读写字节和带宽</td>
+<td>接近代表性访问模式下的可持续水平且字节量解释耗时时，优先减少流量；带宽低但 issue 空档多时回查依赖与在途并发</td>
+</tr>
+<tr>
+<td>合并访存</td>
+<td>L1/TEX 表中 Requests、Sectors、Sectors/Req，以及对应访问类型</td>
+<td>同时核对 active lane、每 lane 字节宽度、对齐和访问模式；比率高并不总意味着浪费</td>
+</tr>
+<tr>
+<td>shared</td>
+<td>bank conflicts、wavefronts、shared 指令与服务吞吐</td>
+<td>判断是否有冲突重放或服务压力，随后试 padding／swizzle 或减少往返；这不是 L1 缓存命中问题</td>
+</tr>
+</tbody>
+</table>
+<p>这些是常见名称示例，运行前用 <code>ncu --query-metrics</code> 确认本机支持的完整名字；global/local、load/store、texture 等流量混在一个总指标里时，尽量拆出与当前假设对应的限定项。<a target="_blank" rel="noopener" href="https://docs.nvidia.com/nsight-compute/ProfilingGuide/#memory-tables">Nsight Compute：Memory Workload Analysis 与 Memory Tables</a></p>
+<p><strong>一个容易误判的“4”。</strong> 对 32 个活跃 lane、每 lane 读取一个 4-byte float、连续且按 sector 对齐的教学访问，128 byte 覆盖四个 32-byte sector。但若每 lane 一次合法读取 float4，整 warp 的有效数据就变成 <code>32*16=512 byte</code>，至少覆盖 16 个这样的 sector；不能继续拿“4”作为所有向量化访问的正确性或效率阈值。部分活跃 lane、广播／重叠地址和未对齐也会改变关系。实际 request 拆分需看对应架构与工具计数口径。</p>
+<p>因此诊断访问放大时，需要把<strong>相同有效数据量</strong>对应的指令、请求、sector 和下游字节一起比较，而不是只追某个比率越小越好。向量化主要改变单线程的指令宽度；跨线程地址有跨距时，应先修映射，不能指望套 <code>float4</code> 自动解决合并访存。<a target="_blank" rel="noopener" href="https://developer.nvidia.com/blog/cuda-pro-tip-increase-performance-with-vectorized-memory-access/">NVIDIA：Vectorized Memory Access</a> · <a target="_blank" rel="noopener" href="https://docs.nvidia.com/cuda/cuda-c-best-practices-guide/index.html#coalesced-access-to-global-memory">CUDA Best Practices：Coalesced Access</a></p>
+<p><strong>L1/shared 容量的代价。</strong> 许多架构二者共用底层 SRAM，且每块 shared 需求还会限制驻留。增加 tile/stage 同时可能改变复用、缓存容量和 occupancy，应该一起测量。截图中的“某 GB202 kernel 每多 16 KB shared 慢若干微秒”缺少本篇可复现实验条件，不能推广为线性规律；本篇也未在该 GPU 上测得这个结果。</p>
+<p><strong>不要把不同 swizzle 混起来。</strong> CTA swizzle 是改变逻辑工作分块的调度／访问顺序以探索局部性；shared swizzle 是改变 shared 中的地址布局以影响 bank 映射。Stream-K 则涉及矩阵乘法的工作划分与负载平衡，并不是一个“L2 命中率低就打开”的通用缓存选项。初学时先用第 6 节的固定 tiling 例子把数据复用弄清楚。</p>
+<h3 id="9.7-compute-分支：查“忙的是谁”，再查“忙得是否有价值”" tabindex="-1">9.7 compute 分支：查“忙的是谁”，再查“忙得是否有价值”</h3>
+<ul>
+<li><strong>Tensor 通路高</strong>：检查是否确实完成了有价值的矩阵工作，数据类型与计算量是否合适。降低 FLOP、融合消除中间工作或改变精度，需要算法和误差要求允许；不能只为让指标漂亮改变正确性。</li>
+<li><strong>FP／INT／特殊函数通路高，Tensor 低</strong>：先确认任务是否有可映射的矩阵运算及合适形状／精度。如果只是地址计算、归约或不适合 MMA 的工作，Tensor 低很正常。适合 GEMM 的情形才进一步评估库实现或 MMA／WGMMA 等路径。</li>
+<li><strong>发射指令很多，有效算术少</strong>：查看分歧、地址与索引开销、零碎访存、额外转换和编译产生的控制指令。不同类型的 pipe 压力不能一概解释为“算力不够”。</li>
+</ul>
+<p><code>math_pipe_throttle</code> 可以提示某通路的接收能力问题，但它与 <code>wait</code> 的结果依赖不同。目标 pipe 已持续饱和时，增加同类指令的候选 warp 不会凭空提高该 pipe 的吞吐。<a target="_blank" rel="noopener" href="https://docs.nvidia.com/nsight-compute/ProfilingGuide/">Nsight Compute：Compute Workload Analysis</a></p>
+<h3 id="9.8-把流程真正用到本篇-demo" tabindex="-1">9.8 把流程真正用到本篇 demo</h3>
+<p>下面是可在安装工具的 NVIDIA GPU 环境执行的采集方式；本机无此环境，以下是操作示例，不是本文已取得的测量报告。先执行程序的校验，再采集，报告文件保存在运行命令的当前目录。</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 先看时间线：哪些 kernel / 拷贝 / 主机间隔影响整体。</span></span><br><span class="line">nsys profile --trace=cuda,nvtx --output=overlap_trace ./overlap 8 16</span><br><span class="line">nsys stats --report cuda_gpu_kern_sum overlap_trace.nsys-rep</span><br><span class="line"></span><br><span class="line"><span class="comment"># 再按本机实际可用的 section 和 metric 采集。</span></span><br><span class="line">ncu --list-sections</span><br><span class="line">ncu --query-metrics</span><br><span class="line"></span><br><span class="line"><span class="comment"># 本文 tiling 程序每个版本先校验一次，再 warmup 五次。</span></span><br><span class="line"><span class="comment"># 因而跳过目标 kernel 的前六次匹配启动，采一轮计时阶段的启动。</span></span><br><span class="line">ncu --kernel-name regex:matmul_tiled --launch-skip 6 --launch-count 1 \</span><br><span class="line">    --section SpeedOfLight --section LaunchStats --section Occupancy \</span><br><span class="line">    --section SchedulerStats --section WarpStateStats \</span><br><span class="line">    --section MemoryWorkloadAnalysis --section ComputeWorkloadAnalysis \</span><br><span class="line">    --output=tiled_report ./tiling 256 256 256</span><br></pre></td></tr></table></figure>
+<p>先检查筛选结果确实匹配目标 kernel；若修改了 demo 的启动顺序，应相应修改 skip。只采某一个 kernel 是为了定位它内部的机制；Nsight Compute 可能通过 replay 等方式改变原本并发条件，不能把该报告当作端到端 overlap 时间线。<a target="_blank" rel="noopener" href="https://docs.nvidia.com/nsight-systems/UserGuide/index.html">Nsight Systems 使用指南</a> · <a target="_blank" rel="noopener" href="https://docs.nvidia.com/nsight-compute/ProfilingGuide/">Nsight Compute 采集说明</a></p>
+<table>
+<thead>
+<tr>
+<th>用哪个 demo</th>
+<th>本轮只检验什么假设</th>
+<th>对照哪些证据</th>
+<th>结果如何解释</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>coalescing.cu</code></td>
+<td>连续映射减少每份有效数据的访问放大</td>
+<td>相同 N 下的 sectors/requests、下游字节和耗时</td>
+<td>请求改善但时间不变时，继续查缓存复用、地址指令和其他瓶颈，不自动宣称带宽加速</td>
+</tr>
+<tr>
+<td><code>tiling.cu</code></td>
+<td>显式块内复用减少重复 global 访问</td>
+<td>naive/tiled 的 global 与 shared 流量、寄存器／shared、occupancy 和时间</td>
+<td>global 访问减少可能伴随 shared 与屏障成本；最终看总耗时</td>
+</tr>
+<tr>
+<td><code>vectorized.cu</code></td>
+<td>宽访存减少完成相同字节所需的指令开销</td>
+<td>SASS 访问宽度、指令数、有效字节与时间</td>
+<td>每个请求覆盖更多 sector 可能是宽指令的正常结果，不按标量的“4”判坏</td>
+</tr>
+<tr>
+<td><code>overlap.cu</code></td>
+<td>下一 tile 的搬运提前，减少暴露的等待</td>
+<td>固定 tiles/rounds 下的两个版本、等待的消费者、issue 与时间</td>
+<td>async 源码和 stall 占比下降都不独立证明加速；确认正确性和绝对耗时</td>
+</tr>
+<tr>
+<td><code>occupancy.cu</code></td>
+<td>启动配置和 shared 如何限制理论驻留</td>
+<td>API 给出的容量，结合实际 kernel 的资源与 profiler</td>
+<td>它只查询示例 kernel 的理论容量，不是其他 kernel 的 achieved occupancy</td>
+</tr>
+</tbody>
+</table>
+<p>举一个<strong>假设分析过程</strong>：<code>tiling</code> 的 tiled 版本比 naive 快，但 achieved occupancy 较低。先核对全量输出正确，再看到 global 请求减少而 shared 使用增加，这就支持“复用收益超过了驻留损失”的解释。若随后加深 stage 反而变慢，应回查 shared 占用、可发 warp 与新增同步，而不是坚持“更深流水一定更好”。这些是如何推理的例子，不是本篇实测结论。</p>
+<h3 id="9.9-每轮保留一条可以被否证的记录" tabindex="-1">9.9 每轮保留一条可以被否证的记录</h3>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">对象：GPU / Toolkit / 编译参数 / 输入 / 目标 kernel 或阶段</span><br><span class="line">基线：正确性；独立计时；端到端时间；采集设置</span><br><span class="line">症状：例如 issue 有空档，活跃 warp 多、可发 warp 少</span><br><span class="line">假设：哪条具体依赖或通路造成空档</span><br><span class="line">证据：源代码与 SASS 位置、相关层级指标、反例排查</span><br><span class="line">改动：一次主要改变一个因素，注明附带资源变化</span><br><span class="line">结果：相同工作量再次校验、计时、采集</span><br><span class="line">结论：保留或回退；若瓶颈迁移，重新进入流程</span><br></pre></td></tr></table></figure>
+<p>这条闭环把前文的概念连起来：<strong>SM 结构说明资源在哪里，warp 状态说明为何不能发，分层指标说明等谁或挤在哪里，tiling／向量化／overlap 是带着证据选择的实现手段。</strong></p>
 <h2 id="10.-检查自己是否理解" tabindex="-1">10. 检查自己是否理解</h2>
 <details><summary>occupancy 从 50% 提高到 75%，耗时却增加，是否矛盾？</summary>
 <p>不矛盾。更多驻留 warp 可能伴随 spill、复用减少、队列竞争或不同的指令工作量。occupancy 是容量比例，不是性能结果。</p>
