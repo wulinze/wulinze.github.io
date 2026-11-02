@@ -15,17 +15,20 @@
 
 <script class="next-config" data-name="main" type="application/json">{"hostname":"wulinze.github.io","root":"/","images":"/images","scheme":"Pisces","darkmode":false,"version":"8.29.1","exturl":false,"sidebar":{"position":"left","width_expanded":300,"width_dual_column":272,"display":"post","padding":18,"offset":12},"hljswrap":true,"codeblock":{"theme":{"light":"github-dark","dark":"github-dark"},"prism":{"light":"prism","dark":"prism-dark"},"copy_button":{"enable":true,"style":"flat"},"fold":{"enable":false,"height":500},"language":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"mediumzoom":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"stickytabs":false,"motion":{"enable":false,"async":false,"duration":200,"transition":{"menu_item":"fadeInDown","post_block":"fadeIn","post_header":"fadeInDown","post_body":"fadeInDown","coll_header":"fadeInLeft","sidebar":"fadeInUp"}},"i18n":{"placeholder":"搜索...","empty":"没有找到任何搜索结果：${query}","hits_time":"找到 ${hits} 个搜索结果（用时 ${time} 毫秒）","hits":"找到 ${hits} 个搜索结果"},"path":"/search.xml","localsearch":{"enable":true,"top_n_per_article":2,"unescape":true,"preload":false}}</script><script src="/js/config.js" defer></script>
 
-    <meta name="description" content="用七张 Excalidraw 手绘图、可交互小实验与 CUDA demo，讲清线程组织、内存位置、同步及向量加法。">
+    <meta name="description" content="用十张 Excalidraw 手绘图、八个交互实验与 CUDA demo，对应 GPU 物理结构、线程组织和多层访存路径。">
 <meta property="og:type" content="article">
 <meta property="og:title" content="CUDA 基础学习笔记：从一次向量加法理解执行与内存">
 <meta property="og:url" content="https://wulinze.github.io/systems/cuda-basics/">
 <meta property="og:site_name" content="Wu&#39;s Blog">
-<meta property="og:description" content="用七张 Excalidraw 手绘图、可交互小实验与 CUDA demo，讲清线程组织、内存位置、同步及向量加法。">
+<meta property="og:description" content="用十张 Excalidraw 手绘图、八个交互实验与 CUDA demo，对应 GPU 物理结构、线程组织和多层访存路径。">
 <meta property="og:locale" content="zh_CN">
 <meta property="og:image" content="https://wulinze.github.io/images/cuda-basics/01-host-device.svg">
 <meta property="og:image" content="https://wulinze.github.io/images/cuda-basics/02-grid-sm.svg">
+<meta property="og:image" content="https://wulinze.github.io/images/cuda-basics/08-physical-logical.svg">
 <meta property="og:image" content="https://wulinze.github.io/images/cuda-basics/03-thread-index.svg">
 <meta property="og:image" content="https://wulinze.github.io/images/cuda-basics/04-memory.svg">
+<meta property="og:image" content="https://wulinze.github.io/images/cuda-basics/09-load-path.svg">
+<meta property="og:image" content="https://wulinze.github.io/images/cuda-basics/10-shared-reuse.svg">
 <meta property="og:image" content="https://wulinze.github.io/images/cuda-basics/05-block-sync.svg">
 <meta property="og:image" content="https://wulinze.github.io/images/cuda-basics/06-streams.svg">
 <meta property="og:image" content="https://wulinze.github.io/images/cuda-basics/07-coalescing.svg">
@@ -166,7 +169,7 @@
       <div class="sidebar-panel-container">
         <!--noindex-->
         <div class="post-toc-wrap sidebar-panel">
-            <div class="post-toc animated"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E8%BF%99%E7%AF%87%E7%AC%94%E8%AE%B0%E6%83%B3%E5%BC%84%E6%87%82%E4%BB%80%E4%B9%88"><span class="nav-text">这篇笔记想弄懂什么</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#1.-%E4%BB%8E%E4%B8%80%E4%B8%AA%E6%99%AE%E9%80%9A%E5%BE%AA%E7%8E%AF%E5%BC%80%E5%A7%8B"><span class="nav-text">1. 从一个普通循环开始</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%B0%8F-demo%EF%BC%9A%E6%94%B9%E5%8F%98%E8%BE%93%E5%85%A5%EF%BC%8C%E7%9C%8B%E5%90%84%E5%85%83%E7%B4%A0%E7%8B%AC%E7%AB%8B%E8%AE%A1%E7%AE%97"><span class="nav-text">小 demo：改变输入，看各元素独立计算</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#2.-host%E3%80%81device-%E5%92%8C-kernel%EF%BC%9A%E8%B0%81%E5%9C%A8%E6%89%A7%E8%A1%8C%E4%BB%80%E4%B9%88"><span class="nav-text">2. host、device 和 kernel：谁在执行什么</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%B0%8F-demo%EF%BC%9A%E4%B8%80%E6%AD%A5%E6%AD%A5%E6%8E%A8%E8%BF%9B%E7%A8%8B%E5%BA%8F"><span class="nav-text">小 demo：一步步推进程序</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#3.-thread%E3%80%81block%E3%80%81grid-%E4%B8%8E-warp%E3%80%81SM"><span class="nav-text">3. thread、block、grid 与 warp、SM</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#3.1-%E5%85%88%E7%9C%8B%E7%A8%8B%E5%BA%8F%E5%A6%82%E4%BD%95%E7%BB%84%E7%BB%87%E4%BB%BB%E5%8A%A1"><span class="nav-text">3.1 先看程序如何组织任务</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#3.2-%E5%86%8D%E7%9C%8B%E7%A1%AC%E4%BB%B6%E6%80%8E%E6%A0%B7%E6%89%BF%E6%8E%A5%E8%BF%99%E4%BA%9B%E4%BB%BB%E5%8A%A1"><span class="nav-text">3.2 再看硬件怎样承接这些任务</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%B0%8F-demo%EF%BC%9Ablock-%E5%92%8C-warp-%E6%80%8E%E4%B9%88%E6%95%B0"><span class="nav-text">小 demo：block 和 warp 怎么数</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#4.-%E7%BA%BF%E7%A8%8B%E6%80%8E%E6%A0%B7%E6%89%BE%E5%88%B0%E8%87%AA%E5%B7%B1%E8%B4%9F%E8%B4%A3%E7%9A%84%E6%95%B0%E7%BB%84%E5%85%83%E7%B4%A0"><span class="nav-text">4. 线程怎样找到自己负责的数组元素</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%B0%8F-demo%EF%BC%9A%E8%87%AA%E5%B7%B1%E8%B0%83%E6%95%B4-N-%E5%92%8C-T"><span class="nav-text">小 demo：自己调整 N 和 T</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#5.-%E6%95%B0%E6%8D%AE%E6%94%BE%E5%9C%A8%E5%93%AA%E9%87%8C%EF%BC%9A%E5%8C%BA%E5%88%86%E8%AE%BF%E9%97%AE%E8%8C%83%E5%9B%B4%E5%92%8C%E7%89%A9%E7%90%86%E4%BD%8D%E7%BD%AE"><span class="nav-text">5. 数据放在哪里：区分访问范围和物理位置</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#Unified-Memory-%E4%B8%BA%E4%BB%80%E4%B9%88%E7%9C%8B%E8%B5%B7%E6%9D%A5%E5%B0%91%E4%BA%86%E6%8B%B7%E8%B4%9D%E6%AD%A5%E9%AA%A4"><span class="nav-text">Unified Memory 为什么看起来少了拷贝步骤</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%B0%8F-demo%EF%BC%9A%E6%AF%8F%E5%9D%97%E5%90%84%E8%87%AA%E4%BA%A4%E6%8D%A2%E6%95%B0%E6%8D%AE"><span class="nav-text">小 demo：每块各自交换数据</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#6.-%E5%90%8C%E6%AD%A5%E8%A6%81%E5%9B%9E%E7%AD%94%EF%BC%9A%E8%B0%81%E5%9C%A8%E7%AD%89%E5%BE%85%E8%B0%81"><span class="nav-text">6. 同步要回答：谁在等待谁</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#6.1-kernel-%E5%90%AF%E5%8A%A8%E8%BF%94%E5%9B%9E%EF%BC%8C%E4%B8%8D%E7%AD%89%E4%BA%8E%E8%AE%A1%E7%AE%97%E5%AE%8C%E6%88%90"><span class="nav-text">6.1 kernel 启动返回，不等于计算完成</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%B0%8F-demo%EF%BC%9A%E5%B1%8F%E9%9A%9C%E5%88%B0%E5%BA%95%E6%8C%A1%E4%BD%8F%E4%BA%86%E4%BB%80%E4%B9%88"><span class="nav-text">小 demo：屏障到底挡住了什么</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#6.2-stream%EF%BC%9A%E8%A1%A8%E8%BE%BE%E5%B7%A5%E4%BD%9C%E9%A1%BA%E5%BA%8F"><span class="nav-text">6.2 stream：表达工作顺序</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#CUDA-demo%EF%BC%9A%E4%B8%A4%E4%B8%AA-stream-%E4%B9%8B%E9%97%B4%E5%BB%BA%E7%AB%8B%E5%85%88%E5%90%8E%E5%85%B3%E7%B3%BB"><span class="nav-text">CUDA demo：两个 stream 之间建立先后关系</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#7.-%E7%94%A8%E5%AE%8C%E6%95%B4%E4%BE%8B%E5%AD%90%E6%8A%8A%E6%A6%82%E5%BF%B5%E8%BF%9E%E8%B5%B7%E6%9D%A5"><span class="nav-text">7. 用完整例子把概念连起来</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%B2%BF%E6%89%A7%E8%A1%8C%E9%A1%BA%E5%BA%8F%E8%AF%BB%E4%BB%A3%E7%A0%81"><span class="nav-text">沿执行顺序读代码</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%A6%82%E4%BD%95%E8%BF%90%E8%A1%8C%E4%B8%8E%E5%A6%82%E4%BD%95%E8%A7%A3%E8%AF%BB%E7%BB%93%E6%9E%9C"><span class="nav-text">如何运行与如何解读结果</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#8.-%E4%BB%8E%E2%80%9C%E8%83%BD%E8%AF%BB%E6%87%82%E2%80%9D%E8%B5%B0%E5%90%91%E2%80%9C%E7%9F%A5%E9%81%93%E4%B8%BA%E4%BB%80%E4%B9%88%E5%8F%AF%E8%83%BD%E6%85%A2%E2%80%9D"><span class="nav-text">8. 从“能读懂”走向“知道为什么可能慢”</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%B0%8F-demo%EF%BC%9A%E6%94%B9%E5%8F%98%E6%AD%A5%E9%95%BF%EF%BC%8C%E8%A7%82%E5%AF%9F%E5%9C%B0%E5%9D%80%E5%88%86%E5%B8%83"><span class="nav-text">小 demo：改变步长，观察地址分布</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#9.-%E6%A3%80%E6%9F%A5%E8%87%AA%E5%B7%B1%E6%98%AF%E5%90%A6%E7%9C%9F%E6%AD%A3%E7%90%86%E8%A7%A3"><span class="nav-text">9. 检查自己是否真正理解</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%8F%82%E8%80%83%E8%B5%84%E6%96%99%E4%B8%8E%E9%98%85%E8%AF%BB%E9%A1%BA%E5%BA%8F"><span class="nav-text">参考资料与阅读顺序</span></a></li></ol></div>
+            <div class="post-toc animated"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E8%BF%99%E7%AF%87%E7%AC%94%E8%AE%B0%E6%83%B3%E5%BC%84%E6%87%82%E4%BB%80%E4%B9%88"><span class="nav-text">这篇笔记想弄懂什么</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#1.-%E4%BB%8E%E4%B8%80%E4%B8%AA%E6%99%AE%E9%80%9A%E5%BE%AA%E7%8E%AF%E5%BC%80%E5%A7%8B"><span class="nav-text">1. 从一个普通循环开始</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%B0%8F-demo%EF%BC%9A%E6%94%B9%E5%8F%98%E8%BE%93%E5%85%A5%EF%BC%8C%E7%9C%8B%E5%90%84%E5%85%83%E7%B4%A0%E7%8B%AC%E7%AB%8B%E8%AE%A1%E7%AE%97"><span class="nav-text">小 demo：改变输入，看各元素独立计算</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#2.-host%E3%80%81device-%E5%92%8C-kernel%EF%BC%9A%E8%B0%81%E5%9C%A8%E6%89%A7%E8%A1%8C%E4%BB%80%E4%B9%88"><span class="nav-text">2. host、device 和 kernel：谁在执行什么</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%B0%8F-demo%EF%BC%9A%E4%B8%80%E6%AD%A5%E6%AD%A5%E6%8E%A8%E8%BF%9B%E7%A8%8B%E5%BA%8F"><span class="nav-text">小 demo：一步步推进程序</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#3.-thread%E3%80%81block%E3%80%81grid-%E4%B8%8E-warp%E3%80%81SM"><span class="nav-text">3. thread、block、grid 与 warp、SM</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#3.1-%E5%85%88%E7%9C%8B%E7%A8%8B%E5%BA%8F%E5%A6%82%E4%BD%95%E7%BB%84%E7%BB%87%E4%BB%BB%E5%8A%A1"><span class="nav-text">3.1 先看程序如何组织任务</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#3.2-%E5%86%8D%E7%9C%8B%E7%A1%AC%E4%BB%B6%E6%80%8E%E6%A0%B7%E6%89%BF%E6%8E%A5%E8%BF%99%E4%BA%9B%E4%BB%BB%E5%8A%A1"><span class="nav-text">3.2 再看硬件怎样承接这些任务</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%B0%8F-demo%EF%BC%9Ablock-%E5%92%8C-warp-%E6%80%8E%E4%B9%88%E6%95%B0"><span class="nav-text">小 demo：block 和 warp 怎么数</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#3.3-%E6%8A%8A%E6%95%B4%E4%B8%AA-GPU-%E7%9A%84%E7%89%A9%E7%90%86%E7%BB%93%E6%9E%84%E5%92%8C%E9%80%BB%E8%BE%91%E7%BB%93%E6%9E%84%E5%AF%B9%E8%B5%B7%E6%9D%A5"><span class="nav-text">3.3 把整个 GPU 的物理结构和逻辑结构对起来</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#4.-%E7%BA%BF%E7%A8%8B%E6%80%8E%E6%A0%B7%E6%89%BE%E5%88%B0%E8%87%AA%E5%B7%B1%E8%B4%9F%E8%B4%A3%E7%9A%84%E6%95%B0%E7%BB%84%E5%85%83%E7%B4%A0"><span class="nav-text">4. 线程怎样找到自己负责的数组元素</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%B0%8F-demo%EF%BC%9A%E8%87%AA%E5%B7%B1%E8%B0%83%E6%95%B4-N-%E5%92%8C-T"><span class="nav-text">小 demo：自己调整 N 和 T</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#5.-%E6%95%B0%E6%8D%AE%E6%94%BE%E5%9C%A8%E5%93%AA%E9%87%8C%EF%BC%9A%E5%8C%BA%E5%88%86%E8%AE%BF%E9%97%AE%E8%8C%83%E5%9B%B4%E5%92%8C%E7%89%A9%E7%90%86%E4%BD%8D%E7%BD%AE"><span class="nav-text">5. 数据放在哪里：区分访问范围和物理位置</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#5.1-%E5%AD%98%E5%82%A8%E7%A9%BA%E9%97%B4%E5%92%8C%E7%BC%93%E5%AD%98%E5%B1%82%E7%BA%A7%EF%BC%8C%E4%B8%BA%E4%BB%80%E4%B9%88%E4%B8%8D%E8%83%BD%E6%B7%B7%E6%88%90%E4%B8%80%E4%B8%AA%E5%88%97%E8%A1%A8"><span class="nav-text">5.1 存储空间和缓存层级，为什么不能混成一个列表</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#5.2-%E8%B7%9F%E8%B8%AA%E4%B8%80%E6%AC%A1-float-x-=-A%5Bi%5D%EF%BC%9A%E8%AF%B7%E6%B1%82%E5%90%91%E5%A4%96%E8%B5%B0%EF%BC%8C%E6%95%B0%E6%8D%AE%E9%80%81%E5%9B%9E%E5%AF%84%E5%AD%98%E5%99%A8"><span class="nav-text">5.2 跟踪一次 float x &#x3D; A[i]：请求向外走，数据送回寄存器</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%B0%8F-demo%EF%BC%9A%E5%88%87%E6%8D%A2%E8%AE%BF%E9%97%AE%E5%AF%B9%E8%B1%A1%EF%BC%8C%E7%9C%8B%E8%B7%AF%E5%BE%84%E6%98%AF%E5%90%A6%E8%BF%98%E7%BB%8F%E8%BF%87%E6%98%BE%E5%AD%98"><span class="nav-text">小 demo：切换访问对象，看路径是否还经过显存</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#5.3-shared-memory-%E6%80%8E%E6%A0%B7%E6%8E%A5%E5%88%B0%E8%BF%99%E6%9D%A1%E8%B7%AF%E5%BE%84%E4%B8%8A"><span class="nav-text">5.3 shared memory 怎样接到这条路径上</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#5.4-Unified-Memory-%E4%B8%BA%E4%BB%80%E4%B9%88%E7%9C%8B%E8%B5%B7%E6%9D%A5%E5%B0%91%E4%BA%86%E6%8B%B7%E8%B4%9D%E6%AD%A5%E9%AA%A4"><span class="nav-text">5.4 Unified Memory 为什么看起来少了拷贝步骤</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%B0%8F-demo%EF%BC%9A%E6%AF%8F%E5%9D%97%E5%90%84%E8%87%AA%E4%BA%A4%E6%8D%A2%E6%95%B0%E6%8D%AE"><span class="nav-text">小 demo：每块各自交换数据</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#6.-%E5%90%8C%E6%AD%A5%E8%A6%81%E5%9B%9E%E7%AD%94%EF%BC%9A%E8%B0%81%E5%9C%A8%E7%AD%89%E5%BE%85%E8%B0%81"><span class="nav-text">6. 同步要回答：谁在等待谁</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#6.1-kernel-%E5%90%AF%E5%8A%A8%E8%BF%94%E5%9B%9E%EF%BC%8C%E4%B8%8D%E7%AD%89%E4%BA%8E%E8%AE%A1%E7%AE%97%E5%AE%8C%E6%88%90"><span class="nav-text">6.1 kernel 启动返回，不等于计算完成</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%B0%8F-demo%EF%BC%9A%E5%B1%8F%E9%9A%9C%E5%88%B0%E5%BA%95%E6%8C%A1%E4%BD%8F%E4%BA%86%E4%BB%80%E4%B9%88"><span class="nav-text">小 demo：屏障到底挡住了什么</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#6.2-stream%EF%BC%9A%E8%A1%A8%E8%BE%BE%E5%B7%A5%E4%BD%9C%E9%A1%BA%E5%BA%8F"><span class="nav-text">6.2 stream：表达工作顺序</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#CUDA-demo%EF%BC%9A%E4%B8%A4%E4%B8%AA-stream-%E4%B9%8B%E9%97%B4%E5%BB%BA%E7%AB%8B%E5%85%88%E5%90%8E%E5%85%B3%E7%B3%BB"><span class="nav-text">CUDA demo：两个 stream 之间建立先后关系</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#7.-%E7%94%A8%E5%AE%8C%E6%95%B4%E4%BE%8B%E5%AD%90%E6%8A%8A%E6%A6%82%E5%BF%B5%E8%BF%9E%E8%B5%B7%E6%9D%A5"><span class="nav-text">7. 用完整例子把概念连起来</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%B2%BF%E6%89%A7%E8%A1%8C%E9%A1%BA%E5%BA%8F%E8%AF%BB%E4%BB%A3%E7%A0%81"><span class="nav-text">沿执行顺序读代码</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%A6%82%E4%BD%95%E8%BF%90%E8%A1%8C%E4%B8%8E%E5%A6%82%E4%BD%95%E8%A7%A3%E8%AF%BB%E7%BB%93%E6%9E%9C"><span class="nav-text">如何运行与如何解读结果</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#8.-%E4%BB%8E%E2%80%9C%E8%83%BD%E8%AF%BB%E6%87%82%E2%80%9D%E8%B5%B0%E5%90%91%E2%80%9C%E7%9F%A5%E9%81%93%E4%B8%BA%E4%BB%80%E4%B9%88%E5%8F%AF%E8%83%BD%E6%85%A2%E2%80%9D"><span class="nav-text">8. 从“能读懂”走向“知道为什么可能慢”</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%B0%8F-demo%EF%BC%9A%E6%94%B9%E5%8F%98%E6%AD%A5%E9%95%BF%EF%BC%8C%E8%A7%82%E5%AF%9F%E5%9C%B0%E5%9D%80%E5%88%86%E5%B8%83"><span class="nav-text">小 demo：改变步长，观察地址分布</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#9.-%E6%A3%80%E6%9F%A5%E8%87%AA%E5%B7%B1%E6%98%AF%E5%90%A6%E7%9C%9F%E6%AD%A3%E7%90%86%E8%A7%A3"><span class="nav-text">9. 检查自己是否真正理解</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%8F%82%E8%80%83%E8%B5%84%E6%96%99%E4%B8%8E%E9%98%85%E8%AF%BB%E9%A1%BA%E5%BA%8F"><span class="nav-text">参考资料与阅读顺序</span></a></li></ol></div>
         </div>
         <!--/noindex-->
 
@@ -237,7 +240,7 @@
 
     <span hidden itemprop="post" itemscope itemtype="http://schema.org/CreativeWork">
       <meta itemprop="name" content="CUDA 基础学习笔记：从一次向量加法理解执行与内存 | Wu's Blog">
-      <meta itemprop="description" content="用七张 Excalidraw 手绘图、可交互小实验与 CUDA demo，讲清线程组织、内存位置、同步及向量加法。">
+      <meta itemprop="description" content="用十张 Excalidraw 手绘图、八个交互实验与 CUDA demo，对应 GPU 物理结构、线程组织和多层访存路径。">
     </span>
       <header class="post-header">
         <h1 class="post-title" itemprop="name headline">
@@ -267,7 +270,7 @@
   
 </div>
 
-            <div class="post-description">用七张 Excalidraw 手绘图、可交互小实验与 CUDA demo，讲清线程组织、内存位置、同步及向量加法。</div>
+            <div class="post-description">用十张 Excalidraw 手绘图、八个交互实验与 CUDA demo，对应 GPU 物理结构、线程组织和多层访存路径。</div>
         </div>
       </header>
 
@@ -278,7 +281,7 @@
 <p>第一次读 CUDA 代码，容易同时遇到 kernel、block、warp、shared memory、stream 等术语。我的第一步是把它们放回一个具体问题里：<strong>CPU 想让 GPU 完成一次向量加法，任务如何分配，数据放在哪里，什么时候能读取结果？</strong></p>
 <p>本文面向能读懂 C/C++ 数组、指针和循环的读者，采用 CUDA C++ 的线程编程方式。重点是原理和结构；Tensor Core、异步流水线、复杂算子优化留到后续。文中的小规模输入用于理解，不用于证明 GPU 比 CPU 快。</p>
 <p>资料查阅日期为 <strong>2026-11-02</strong>，核心依据是 NVIDIA 官方编程指南和入门教程。完整示例是为这篇笔记编写的；当前本机没有 <code>nvcc</code>，尚未在 CUDA 环境编译或在 GPU 上运行，文中输出标为预期结果。</p>
-<p>这版配有 <strong>7 张可放大的 Excalidraw 手绘图、7 个浏览器概念演示和 4 份 CUDA 源码 demo</strong>。浏览器演示只计算概念模型，不调用 GPU；下载的 CUDA 程序需要 NVIDIA GPU 环境。建议每节先看图，再操作小实验，最后按需展开代码。</p>
+<p>这版配有 <strong>10 张可放大的 Excalidraw 手绘图、8 个浏览器概念演示和 4 份 CUDA 源码 demo</strong>。浏览器演示只计算概念模型，不调用 GPU；下载的 CUDA 程序需要 NVIDIA GPU 环境。建议每节先看图，再操作小实验，最后按需展开代码。</p>
 <p><a href="/downloads/cuda-basics/cuda-basics-demos.zip">下载全部 CUDA demo（ZIP）</a> · <a href="/downloads/cuda-basics/README.txt">运行说明</a></p>
 <h2 id="1.-从一个普通循环开始" tabindex="-1">1. 从一个普通循环开始</h2>
 <p>设 <code>A</code>、<code>B</code>、<code>C</code> 都是长度为 <code>N</code> 的一维数组，元素类型为 <code>float</code>。目标是：</p>
@@ -313,13 +316,13 @@
 <figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">一次 kernel 启动</span><br><span class="line">└─ grid</span><br><span class="line">   ├─ block 0：thread 0、1、2、3</span><br><span class="line">   ├─ block 1：thread 0、1、2、3</span><br><span class="line">   └─ block 2：thread 0、1、2、3</span><br></pre></td></tr></table></figure>
 <p>每个 block 内都有一个 <code>thread 0</code>，所以只看块内编号还不够定位全局任务。需要同时知道“第几个 block”和“block 里的第几个 thread”。<a target="_blank" rel="noopener" href="https://docs.nvidia.com/cuda/cuda-programming-guide/02-basics/writing-cuda-kernels.html#thread-hierarchy">Writing SIMT Kernels：Thread Hierarchy</a></p>
 <h3 id="3.2-再看硬件怎样承接这些任务" tabindex="-1">3.2 再看硬件怎样承接这些任务</h3>
-<p>**SM（Streaming Multiprocessor，流式多处理器）**是 GPU 上执行线程的硬件单元。一个普通 block 的线程由同一个 SM 执行；一个 SM 在资源允许时可以同时驻留多个 block。block 的编号不表示固定的 SM 编号，也不保证执行先后。</p>
+<p><strong>SM（Streaming Multiprocessor，流式多处理器）</strong> 是 GPU 上执行线程的硬件单元。一个普通 block 的线程由同一个 SM 执行；一个 SM 在资源允许时可以同时驻留多个 block。block 的编号不表示固定的 SM 编号，也不保证执行先后。</p>
 <p><strong>warp</strong> 是同一个 block 内组织线程执行的一组，当前 CUDA 的 warp 大小为 32 个线程。它采用 SIMT（Single Instruction, Multiple Threads，单指令多线程）模型：线程执行同一个 kernel，但拥有各自的数据和状态，也可能走不同分支。<a target="_blank" rel="noopener" href="https://docs.nvidia.com/cuda/cuda-programming-guide/01-introduction/programming-model.html#gpu-hardware-model">Programming Model：GPU Hardware Model</a></p>
 <figure class="cuda-diagram">
 <a href="/images/cuda-basics/02-grid-sm.svg" target="_blank" rel="noopener"><img src="/images/cuda-basics/02-grid-sm.svg" alt="每个含64个线程的block拆为两个warp，再由SM承接线程块" loading="lazy"></a>
 <figcaption>图 2：左边是程序划分的任务，右边只画一种可能的硬件分配。颜色箭头不表示固定调度策略。 <a href="/images/cuda-basics/02-grid-sm.svg" target="_blank" rel="noopener">放大看图</a> · <a href="/images/cuda-basics/02-grid-sm.excalidraw" download>下载 Excalidraw 原图</a></figcaption>
 </figure>
-<p>因此，读代码时可以分成两层：<code>grid/block/thread</code> 说明任务怎样组织；<code>SM/warp</code> 帮助理解任务怎样被硬件承接。<strong>不要把一个 CUDA 线程想成永久独占一个物理计算核心。</strong></p>
+<p>因此，读代码时可以分成两层：<code>grid/block/thread</code> 说明任务怎样组织；warp 是线程的执行分组，由 SM 内的硬件承接。<strong>不要把一个 CUDA 线程想成永久独占一个物理计算核心。</strong></p>
 <p>同一个 warp 内的线程如果走不同分支，执行相应路径时会有部分线程不参与，这就是理解分支分歧的起点。但“同属一个 warp”不能替代明确的线程协作与同步规则。线程间交换数据时，仍应使用适合其范围的同步机制。<a target="_blank" rel="noopener" href="https://docs.nvidia.com/cuda/cuda-programming-guide/02-basics/writing-cuda-kernels.html#basics-of-simt">Writing SIMT Kernels：Basics of SIMT</a></p>
 <h3 id="小-demo：block-和-warp-怎么数" tabindex="-1">小 demo：block 和 warp 怎么数</h3>
 <p>先试 64 个线程，再改成 40：每块仍要分成两个 warp，但第二个只有 8 个有效线程位置。再改成 4：一个 block 对应一个只有 4 个有效线程位置的 warp；多个小 block 也不会拼成同一个 warp。</p>
@@ -327,6 +330,64 @@
 <p><a href="/downloads/cuda-basics/thread-layout.cu">下载 thread-layout.cu</a> 可在 GPU 上记录每个线程的 block、块内 warp 与 lane。默认启动 2 个 block，每块 40 个线程。输出由 CPU 按数组下标整理，因此打印顺序不代表 GPU 的执行顺序。</p>
 <figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">nvcc -std=c++17 thread-layout.cu -o thread-layout</span><br><span class="line">./thread-layout</span><br></pre></td></tr></table></figure>
 <p>预期记录之一为 <code>i=39 block=0 thread=39 warp_in_block=1 lane=7</code>；第 40 条全局记录进入 block 1，块内 thread、warp、lane 都重新从 0 开始。这些是按索引定义推导的值。</p>
+<h3 id="3.3-把整个-GPU-的物理结构和逻辑结构对起来" tabindex="-1">3.3 把整个 GPU 的物理结构和逻辑结构对起来</h3>
+<p>可以先把 GPU 想成由许多 SM 组成的计算设备，再放大其中一个 SM。下面画的是<strong>面向 CUDA 计算的结构全景</strong>：涵盖计算单元、片上存储、显存与 host 连接；省略图形、显示、视频等专用模块。它不是某一型号的精确芯片平面图，实际数量、分区和多芯粒组织依架构而变。</p>
+<figure class="cuda-diagram">
+<a href="/images/cuda-basics/08-physical-logical.svg" target="_blank" rel="noopener"><img src="/images/cuda-basics/08-physical-logical.svg" alt="左侧 grid、block、warp、thread 对应右侧 GPU、SM、warp 调度器及寄存器；下方连接 L2、内存控制器与设备显存" loading="lazy"></a>
+<figcaption>图 2A：先沿右侧看硬件包含关系，再看左侧的任务怎样使用它。箭头表示承接关系，不是固定的一对一绑定。 <a href="/images/cuda-basics/08-physical-logical.svg" target="_blank" rel="noopener">放大看图</a> · <a href="/images/cuda-basics/08-physical-logical.excalidraw" download>下载 Excalidraw 原图</a></figcaption>
+</figure>
+<p>从外往里读右侧：</p>
+<ol>
+<li><strong>CPU 与主机内存</strong>在 host 一侧。CPU 提交工作，并通过平台支持的连接与 GPU 传输数据；独立显卡常见 PCIe，特定平台也有其他 CPU–GPU 互连。它与 SM 内部访存不是同一层连接。</li>
+<li><strong>GPU 的计算部分</strong>包含多组 SM。NVIDIA 把 SM 组织在 GPC（Graphics Processing Cluster）等硬件分组中；有些架构还会出现 TPC 等中间分组。初学写普通 kernel 时，不需要直接选择这些分组。</li>
+<li><strong>SM 内部</strong>有 warp 调度器、寄存器文件、不同类型的执行单元，以及 load/store 单元。调度器从可执行的 warp 中发出指令；算术指令交给相应计算单元，访存指令交给访存通路。常说的 CUDA Core 是其中的算术执行资源，不能把它理解为一个固定运行某个 CUDA thread 的 CPU 核。</li>
+<li><strong>SM 附近的片上存储</strong>包括 register、shared memory 和 L1。许多现代 NVIDIA GPU 的 L1 与 shared 使用同一块物理 SRAM 的不同容量分配，但两者的使用方式不同。SRAM 指静态随机访问存储器，常用于片上高速存储。</li>
+<li><strong>L2 位于 SM 之外</strong>，服务多个 SM，物理上可以分成多个分区。再向外是内存控制器和设备 DRAM（动态随机访问存储器），也就是通常说的显存，例如 HBM 或 GDDR。HBM 可以与计算芯片同封装；同封装不等于位于 SM 内，也不等于寄存器或缓存。</li>
+</ol>
+<p>这些组件的角色和内存通路可以对照 <a target="_blank" rel="noopener" href="https://docs.nvidia.com/cuda/cuda-programming-guide/01-introduction/programming-model.html">NVIDIA Programming Model</a> 与 <a target="_blank" rel="noopener" href="https://docs.nvidia.com/nsight-compute/ProfilingGuide/index.html">Nsight Compute：GPU 和 Memory Chart 模型</a> 阅读。</p>
+<table>
+<thead>
+<tr>
+<th>CUDA 代码里的逻辑对象</th>
+<th>硬件如何承接</th>
+<th>不能据此推断什么</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>一次 kernel 的 grid</td>
+<td>block 被分配到可用 SM，可能分多批执行</td>
+<td>grid 不要求全部 block 同时驻留</td>
+</tr>
+<tr>
+<td>一个普通 block</td>
+<td>其线程在同一个 SM 上执行，使用该 SM 的寄存器与 shared 等资源</td>
+<td><code>blockIdx.x</code> 不是 SM 编号；一个 SM 可驻留多个 block</td>
+</tr>
+<tr>
+<td>一个 warp</td>
+<td>同一 block 内最多 32 个线程位置，由 SM 的调度器发出指令</td>
+<td>不保证一条 warp 指令只用一个时钟周期完成</td>
+</tr>
+<tr>
+<td>一个 thread</td>
+<td>有自己的索引、寄存器状态和执行状态；其指令使用 SM 内的功能单元</td>
+<td>不永久独占某个 CUDA Core</td>
+</tr>
+<tr>
+<td>block 的 shared 数组</td>
+<td>驻留 SM 上为该 block 分配的 shared 空间</td>
+<td>不同 block 的同名数组不是同一份数据</td>
+</tr>
+<tr>
+<td>global 数组</td>
+<td>本例的分配由设备 DRAM 支撑，访问可能命中 L1/L2</td>
+<td><code>A[i]</code> 不意味着每次都去显存芯片读取</td>
+</tr>
+</tbody>
+</table>
+<p>硬件层级中有 GPC，并不意味着普通 grid 下面必须添加一个对应它的逻辑对象。支持的设备上还可以显式使用 <strong>thread block cluster</strong>：计算能力 9.0 起提供这一可选层级，让一组 block 在同一个 GPC 内协同调度，并支持集群内同步与 distributed shared memory。本篇普通 kernel 没有启用 cluster，后文的 shared 都指普通块内用法。<a target="_blank" rel="noopener" href="https://docs.nvidia.com/cuda/cuda-programming-guide/01-introduction/programming-model.html#thread-block-clusters">Thread Block Clusters</a></p>
+<p>用已有 demo 对照：<code>thread-layout.cu</code> 的 <code>&lt;&lt;&lt;2, 40&gt;&gt;&gt;</code> 表示一个 grid、两个 block、每块两个 warp，共 80 个线程。GPU 有多少个 SM 不会改变这些逻辑数量；实际驻留在哪个 SM，以及同一时刻驻留几个 block，由硬件和资源约束决定。</p>
 <h2 id="4.-线程怎样找到自己负责的数组元素" tabindex="-1">4. 线程怎样找到自己负责的数组元素</h2>
 <p>这里使用一维 grid 和一维 block，四个内置变量的含义如下：</p>
 <table>
@@ -441,7 +502,76 @@
 <figcaption>图 4：先问谁能访问，再问放在哪里。A、B 两个 block 的 shared memory 是不同的对象。 <a href="/images/cuda-basics/04-memory.svg" target="_blank" rel="noopener">放大看图</a> · <a href="/images/cuda-basics/04-memory.excalidraw" download>下载 Excalidraw 原图</a></figcaption>
 </figure>
 <p>对向量加法来说，各线程只读自己的 <code>A[i]</code>、<code>B[i]</code>，写自己的 <code>C[i]</code>，没有块内交换数据的需求，因此不需要为了“用上 GPU 特性”而添加 shared memory。</p>
-<h3 id="Unified-Memory-为什么看起来少了拷贝步骤" tabindex="-1">Unified Memory 为什么看起来少了拷贝步骤</h3>
+<h3 id="5.1-存储空间和缓存层级，为什么不能混成一个列表" tabindex="-1">5.1 存储空间和缓存层级，为什么不能混成一个列表</h3>
+<p><code>global / shared / local</code> 主要回答程序访问哪种存储空间、谁可以访问；<code>L1 / L2 / DRAM</code> 则回答数据由哪个物理层级提供。<strong>同一个 global 地址可以在显存中有数据，也在缓存中有副本。</strong> L1、L2 不是需要分别 <code>cudaMalloc</code> 的两种数组。</p>
+<table>
+<thead>
+<tr>
+<th>物理位置</th>
+<th>对应的逻辑用途</th>
+<th>谁负责管理内容</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>SM 的寄存器文件</td>
+<td>保存线程的活跃值，例如加载结果、下标和中间结果</td>
+<td>编译器分配；硬件执行寄存器读写</td>
+</tr>
+<tr>
+<td>SM 的 shared 存储</td>
+<td><code>__shared__</code> 数组，供一个普通 block 协作</td>
+<td>程序显式写入、读取，并安排同步</td>
+</tr>
+<tr>
+<td>SM 的 L1 数据缓存</td>
+<td>缓存部分 global/local 等访问的数据，具体策略依架构与指令而定</td>
+<td>硬件管理命中、填充和替换</td>
+</tr>
+<tr>
+<td>多个 SM 共用的 L2</td>
+<td>缓存流向设备内存的访问数据</td>
+<td>硬件管理，物理上可分区</td>
+</tr>
+<tr>
+<td>设备 DRAM（HBM/GDDR）</td>
+<td>本例 global 分配，以及需要使用 local 的线程私有存储</td>
+<td>程序/运行时管理分配，硬件完成实际访问</td>
+</tr>
+</tbody>
+</table>
+<p>shared 和 L1 即便共享底层 SRAM，也不是同一种地址空间：普通 <code>A[i]</code> 的缓存命中不会自动变成 <code>tile[i]</code>；声明 shared 数组也不会自动把 global 数据搬进去。<a target="_blank" rel="noopener" href="https://docs.nvidia.com/nsight-compute/ProfilingGuide/index.html#memory-chart">Nsight Compute：Memory Chart</a></p>
+<p>这样的分层让容量与访问成本有所取舍：靠近执行单元的片上存储容量有限，设备 DRAM 则提供更大的存储空间。实际访问耗时还受命中率、带宽、竞争和指令影响，不能给每一层贴一个适用于所有 GPU 的固定延迟。</p>
+<h3 id="5.2-跟踪一次-float-x-=-A[i]：请求向外走，数据送回寄存器" tabindex="-1">5.2 跟踪一次 <code>float x = A[i]</code>：请求向外走，数据送回寄存器</h3>
+<p>假设 <code>A</code> 指向当前 GPU 的普通设备分配、编译器确实生成了这次普通标量 global load，并且该指令允许使用 L1 缓存。先忽略地址翻译、只读专用通路和异步拷贝等细节：</p>
+<ol>
+<li>线程计算自己的地址。一个 warp 执行这条 load 时，活跃线程的地址交给访存单元；硬件按地址分布组合、拆分为相应访问请求。因此，“32 个线程”不等于“向显存发送 32 次独立读取”。</li>
+<li>请求检查本 SM 的 <strong>L1</strong>。需要的数据已经在这里时，可以由 L1 提供；不需要为这次命中的部分继续读取 L2 或 DRAM。</li>
+<li>L1 未命中的部分交给 <strong>L2</strong>。L2 命中则从 L2 返回；只有仍未命中的部分才继续访问设备内存。</li>
+<li>L2 也未命中时，通过<strong>内存控制器</strong>读取 HBM/GDDR。返回的数据按具体缓存策略处理，最终把线程需要的值交给目标寄存器。</li>
+<li>后面的 <code>x + 1</code> 依赖加载结果。等待这个结果的指令不能提前使用它；SM 可以发出其他就绪 warp 的指令，但不保证总能隐藏等待时间。</li>
+</ol>
+<figure class="cuda-diagram">
+<a href="/images/cuda-basics/09-load-path.svg" target="_blank" rel="noopener"><img src="/images/cuda-basics/09-load-path.svg" alt="global load 请求按条件查询 L1、L2 与 DRAM；任一命中层向目标寄存器返回数据，shared 不在这条必经路径上" loading="lazy"></a>
+<figcaption>图 4A：橙色是向外查找的请求，绿色是数据返回。图中假定允许 L1 缓存；命中哪一层就由哪一层提供数据。 <a href="/images/cuda-basics/09-load-path.svg" target="_blank" rel="noopener">放大看图</a> · <a href="/images/cuda-basics/09-load-path.excalidraw" download>下载 Excalidraw 原图</a></figcaption>
+</figure>
+<p>寄存器在这里是<strong>加载的目的地</strong>，不是执行新 load 之前先查找的一级地址缓存。若 <code>x</code> 已经保存在寄存器，后续复用 <code>x</code> 直接使用寄存器值即可；这是复用已取得的值，而不是又执行了一次对 <code>A[i]</code> 的 load。编译器也可能消除重复加载，不能仅凭 C++ 代码行数计算真实访存次数。</p>
+<p>还要保留两个边界：有些加载会绕过 L1，直接使用 L2 通路；一个 warp 的请求也可能有一部分命中、一部分未命中。图中为了入门只跟踪一个所需数据片段，不假设所有线程总是命中同一层。缓存命中也不能替代线程间同步。<a target="_blank" rel="noopener" href="https://docs.nvidia.com/nsight-compute/ProfilingGuide/index.html#l1-tex-cache">Nsight Compute：L1/TEX Cache</a> · <a target="_blank" rel="noopener" href="https://docs.nvidia.com/cuda/cuda-c-best-practices-guide/index.html#memory-optimizations">CUDA Best Practices：Memory Optimizations</a></p>
+<h3 id="小-demo：切换访问对象，看路径是否还经过显存" tabindex="-1">小 demo：切换访问对象，看路径是否还经过显存</h3>
+<p>先选择 global load，依次切换 L1 命中、L2 命中、全部未命中；再切换到 shared 和寄存器。这里的命中状态由你指定，用于解释路径，不预测真实缓存命中率，也不模拟延迟。local 一项假定编译器确实产生了 local memory 访问。</p>
+<div class="cuda-demo" data-cuda-demo="memory"><p>启用 JavaScript 可切换 global、shared、register、local 的读取路径。</p></div>
+<h3 id="5.3-shared-memory-怎样接到这条路径上" tabindex="-1">5.3 shared memory 怎样接到这条路径上</h3>
+<p>shared memory 是程序显式使用的另一条分支，不是 <code>register → shared → L1 → L2 → DRAM</code> 这种自动查找链中的一级。普通 C++ 写法 <code>tile[t] = A[i]</code> 通常先执行 global load 得到寄存器临时值，再执行 shared store。支持的异步拷贝指令可以直接把 global 数据送入 shared、绕过中间寄存器；这是后续进阶路径，不能用来推断所有普通赋值的实现。</p>
+<figure class="cuda-diagram">
+<a href="/images/cuda-basics/10-shared-reuse.svg" target="_blank" rel="noopener"><img src="/images/cuda-basics/10-shared-reuse.svg" alt="global 数据通过普通加载和 shared store 填入 shared；块内同步后，线程通过 shared load 读入寄存器并计算" loading="lazy"></a>
+<figcaption>图 4B：上半部是显式搬运，下半部是块内复用。shared load 本身不需要再次查询原 global 地址的 L1/L2/DRAM。 <a href="/images/cuda-basics/10-shared-reuse.svg" target="_blank" rel="noopener">放大看图</a> · <a href="/images/cuda-basics/10-shared-reuse.excalidraw" download>下载 Excalidraw 原图</a></figcaption>
+</figure>
+<p>将后面的 <code>shared-rotate.cu</code> 核心语句拆开，就能逐行对上硬件。下面是用于理解的代码片段，假设每个 block 恰好 4 个线程、输入长度是 4 的倍数：</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">__shared__ <span class="type">float</span> tile[<span class="number">4</span>];</span><br><span class="line"><span class="type">int</span> t = threadIdx.x;</span><br><span class="line"><span class="type">int</span> i = blockIdx.x * blockDim.x + t;</span><br><span class="line"><span class="type">float</span> x = input[i];          <span class="comment">// global load：缓存或 DRAM → 寄存器</span></span><br><span class="line">tile[t] = x;               <span class="comment">// shared store：寄存器 → 本块 shared</span></span><br><span class="line">__syncthreads();             <span class="comment">// 本块参与线程写完之后，才能互读</span></span><br><span class="line"><span class="type">float</span> y = tile[(t + <span class="number">1</span>) % <span class="number">4</span>]; <span class="comment">// shared load：本块 shared → 寄存器</span></span><br><span class="line">output[i] = y;              <span class="comment">// global store：走写入通路</span></span><br></pre></td></tr></table></figure>
+<p>例如 block 0 的 thread 0 先把 <code>input[0]</code> 搬进 <code>tile[0]</code>；屏障后读取的是 thread 1 已写入的 <code>tile[1]</code>。这次 shared load 直接使用 shared 中的数据，不需要重新沿 global 路径读取 <code>input[1]</code>。该例主要展示协作；是否加速需要实测。</p>
+<p>这里的变量名只是源码概念，具体是否分配独立寄存器以及使用什么机器指令由编译器决定。最后一行是 <strong>store</strong>，其缓存策略与可见性规则不能简单套用前面的 load 命中流程。普通缓存也不是 block 间通信的同步机制。</p>
+<p>线程私有的 <strong>local memory</strong> 则是另一种容易误会的情况：它的“私有”是逻辑范围，实际存储由设备内存支撑，读取可能经过缓存。寄存器压力导致 spill 时，某些原本希望留在寄存器的值需要保存到 local、随后重新加载；因此“多用局部变量”并不自动等于“只访问 SM 寄存器”。<a target="_blank" rel="noopener" href="https://docs.nvidia.com/cuda/cuda-programming-guide/02-basics/writing-cuda-kernels.html">Writing SIMT Kernels：Memory Spaces</a> · <a target="_blank" rel="noopener" href="https://docs.nvidia.com/nsight-compute/ProfilingGuide/index.html#memory-chart">Nsight Compute：Load Global Store Shared</a></p>
+<h3 id="5.4-Unified-Memory-为什么看起来少了拷贝步骤" tabindex="-1">5.4 Unified Memory 为什么看起来少了拷贝步骤</h3>
 <p>一些入门教程使用 <code>cudaMallocManaged</code>，使同一份 managed allocation 能被 CPU 和 GPU 代码访问。它简化了内存管理，但不意味着数据访问没有代价，也不取消读写之间的同步要求；具体机制与平台能力有关。本篇选择显式拷贝，方便先看清数据位置。<a target="_blank" rel="noopener" href="https://docs.nvidia.com/cuda/cuda-programming-guide/02-basics/understanding-memory.html">Unified and System Memory</a></p>
 <h3 id="小-demo：每块各自交换数据" tabindex="-1">小 demo：每块各自交换数据</h3>
 <p><a href="/downloads/cuda-basics/shared-rotate.cu">shared-rotate.cu</a> 把 8 个整数分给两个 block，每块 4 个线程。每线程先把自己的值写进本块的 shared memory；块内屏障之后，再读取本块的下一个位置。</p>
@@ -604,6 +734,11 @@
 <td>进阶阅读</td>
 <td><a target="_blank" rel="noopener" href="https://developer.nvidia.com/blog/using-shared-memory-cuda-cc/">Using Shared Memory in CUDA C/C++</a></td>
 <td>块内数据交换与同步；2013 年文章中的旧架构参数不当作当前硬件规格</td>
+</tr>
+<tr>
+<td>对照物理访存通路</td>
+<td><a target="_blank" rel="noopener" href="https://docs.nvidia.com/nsight-compute/ProfilingGuide/index.html#memory-chart">Nsight Compute Profiling Guide</a></td>
+<td>逻辑存储空间与 L1/shared/L2/设备内存的对应</td>
 </tr>
 <tr>
 <td>开始性能实践时</td>
