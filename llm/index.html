@@ -172,7 +172,7 @@
   <nav class="site-state">
       <div class="site-state-item site-state-posts">
         <a href="/archives/">
-          <span class="site-state-item-count">68</span>
+          <span class="site-state-item-count">107</span>
           <span class="site-state-item-name">日志</span>
         </a>
       </div>
@@ -182,7 +182,7 @@
       </div>
       <div class="site-state-item site-state-tags">
           <a href="/tags/">
-        <span class="site-state-item-count">69</span>
+        <span class="site-state-item-count">71</span>
         <span class="site-state-item-name">标签</span></a>
       </div>
   </nav>
@@ -233,13 +233,56 @@
 <p>关注缓存池的组织、共享复用与生命周期管理，记录存储层次、数据搬运和调度中的问题与尝试。</p>
 <h2 id="算子学习" tabindex="-1">算子学习</h2>
 <p>从算子原理和实现入手，保留代码、测试条件、性能分析与学习过程中的疑问。</p>
-<p>CUDA／LeetCUDA 系列按原文章节顺序创作，<strong>一章一篇博客</strong>，编号接续现有笔记。每篇包含原理与公式、流程图、交互演示、完整代码 demo，以及 Triton／TileLang 练习与验收。</p>
+<p>CUDA／LeetCUDA 系列按原文章节顺序整理，<strong>一章一篇博客</strong>，接续（一）至（四十一），覆盖 PDF 的 40 个编号章节。CuTe 独立导读与附录另列为补充资料。全部归入「LLM 推理」。</p>
+<p>每篇有原理与术语、流程图、交互演示、具体代码与 Triton／TileLang 练习。新增篇章的 CPU 案例已经执行；GPU 基线与原书专用代码提供运行入口，尚未在当前环境做 GPU 编译、正确性及性能实测。</p>
 <ul>
-<li><a href="/systems/gpu-learning-path/">完整学习目录与后续章节</a></li>
+<li><a href="/systems/gpu-learning-path/">完整学习目录、来源页码与实验入口</a></li>
 <li><a href="/systems/cuda-basics/">（一）CUDA 基础：执行模型与内存</a></li>
 <li><a href="/systems/cuda-overlap/">（二）性能分析：SM 调度、warp stall 与流水线</a></li>
-<li><a href="/systems/gpu-roofline/">（三）GPU 架构与 Roofline：估算并验证性能上限</a></li>
-<li><a href="/llm/cuda-reduction/">（四）归约与点积：从 warp 到全局结果</a></li>
+<li><a href="/systems/gpu-roofline/">（三）GPU 架构与 Roofline：先预测，再测量</a></li>
+<li><a href="/llm/cuda-reduction/">（四）归约与点积：从一组数到一个结果</a></li>
+<li><a href="/llm/cuda-vector-atomic/">（五）访问粒度与原子冲突：向量化和直方图</a></li>
+<li><a href="/llm/cuda-softmax/">（六）稳定 Softmax：从整行到在线状态</a></li>
+<li><a href="/llm/cuda-lse-merge/">（七）LSE 与注意力状态合并</a></li>
+<li><a href="/llm/cuda-normalization/">（八）RMSNorm 与 LayerNorm：统计量和广播</a></li>
+<li><a href="/llm/cuda-rope-transpose/">（九）RoPE 与转置：数据重排为何影响性能</a></li>
+<li><a href="/llm/cuda-gemv/">（十）GEMV：如何把一行交给 warp</a></li>
+<li><a href="/llm/cuda-gemm-tiling/">（十一）GEMM：block tile 与寄存器 tile</a></li>
+<li><a href="/llm/cuda-tf32-pipeline/">（十二）精度与异步搬运：TF32 和双缓冲</a></li>
+<li><a href="/llm/cuda-mma-fragments/">（十三）MMA 与 fragment：理解协作计算的数据归属</a></li>
+<li><a href="/llm/cuda-swizzle/">（十四）布局与调度：三种不同的 swizzle</a></li>
+<li><a href="/llm/cuda-hopper-tma-wgmma/">（十五）TMA 与 WGMMA：Hopper 的完成协议</a></li>
+<li><a href="/llm/cuda-sm120-warp-specialization/">（十六）SM120 的生产消费流水</a></li>
+<li><a href="/llm/cuda-flash-attention-math/">（十七）FlashAttention：为什么可以不写出分数矩阵</a></li>
+<li><a href="/llm/cuda-attention-split-q/">（十八）Split-Q：让每组线程拥有自己的查询行</a></li>
+<li><a href="/llm/cuda-attention-kv-pipeline/">（十九）注意力的双流水：K、V 与角色分工</a></li>
+<li><a href="/llm/cuda-attention-multi-consumer/">（二十）多 consumer 与分段合并</a></li>
+<li><a href="/llm/cuda-attention-split-d/">（二十一）大 head_dim：Split-D 的两次分块</a></li>
+<li><a href="/llm/cuda-cute-layout/">（二十二）Layout：坐标、地址与可逆映射</a></li>
+<li><a href="/llm/cuda-cute-tiled-copy/">（二十三）Copy 的归属：谁搬什么，搬到哪里</a></li>
+<li><a href="/llm/cuda-cute-tiled-mma/">（二十四）MMA 的归属：从原子到输出 fragment</a></li>
+<li><a href="/llm/cuda-cute-tma-layout/">（二十五）Swizzle 与 TMA 的地址契约</a></li>
+<li><a href="/llm/cuda-cute-gemm/">（二十六）布局驱动的 GEMM 工程</a></li>
+<li><a href="/llm/cuda-cute-attention-variants/">（二十七）Attention 实现对照：统一流水、角色分工与双 consumer</a></li>
+<li><a href="/llm/cuda-cute-split-d-layout/">（二十八）大 D 的布局代数与寄存器预算</a></li>
+<li><a href="/llm/cuda-persistent-attention/">（二十九）Persistent Attention：任务循环与尾波</a></li>
+<li><a href="/llm/cuda-non-ws-split-d/">（三十）大 D 的 non-WS 流水：让所有线程参与 MMA</a></li>
+<li><a href="/llm/cuda-fp8-quantization/">（三十一）FP8 的格式与量化前处理</a></li>
+<li><a href="/llm/cuda-fp8-gemm/">（三十二）FP8 GEMM：scale 如何进入累加</a></li>
+<li><a href="/llm/cuda-nvfp4-format/">（三十三）NVFP4：两级 scale 与打包</a></li>
+<li><a href="/llm/cuda-block-scaled-mma/">（三十四）Block-scaled MMA：scale 也是操作数</a></li>
+<li><a href="/llm/cuda-quantized-attention-math/">（三十五）量化 Attention：误差在哪里被放大</a></li>
+<li><a href="/llm/cuda-fp8-attention-preprocess/">（三十六）FP8 Attention 的前处理链</a></li>
+<li><a href="/llm/cuda-fp8-persist-scale/">（三十七）FP8 persist-D 与 scale 折叠</a></li>
+<li><a href="/llm/cuda-fp8-split-d-m4n2/">（三十八）FP8 大 D：Split-D 与并行布局</a></li>
+<li><a href="/llm/cuda-fp4-attention-preprocess/">（三十九）FP4 Attention 的量化链</a></li>
+<li><a href="/llm/cuda-fp4-attention-probability/">（四十）FP4 Attention：P 的两级量化</a></li>
+<li><a href="/llm/cuda-benchmark-accuracy/">（四十一）基准与精度：把学习结果变成可复现实验</a></li>
+</ul>
+<p>补充阅读：</p>
+<ul>
+<li><a href="/llm/cute-layout-primer/">CuTe 白皮书：坐标、函数与布局代数</a></li>
+<li><a href="/llm/cuda-lab-toolbox/">附录：实验工具箱、构建入口与性能结果复现</a></li>
 </ul>
 <hr>
 <p>整理后的笔记会按这三个方向归档，尽量区分已有结论、实验观察和仍待验证的想法。</p>

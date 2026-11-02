@@ -1,0 +1,417 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width">
+<meta name="theme-color" content="#10151b"><meta name="generator" content="Hexo 8.1.2">
+
+  <link rel="mask-icon" href="/images/avatar.svg" color="#10151b">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+
+<link rel="stylesheet" href="/assets/fontawesome/css/all.min.css">
+
+<script class="next-config" data-name="main" type="application/json">{"hostname":"wulinze.github.io","root":"/","images":"/images","scheme":"Pisces","darkmode":false,"version":"8.29.1","exturl":false,"sidebar":{"position":"left","width_expanded":300,"width_dual_column":272,"display":"post","padding":18,"offset":12},"hljswrap":true,"codeblock":{"theme":{"light":"github-dark","dark":"github-dark"},"prism":{"light":"prism","dark":"prism-dark"},"copy_button":{"enable":true,"style":"flat"},"fold":{"enable":false,"height":500},"language":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"mediumzoom":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"stickytabs":false,"motion":{"enable":false,"async":false,"duration":200,"transition":{"menu_item":"fadeInDown","post_block":"fadeIn","post_header":"fadeInDown","post_body":"fadeInDown","coll_header":"fadeInLeft","sidebar":"fadeInUp"}},"i18n":{"placeholder":"搜索...","empty":"没有找到任何搜索结果：${query}","hits_time":"找到 ${hits} 个搜索结果（用时 ${time} 毫秒）","hits":"找到 ${hits} 个搜索结果"},"path":"/search.xml","localsearch":{"enable":true,"top_n_per_article":2,"unescape":true,"preload":false}}</script><script src="/js/config.js" defer></script>
+
+    <meta name="description" content="梳理 LeetCUDA 中独立 CuTe 导读的层级 shape、复合、合并、补、乘积与切分，用小模型和对应练习连接后续布局章节。">
+<meta property="og:type" content="article">
+<meta property="og:title" content="CUDA 学习补充：CuTe 白皮书怎样读——坐标、函数与布局代数">
+<meta property="og:url" content="https://wulinze.github.io/llm/cute-layout-primer/">
+<meta property="og:site_name" content="Wu&#39;s Blog">
+<meta property="og:description" content="梳理 LeetCUDA 中独立 CuTe 导读的层级 shape、复合、合并、补、乘积与切分，用小模型和对应练习连接后续布局章节。">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://wulinze.github.io/images/leetcuda/cuda-cute-layout.svg">
+<meta property="article:published_time" content="2026-11-02T09:01:00.000Z">
+<meta property="article:modified_time" content="2026-11-02T09:01:00.000Z">
+<meta property="article:author" content="wulinze">
+<meta property="article:tag" content="CUDA">
+<meta property="article:tag" content="CuTe">
+<meta property="article:tag" content="算子学习">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://wulinze.github.io/images/leetcuda/cuda-cute-layout.svg">
+
+
+<link rel="canonical" href="https://wulinze.github.io/llm/cute-layout-primer/">
+
+
+<script class="next-config" data-name="page" type="application/json">{"sidebar":"","isHome":false,"isPost":true,"lang":"zh-CN","comments":true,"permalink":"https://wulinze.github.io/llm/cute-layout-primer/","path":"/llm/cute-layout-primer/","title":"CUDA 学习补充：CuTe 白皮书怎样读——坐标、函数与布局代数"}</script>
+
+<script class="next-config" data-name="calendar" type="application/json">""</script>
+<title>CUDA 学习补充：CuTe 白皮书怎样读——坐标、函数与布局代数 | Wu's Blog</title>
+  
+
+
+
+
+
+
+
+
+  
+<script src="/js/utils.js" defer></script><script src="/js/sidebar.js" defer></script><script src="/js/next-boot.js" defer></script>
+
+  <script src="/assets/local-search/search.js" defer></script>
+<script src="/js/third-party/search/local-search.js" defer></script>
+
+
+
+
+
+
+
+  
+
+
+
+
+  
+
+  <script class="next-config" data-name="enableMath" type="application/json">true</script><link rel="stylesheet" href="/assets/katex/katex.min.css">
+
+
+<link rel="icon" type="image/svg+xml" href="/images/avatar.svg">
+<link rel="stylesheet" href="/css/palette.css">
+<link rel="stylesheet" href="/css/reading.css">
+
+  <noscript>
+    <link rel="stylesheet" href="/css/noscript.css">
+  </noscript>
+<link rel="alternate" href="/atom.xml" title="Wu's Blog" type="application/atom+xml">
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="headband"></div>
+
+  <main class="main">
+    <div class="column">
+      <header class="header" itemscope itemtype="http://schema.org/WPHeader"><div class="site-brand-container">
+  <div class="site-nav-search popup-trigger" aria-label="搜索" role="button">
+      <i class="fa fa-search fa-fw fa-lg"></i>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <i class="logo-line"></i>
+      <p class="site-title">Wu's Blog</p>
+      <i class="logo-line"></i>
+    </a>
+      <p class="site-subtitle" itemprop="description">技术分享 · 思考与实践</p>
+  </div>
+
+  <div class="site-nav-toggle" aria-label="切换导航栏" role="button">
+      <i class="fa fa-ellipsis fa-fw fa-lg"></i>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  <ul class="main-menu menu"><li class="menu-item menu-item-home"><a href="/" rel="section">首页</a></li><li class="menu-item menu-item-文章"><a href="/blog/" rel="section">文章</a></li><li class="menu-item menu-item-categories"><a href="/categories/" rel="section">分类</a></li><li class="menu-item menu-item-tags"><a href="/tags/" rel="section">标签</a></li><li class="menu-item menu-item-archives"><a href="/archives/" rel="section">归档</a></li><li class="menu-item menu-item-about"><a href="/about/" rel="section">关于</a></li>
+      <li class="menu-item menu-item-search">
+        <a role="button" class="popup-trigger">搜索
+        </a>
+      </li>
+  </ul>
+</nav>
+
+
+
+  
+  <template id="search-popup-template"><div class="search-pop-overlay">
+    <div class="popup search-popup">
+      <div class="search-header">
+        <span class="search-icon">
+          <i class="fa fa-search"></i>
+        </span>
+        <div class="search-input-container">
+          <input autocomplete="off" autocapitalize="off" maxlength="80"
+                placeholder="搜索..." spellcheck="false"
+                type="search" class="search-input">
+        </div>
+        <span class="popup-btn-close" role="button">
+          <i class="fa fa-times-circle"></i>
+        </span>
+      </div>
+      <div class="search-result-container">
+        <div class="search-result-icon">
+          <i class="fa fa-spinner fa-pulse fa-5x"></i>
+        </div>
+      </div>
+    </div>
+  </div></template>
+
+</header>
+        
+  
+  <aside class="sidebar">
+
+    <div class="sidebar-inner sidebar-nav-active sidebar-toc-active">
+      <ul class="sidebar-nav">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <div class="sidebar-panel-container">
+        <!--noindex-->
+        <div class="post-toc-wrap sidebar-panel">
+            <div class="post-toc animated"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%B8%BA%E4%BB%80%E4%B9%88%E5%8D%95%E7%8B%AC%E4%BF%9D%E7%95%99%E8%BF%99%E7%AF%87%E5%AF%BC%E8%AF%BB"><span class="nav-text">为什么单独保留这篇导读</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%9C%AF%E8%AF%AD%E5%85%88%E5%88%86%E4%B8%89%E5%B1%82"><span class="nav-text">术语先分三层</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E7%94%A8%E5%90%8C%E4%B8%80%E7%BB%84%E5%9D%90%E6%A0%87%E7%90%86%E8%A7%A3%E5%B9%B3%E5%9D%A6%E4%B8%8E%E5%B1%82%E7%BA%A7%E5%BD%A2%E7%8A%B6"><span class="nav-text">用同一组坐标理解平坦与层级形状</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%85%AD%E7%B1%BB%E6%93%8D%E4%BD%9C%E5%88%86%E5%88%AB%E8%A7%A3%E5%86%B3%E4%BB%80%E4%B9%88"><span class="nav-text">六类操作分别解决什么</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#Coalesce%EF%BC%9A%E6%B6%88%E5%8E%BB%E5%8F%AF%E5%90%88%E5%B9%B6%E7%9A%84%E5%9D%90%E6%A0%87%E5%B1%82"><span class="nav-text">Coalesce：消去可合并的坐标层</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Composition%EF%BC%9A%E5%85%88%E5%86%85%E5%B1%82%EF%BC%8C%E5%90%8E%E5%A4%96%E5%B1%82"><span class="nav-text">Composition：先内层，后外层</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Complement%EF%BC%9A%E8%A1%A5%E5%85%A8%E5%B0%9A%E6%9C%AA%E8%A6%86%E7%9B%96%E7%9A%84%E6%96%B9%E5%90%91"><span class="nav-text">Complement：补全尚未覆盖的方向</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Product%EF%BC%9A%E6%8A%8A%E5%B0%8F%E5%B8%83%E5%B1%80%E5%B9%B3%E7%A7%BB%E9%93%BA%E5%BC%80"><span class="nav-text">Product：把小布局平移铺开</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Divide%EF%BC%9A%E5%8F%96%E5%87%BA%E5%B1%80%E9%83%A8-tile-%E4%B8%8E%E5%A4%96%E9%83%A8%E5%9D%90%E6%A0%87"><span class="nav-text">Divide：取出局部 tile 与外部坐标</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Inverse%EF%BC%9A%E5%85%88%E6%A3%80%E6%9F%A5%E6%98%AF%E5%90%A6%E4%B8%80%E4%B8%80%E5%AF%B9%E5%BA%94"><span class="nav-text">Inverse：先检查是否一一对应</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%9B%BE%E4%B8%8E%E4%BA%A4%E4%BA%92%EF%BC%9A%E4%BB%8E%E5%9D%90%E6%A0%87%E6%8E%A8%E5%88%B0%E5%9C%B0%E5%9D%80%EF%BC%8C%E5%86%8D%E6%A3%80%E6%9F%A5%E5%88%AB%E5%90%8D"><span class="nav-text">图与交互：从坐标推到地址，再检查别名</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%B8%80%E4%B8%AA%E5%AE%8C%E6%95%B4%E7%9A%84%E4%BB%A3%E6%95%B0%E5%B0%8F-demo"><span class="nav-text">一个完整的代数小 demo</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Triton-%E4%B8%8E-TileLang-%E6%80%8E%E4%B9%88%E9%AA%8C%E8%AF%81%E8%BF%99%E4%BB%BD%E7%90%86%E8%A7%A3"><span class="nav-text">Triton 与 TileLang 怎么验证这份理解</span></a></li></ol></div>
+        </div>
+        <!--/noindex-->
+
+        <div class="site-overview-wrap sidebar-panel">
+          <div class="site-author animated" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="wulinze"
+      src="/images/avatar.svg">
+  <p class="site-author-name" itemprop="name">wulinze</p>
+  <div class="site-description" itemprop="description">wulinze 的个人主页，关注 LLM 并行方式、Cache 池化与算子学习，分享系统知识和 LeetCode 刷题记录。</div>
+</div>
+<div class="site-state-wrap animated">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+        <a href="/archives/">
+          <span class="site-state-item-count">107</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+        <span class="site-state-item-count">4</span>
+        <span class="site-state-item-name">分类</span>
+      </div>
+      <div class="site-state-item site-state-tags">
+          <a href="/tags/">
+        <span class="site-state-item-count">71</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author animated">
+      <span class="links-of-author-item">
+        <a href="https://github.com/wulinze" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;wulinze" rel="noopener me" target="_blank"><i class="fab fa-github fa-fw"></i>GitHub</a>
+      </span>
+  </div>
+
+        </div>
+      </div>
+    </div>
+
+    
+  </aside>
+
+
+    </div>
+
+    <div class="main-inner post posts-expand">
+
+
+  
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://wulinze.github.io/llm/cute-layout-primer/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.svg">
+      <meta itemprop="name" content="wulinze">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Wu's Blog">
+      <meta itemprop="description" content="wulinze 的个人主页，关注 LLM 并行方式、Cache 池化与算子学习，分享系统知识和 LeetCode 刷题记录。">
+    </span>
+
+    <span hidden itemprop="post" itemscope itemtype="http://schema.org/CreativeWork">
+      <meta itemprop="name" content="CUDA 学习补充：CuTe 白皮书怎样读——坐标、函数与布局代数 | Wu's Blog">
+      <meta itemprop="description" content="梳理 LeetCUDA 中独立 CuTe 导读的层级 shape、复合、合并、补、乘积与切分，用小模型和对应练习连接后续布局章节。">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          CUDA 学习补充：CuTe 白皮书怎样读——坐标、函数与布局代数
+        </h1>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">发表于</span>
+
+      <time title="创建时间：2026-11-02 17:01" itemprop="dateCreated datePublished" datetime="2026-11-02T17:01:00+08:00">2026-11-02</time>
+    </span>
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-folder"></i>
+      </span>
+      <span class="post-meta-item-text">分类于</span>
+        <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+          <a href="/categories/llm-inference/" itemprop="url" rel="index"><span itemprop="name">LLM 推理</span></a>
+        </span>
+    </span>
+
+  
+</div>
+
+            <div class="post-description">梳理 LeetCUDA 中独立 CuTe 导读的层级 shape、复合、合并、补、乘积与切分，用小模型和对应练习连接后续布局章节。</div>
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody"><h2 id="为什么单独保留这篇导读" tabindex="-1">为什么单独保留这篇导读</h2>
+<p>原 PDF 第 277–309 页是独立的 CuTe 白皮书中文译注，不是新的编号章节。它位于 Attention 与 CuTe 章节之间。本补充保持这个位置，不挤占（一）至（四十一）的连续编号，也不把 33 页理论直接当成一段附注略过。</p>
+<p>白皮书的价值在于给复杂线程/数据布局提供统一语言。学习时先理解“布局是函数”，再看哪些函数组合仍可表达为 CuTe layout，最后回到真实 copy 和 MMA。原论文为 Cris Cecka 的 <a target="_blank" rel="noopener" href="https://arxiv.org/abs/2603.02298v2">CuTe Layout Representation and Algebra</a>，这里是学习导读与原创小例子，不重复发布整份译文。</p>
+<h2 id="术语先分三层" tabindex="-1">术语先分三层</h2>
+<table>
+<thead>
+<tr>
+<th>层次</th>
+<th>对象</th>
+<th>要问的问题</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>坐标结构</td>
+<td>tuple、层级 tuple、shape、rank、size</td>
+<td>合法坐标长什么样，元素有多少？</td>
+</tr>
+<tr>
+<td>映射</td>
+<td>stride、layout、tensor/accessor</td>
+<td>坐标变成哪个 offset，再怎样取值？</td>
+</tr>
+<tr>
+<td>代数操作</td>
+<td>composition、coalesce、complement、product、divide、inverse</td>
+<td>怎样组合或重组映射，并保留需要的性质？</td>
+</tr>
+</tbody>
+</table>
+<p><code>rank</code> 是顶层模式数量，不是所有嵌套叶子的总数。<code>size</code> 是 shape 的叶子大小乘积，不是所占地址空间字节数。<code>Tensor</code> 不只是 shape；还要知道数据引擎或访问器和 layout。</p>
+<h2 id="用同一组坐标理解平坦与层级形状" tabindex="-1">用同一组坐标理解平坦与层级形状</h2>
+<p>普通二维布局可以写为 <code>L(r,c)=r*s_r+c*s_c</code>。shape=(2,3)、stride=(1,2) 时，L(1,2)=5。若用整数坐标按 CuTe 的第一模式优先展开：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">i = r + 2*c</span><br><span class="line">r = i % 2</span><br><span class="line">c = i // 2</span><br><span class="line">L(i) = (i%2)*1 + (i//2)*2 = i</span><br></pre></td></tr></table></figure>
+<p>不要把 Python 常见行主序的展平顺序自动套给 CuTe。先看具体 shape/stride 与坐标分解规则。</p>
+<p>层级 shape 比如 <code>((2,3),4)</code> 把前两根轴组合为一个模式，但仍可保留内部结构。算法可以把这一模式当整体操作，也能进一步展开；“元素数量相同”并不保证两种层级结构处处可互换。正式的相容性条件要回到白皮书定义。</p>
+<h2 id="六类操作分别解决什么" tabindex="-1">六类操作分别解决什么</h2>
+<h3 id="Coalesce：消去可合并的坐标层" tabindex="-1">Coalesce：消去可合并的坐标层</h3>
+<p>若相邻模式在指定展开顺序下连续，多个模式可以合成一个。例如 <code>(2,3):(1,2)</code> 可视为 <code>6:1</code>。若 stride 变成 <code>(1,4)</code>，中间有洞，就不能直接宣称同一个连续布局。Coalesce 改变表示，不等于拷贝数据，也不能随意跨越不满足条件的模式。</p>
+<h3 id="Composition：先内层，后外层" tabindex="-1">Composition：先内层，后外层</h3>
+<p><code>R(c)=A(B(c))</code>。例：A(i)=2<em>i，B(j)=3</em>j，则 R(j)=6*j。真实层级 layout 中必须核对 B 的输出是否是 A 能解释的坐标，合法坐标范围是否匹配。函数式写法是直觉入口，不意味着任意 Python 函数组合都能化为合法 CuTe 类型。</p>
+<h3 id="Complement：补全尚未覆盖的方向" tabindex="-1">Complement：补全尚未覆盖的方向</h3>
+<p>一个 tile 布局只描述了部分地址方向，complement 提供与它配合的其余方向，使 tile 可以铺到更大范围。它不是简单的集合差，也不是按位取反。阅读时用小整数布局枚举两者组合后的覆盖范围，比直接背符号更可靠。</p>
+<h3 id="Product：把小布局平移铺开" tabindex="-1">Product：把小布局平移铺开</h3>
+<p>例如四元素 tile <code>0,1,2,3</code> 沿外层坐标以步长 4 重复，得到 0…11 的三块。product 家族会以不同模式组合方式组织内外坐标。更换组合顺序会改变逻辑视图，未必改变底层数据。</p>
+<h3 id="Divide：取出局部-tile-与外部坐标" tabindex="-1">Divide：取出局部 tile 与外部坐标</h3>
+<p>对长度 12、tile=4 的例子，<code>i=inner+4*outer</code>，inner 在 0…3，outer 在 0…2。每个全局 i 唯一分解为局部元素和 tile 编号；这正是线程块取 global tile 的基础。实际 logical/zipped/tiled divide 的模式结构不同，要打印结果再用。</p>
+<h3 id="Inverse：先检查是否一一对应" tabindex="-1">Inverse：先检查是否一一对应</h3>
+<p>如果多个逻辑坐标映到同一地址，不能要求一个全局唯一逆。stride=0 的广播是最简单反例。讨论 left/right inverse 时必须注明定义域与满足的组合关系，不能因为有 <code>inverse</code> 名称就把任意映射当双射。</p>
+<h2 id="图与交互：从坐标推到地址，再检查别名" tabindex="-1">图与交互：从坐标推到地址，再检查别名</h2>
+<figure class="cuda-diagram">
+<img src="/images/leetcuda/cuda-cute-layout.svg" alt="shape stride到offset再到覆盖和组合的流程" loading="lazy">
+<figcaption>这里复用布局章节的图：它是本导读的最小可计算实例。<a href="/images/leetcuda/cuda-cute-layout.excalidraw" download>编辑原图</a></figcaption>
+</figure>
+<div class="leet-lab" data-leetcuda-lab data-source="/downloads/leetcuda/21/scenarios.json">
+<label>选择连续、padding、列主序或别名布局<select aria-label="布局导读案例"></select></label>
+<p data-progress aria-live="polite"></p><div data-output></div><p data-detail></p>
+<div class="leet-actions"><button type="button" data-previous>上一步</button><button type="button" data-next>下一步</button><button type="button" data-reset>重置</button></div><p data-check></p>
+</div>
+<p>先预测 shape=(2,3)、stride=(4,1) 的最大 offset 和逻辑元素数量，再操作。然后切到 stride=(0,1)，解释为什么它不是可用于唯一写出的布局。快照来自已运行 CPU 模型，不是硬件布局自动推断器。</p>
+<h2 id="一个完整的代数小-demo" tabindex="-1">一个完整的代数小 demo</h2>
+<p>下面只需 Python 标准库，执行后所有断言应通过。它是整数模型，不依赖 GPU，也不声称覆盖 CuTe 所有层级代数规则。</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">def</span> <span class="title function_">layout</span>(<span class="params">row, col, strides</span>):</span><br><span class="line">    <span class="keyword">return</span> row * strides[<span class="number">0</span>] + col * strides[<span class="number">1</span>]</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="keyword">def</span> <span class="title function_">check</span>():</span><br><span class="line">    <span class="comment"># 第一模式优先的坐标展开；验证 coalesce 的连续特例。</span></span><br><span class="line">    values = [layout(i % <span class="number">2</span>, i // <span class="number">2</span>, (<span class="number">1</span>, <span class="number">2</span>)) <span class="keyword">for</span> i <span class="keyword">in</span> <span class="built_in">range</span>(<span class="number">6</span>)]</span><br><span class="line">    <span class="keyword">assert</span> values == <span class="built_in">list</span>(<span class="built_in">range</span>(<span class="number">6</span>))</span><br><span class="line">    <span class="comment"># padding 布局有洞，不能当作相同连续数组。</span></span><br><span class="line">    padded = [layout(i % <span class="number">2</span>, i // <span class="number">2</span>, (<span class="number">1</span>, <span class="number">4</span>)) <span class="keyword">for</span> i <span class="keyword">in</span> <span class="built_in">range</span>(<span class="number">6</span>)]</span><br><span class="line">    <span class="keyword">assert</span> padded == [<span class="number">0</span>, <span class="number">1</span>, <span class="number">4</span>, <span class="number">5</span>, <span class="number">8</span>, <span class="number">9</span>]</span><br><span class="line">    <span class="comment"># divide/product 的小整数特例，验证无遗漏、无重算。</span></span><br><span class="line">    coordinates = [(i % <span class="number">4</span>, i // <span class="number">4</span>) <span class="keyword">for</span> i <span class="keyword">in</span> <span class="built_in">range</span>(<span class="number">12</span>)]</span><br><span class="line">    rebuilt = [inner + <span class="number">4</span> * outer <span class="keyword">for</span> inner, outer <span class="keyword">in</span> coordinates]</span><br><span class="line">    <span class="keyword">assert</span> rebuilt == <span class="built_in">list</span>(<span class="built_in">range</span>(<span class="number">12</span>))</span><br><span class="line">    <span class="comment"># 函数复合先 B 后 A。</span></span><br><span class="line">    <span class="keyword">def</span> <span class="title function_">a</span>(<span class="params">i</span>): <span class="keyword">return</span> <span class="number">2</span> * i</span><br><span class="line">    <span class="keyword">def</span> <span class="title function_">b</span>(<span class="params">i</span>): <span class="keyword">return</span> <span class="number">3</span> * i</span><br><span class="line">    <span class="keyword">assert</span> [a(b(i)) <span class="keyword">for</span> i <span class="keyword">in</span> <span class="built_in">range</span>(<span class="number">4</span>)] == [<span class="number">0</span>, <span class="number">6</span>, <span class="number">12</span>, <span class="number">18</span>]</span><br><span class="line">    <span class="comment"># 广播布局不是单射，逆不唯一。</span></span><br><span class="line">    aliases = [layout(r, c, (<span class="number">0</span>, <span class="number">1</span>)) <span class="keyword">for</span> r <span class="keyword">in</span> <span class="built_in">range</span>(<span class="number">2</span>) <span class="keyword">for</span> c <span class="keyword">in</span> <span class="built_in">range</span>(<span class="number">3</span>)]</span><br><span class="line">    <span class="keyword">assert</span> <span class="built_in">len</span>(<span class="built_in">set</span>(aliases)) == <span class="number">3</span> <span class="keyword">and</span> <span class="built_in">len</span>(aliases) == <span class="number">6</span></span><br><span class="line">    <span class="built_in">print</span>(<span class="string">&quot;PASS: coordinates, composition, divide/product, aliases&quot;</span>)</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="keyword">if</span> __name__ == <span class="string">&quot;__main__&quot;</span>:</span><br><span class="line">    check()</span><br></pre></td></tr></table></figure>
+<p><a href="/downloads/leetcuda/21/cuda-cute-layout.zip">完整布局实验包与 CuTe host 测试入口</a> 还包含网页同款模型和两种 DSL 练习。</p>
+<h2 id="Triton-与-TileLang-怎么验证这份理解" tabindex="-1">Triton 与 TileLang 怎么验证这份理解</h2>
+<p>Triton 先用显式 stride 构造两种 view 的 copy，和连续逻辑参考比较；不要以 <code>.reshape</code> 的形状相同代替地址验证。TileLang 先枚举 thread/value 对应坐标，再实现 global→shared→global 往返。两者先保证覆盖无遗漏、无非法别名和尾部不越界，再讨论 bank 与向量宽度。</p>
+<p>在上面的布局实验包中执行：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">python run_gpu.py --chapter 21 --backend triton</span><br><span class="line">python run_gpu.py --chapter 21 --backend tilelang</span><br></pre></td></tr></table></figure>
+<p>这些是语义基线，GPU 编译与运行在当前无 NVIDIA GPU 的编辑环境中未实测。CuTe 的具体类型计算继续到 <a href="/llm/cuda-cute-layout/">（二十二）Layout</a>、<a href="/llm/cuda-cute-tiled-copy/">（二十三）TiledCopy</a>、<a href="/llm/cuda-cute-tiled-mma/">（二十四）TiledMMA</a> 和 <a href="/llm/cuda-cute-tma-layout/">（二十五）Swizzle/TMA</a>。</p>
+<link rel="stylesheet" href="/css/leetcuda-labs.css">
+<script src="/js/leetcuda-labs.js" defer></script>
+
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/CUDA/" rel="tag"># CUDA</a>
+              <a href="/tags/%E7%AE%97%E5%AD%90%E5%AD%A6%E4%B9%A0/" rel="tag"># 算子学习</a>
+              <a href="/tags/CuTe/" rel="tag"># CuTe</a>
+          </div>
+
+        
+
+          <div class="post-nav">
+            <div class="post-nav-item">
+                <a href="/llm/cuda-benchmark-accuracy/" rel="prev" title="CUDA 算子学习（四十一）：基准与精度：把学习结果变成可复现实验">
+                  <i class="fa fa-angle-left"></i> CUDA 算子学习（四十一）：基准与精度：把学习结果变成可复现实验
+                </a>
+            </div>
+            <div class="post-nav-item">
+                <a href="/llm/cuda-lab-toolbox/" rel="next" title="CUDA 学习补充：实验工具箱、构建入口与性能结果复现">
+                  CUDA 学习补充：实验工具箱、构建入口与性能结果复现 <i class="fa fa-angle-right"></i>
+                </a>
+            </div>
+          </div>
+    </footer>
+  </article>
+</div>
+
+
+
+
+
+
+</div>
+  </main>
+
+  <footer class="footer">
+    <div class="footer-inner">
+
+  <div class="copyright">
+    &copy; 2023 – 
+    <span itemprop="copyrightYear">2026</span>
+    <span class="with-love">
+      <i class="fa fa-code"></i>
+    </span>
+    <span class="author" itemprop="copyrightHolder">wulinze</span>
+  </div>
+  <div class="powered-by">由 <a href="https://hexo.io/" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.js.org/pisces/" rel="noopener" target="_blank">NexT.Pisces</a> 强力驱动
+  </div>
+
+    </div>
+  </footer>
+
+  
+  <div class="toggle sidebar-toggle" role="button">
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+  </div>
+  <div class="back-to-top" role="button" aria-label="返回顶部">
+    <i class="fa fa-arrow-up fa-lg"></i>
+    <span>0%</span>
+  </div>
+
+<noscript>
+  <div class="noscript-warning">Theme NexT works best with JavaScript enabled</div>
+</noscript>
+<script src="/js/reading-guide.js" defer></script>
+
+</body>
+</html>

@@ -1,0 +1,476 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width">
+<meta name="theme-color" content="#10151b"><meta name="generator" content="Hexo 8.1.2">
+
+  <link rel="mask-icon" href="/images/avatar.svg" color="#10151b">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+
+<link rel="stylesheet" href="/assets/fontawesome/css/all.min.css">
+
+<script class="next-config" data-name="main" type="application/json">{"hostname":"wulinze.github.io","root":"/","images":"/images","scheme":"Pisces","darkmode":false,"version":"8.29.1","exturl":false,"sidebar":{"position":"left","width_expanded":300,"width_dual_column":272,"display":"post","padding":18,"offset":12},"hljswrap":true,"codeblock":{"theme":{"light":"github-dark","dark":"github-dark"},"prism":{"light":"prism","dark":"prism-dark"},"copy_button":{"enable":true,"style":"flat"},"fold":{"enable":false,"height":500},"language":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"mediumzoom":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"stickytabs":false,"motion":{"enable":false,"async":false,"duration":200,"transition":{"menu_item":"fadeInDown","post_block":"fadeIn","post_header":"fadeInDown","post_body":"fadeInDown","coll_header":"fadeInLeft","sidebar":"fadeInUp"}},"i18n":{"placeholder":"搜索...","empty":"没有找到任何搜索结果：${query}","hits_time":"找到 ${hits} 个搜索结果（用时 ${time} 毫秒）","hits":"找到 ${hits} 个搜索结果"},"path":"/search.xml","localsearch":{"enable":true,"top_n_per_article":2,"unescape":true,"preload":false}}</script><script src="/js/config.js" defer></script>
+
+    <meta name="description" content="融合、平滑、量化及 scale 生成。附可编辑流程图、四组逐步交互、独立 CPU demo、Triton 与 TileLang 语义基线及进阶练习。">
+<meta property="og:type" content="article">
+<meta property="og:title" content="CUDA 算子学习（三十六）：FP8 Attention 的前处理链">
+<meta property="og:url" content="https://wulinze.github.io/llm/cuda-fp8-attention-preprocess/">
+<meta property="og:site_name" content="Wu&#39;s Blog">
+<meta property="og:description" content="融合、平滑、量化及 scale 生成。附可编辑流程图、四组逐步交互、独立 CPU demo、Triton 与 TileLang 语义基线及进阶练习。">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://wulinze.github.io/images/leetcuda/cuda-fp8-attention-preprocess.svg">
+<meta property="article:published_time" content="2026-11-02T09:00:35.000Z">
+<meta property="article:modified_time" content="2026-11-02T09:00:35.000Z">
+<meta property="article:author" content="wulinze">
+<meta property="article:tag" content="CUDA">
+<meta property="article:tag" content="TileLang">
+<meta property="article:tag" content="Triton">
+<meta property="article:tag" content="算子学习">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://wulinze.github.io/images/leetcuda/cuda-fp8-attention-preprocess.svg">
+
+
+<link rel="canonical" href="https://wulinze.github.io/llm/cuda-fp8-attention-preprocess/">
+
+
+<script class="next-config" data-name="page" type="application/json">{"sidebar":"","isHome":false,"isPost":true,"lang":"zh-CN","comments":true,"permalink":"https://wulinze.github.io/llm/cuda-fp8-attention-preprocess/","path":"/llm/cuda-fp8-attention-preprocess/","title":"CUDA 算子学习（三十六）：FP8 Attention 的前处理链"}</script>
+
+<script class="next-config" data-name="calendar" type="application/json">""</script>
+<title>CUDA 算子学习（三十六）：FP8 Attention 的前处理链 | Wu's Blog</title>
+  
+
+
+
+
+
+
+
+
+  
+<script src="/js/utils.js" defer></script><script src="/js/sidebar.js" defer></script><script src="/js/next-boot.js" defer></script>
+
+  <script src="/assets/local-search/search.js" defer></script>
+<script src="/js/third-party/search/local-search.js" defer></script>
+
+
+
+
+
+
+
+  
+
+
+
+
+  
+
+  <script class="next-config" data-name="enableMath" type="application/json">true</script><link rel="stylesheet" href="/assets/katex/katex.min.css">
+
+
+<link rel="icon" type="image/svg+xml" href="/images/avatar.svg">
+<link rel="stylesheet" href="/css/palette.css">
+<link rel="stylesheet" href="/css/reading.css">
+
+  <noscript>
+    <link rel="stylesheet" href="/css/noscript.css">
+  </noscript>
+<link rel="alternate" href="/atom.xml" title="Wu's Blog" type="application/atom+xml">
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="headband"></div>
+
+  <main class="main">
+    <div class="column">
+      <header class="header" itemscope itemtype="http://schema.org/WPHeader"><div class="site-brand-container">
+  <div class="site-nav-search popup-trigger" aria-label="搜索" role="button">
+      <i class="fa fa-search fa-fw fa-lg"></i>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <i class="logo-line"></i>
+      <p class="site-title">Wu's Blog</p>
+      <i class="logo-line"></i>
+    </a>
+      <p class="site-subtitle" itemprop="description">技术分享 · 思考与实践</p>
+  </div>
+
+  <div class="site-nav-toggle" aria-label="切换导航栏" role="button">
+      <i class="fa fa-ellipsis fa-fw fa-lg"></i>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  <ul class="main-menu menu"><li class="menu-item menu-item-home"><a href="/" rel="section">首页</a></li><li class="menu-item menu-item-文章"><a href="/blog/" rel="section">文章</a></li><li class="menu-item menu-item-categories"><a href="/categories/" rel="section">分类</a></li><li class="menu-item menu-item-tags"><a href="/tags/" rel="section">标签</a></li><li class="menu-item menu-item-archives"><a href="/archives/" rel="section">归档</a></li><li class="menu-item menu-item-about"><a href="/about/" rel="section">关于</a></li>
+      <li class="menu-item menu-item-search">
+        <a role="button" class="popup-trigger">搜索
+        </a>
+      </li>
+  </ul>
+</nav>
+
+
+
+  
+  <template id="search-popup-template"><div class="search-pop-overlay">
+    <div class="popup search-popup">
+      <div class="search-header">
+        <span class="search-icon">
+          <i class="fa fa-search"></i>
+        </span>
+        <div class="search-input-container">
+          <input autocomplete="off" autocapitalize="off" maxlength="80"
+                placeholder="搜索..." spellcheck="false"
+                type="search" class="search-input">
+        </div>
+        <span class="popup-btn-close" role="button">
+          <i class="fa fa-times-circle"></i>
+        </span>
+      </div>
+      <div class="search-result-container">
+        <div class="search-result-icon">
+          <i class="fa fa-spinner fa-pulse fa-5x"></i>
+        </div>
+      </div>
+    </div>
+  </div></template>
+
+</header>
+        
+  
+  <aside class="sidebar">
+
+    <div class="sidebar-inner sidebar-nav-active sidebar-toc-active">
+      <ul class="sidebar-nav">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <div class="sidebar-panel-container">
+        <!--noindex-->
+        <div class="post-toc-wrap sidebar-panel">
+            <div class="post-toc animated"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%85%88%E7%9F%A5%E9%81%93%E8%BF%99%E7%AF%87%E8%A6%81%E8%A7%A3%E5%86%B3%E4%BB%80%E4%B9%88"><span class="nav-text">先知道这篇要解决什么</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%9C%AC%E7%AF%87%E6%9C%AF%E8%AF%AD%E4%B8%8E%E8%BE%93%E5%85%A5%E7%BA%A6%E5%AE%9A"><span class="nav-text">本篇术语与输入约定</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%8E%9F%E7%90%86%E4%B8%8E%E7%BB%93%E6%9E%84"><span class="nav-text">原理与结构</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%93%AA%E4%BA%9B%E5%8F%98%E6%8D%A2%E4%BF%9D%E6%8C%81%E6%95%B0%E5%AD%A6"><span class="nav-text">哪些变换保持数学</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%A0%BC%E5%BC%8F%E5%92%8C%E5%B8%83%E5%B1%80%E4%B8%80%E8%B5%B7%E8%BE%93%E5%87%BA"><span class="nav-text">格式和布局一起输出</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E8%9E%8D%E5%90%88%E5%85%88%E7%9C%8B%E4%BE%9D%E8%B5%96"><span class="nav-text">融合先看依赖</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%85%AC%E5%BC%8F%EF%BC%9A%E4%BB%8E%E5%AE%9A%E4%B9%89%E5%88%B0%E5%8F%AF%E6%A0%B8%E5%AF%B9%E7%9A%84%E5%B0%8F%E4%BE%8B%E5%AD%90"><span class="nav-text">公式：从定义到可核对的小例子</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%B5%81%E7%A8%8B%E5%9B%BE%EF%BC%9A%E6%B2%BF%E6%95%B0%E6%8D%AE%E4%BE%9D%E8%B5%96%E9%80%90%E6%AD%A5%E7%9C%8B"><span class="nav-text">流程图：沿数据依赖逐步看</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%BA%A4%E4%BA%92%E5%AE%9E%E9%AA%8C%EF%BC%9A%E6%94%B9%E5%8F%98%E6%A1%88%E4%BE%8B%EF%BC%8C%E8%A7%82%E5%AF%9F%E4%B8%AD%E9%97%B4%E7%8A%B6%E6%80%81"><span class="nav-text">交互实验：改变案例，观察中间状态</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%8F%AF%E4%BB%A5%E7%9B%B4%E6%8E%A5%E8%BF%90%E8%A1%8C%E7%9A%84%E4%BB%A3%E7%A0%81-demo"><span class="nav-text">可以直接运行的代码 demo</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#Triton-%E4%B8%8E-TileLang-%E7%9A%84%E5%8F%AF%E8%BF%90%E8%A1%8C%E5%9F%BA%E7%BA%BF"><span class="nav-text">Triton 与 TileLang 的可运行基线</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%AF%B9%E7%85%A7%E5%8E%9F%E4%B9%A6%E7%9A%84%E6%9E%B6%E6%9E%84%E4%B8%93%E7%94%A8-CUDA-%E5%AE%9E%E7%8E%B0"><span class="nav-text">对照原书的架构专用 CUDA 实现</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E7%8B%AC%E7%AB%8B%E7%BB%83%E4%B9%A0%EF%BC%9A%E5%85%88%E6%AD%A3%E7%A1%AE%EF%BC%8C%E5%86%8D%E9%AA%8C%E8%AF%81%E4%BC%98%E5%8C%96%E5%81%87%E8%AE%BE"><span class="nav-text">独立练习：先正确，再验证优化假设</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%B8%B8%E8%A7%81%E8%AF%AF%E8%A7%A3%E4%B8%8E%E5%88%A4%E6%96%AD%E8%BE%B9%E7%95%8C"><span class="nav-text">常见误解与判断边界</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E9%AA%8C%E8%AF%81%E7%8A%B6%E6%80%81%E4%B8%8E%E5%BB%B6%E4%BC%B8%E9%98%85%E8%AF%BB"><span class="nav-text">验证状态与延伸阅读</span></a></li></ol></div>
+        </div>
+        <!--/noindex-->
+
+        <div class="site-overview-wrap sidebar-panel">
+          <div class="site-author animated" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="wulinze"
+      src="/images/avatar.svg">
+  <p class="site-author-name" itemprop="name">wulinze</p>
+  <div class="site-description" itemprop="description">wulinze 的个人主页，关注 LLM 并行方式、Cache 池化与算子学习，分享系统知识和 LeetCode 刷题记录。</div>
+</div>
+<div class="site-state-wrap animated">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+        <a href="/archives/">
+          <span class="site-state-item-count">107</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+        <span class="site-state-item-count">4</span>
+        <span class="site-state-item-name">分类</span>
+      </div>
+      <div class="site-state-item site-state-tags">
+          <a href="/tags/">
+        <span class="site-state-item-count">71</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author animated">
+      <span class="links-of-author-item">
+        <a href="https://github.com/wulinze" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;wulinze" rel="noopener me" target="_blank"><i class="fab fa-github fa-fw"></i>GitHub</a>
+      </span>
+  </div>
+
+        </div>
+      </div>
+    </div>
+
+    
+  </aside>
+
+
+    </div>
+
+    <div class="main-inner post posts-expand">
+
+
+  
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://wulinze.github.io/llm/cuda-fp8-attention-preprocess/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.svg">
+      <meta itemprop="name" content="wulinze">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Wu's Blog">
+      <meta itemprop="description" content="wulinze 的个人主页，关注 LLM 并行方式、Cache 池化与算子学习，分享系统知识和 LeetCode 刷题记录。">
+    </span>
+
+    <span hidden itemprop="post" itemscope itemtype="http://schema.org/CreativeWork">
+      <meta itemprop="name" content="CUDA 算子学习（三十六）：FP8 Attention 的前处理链 | Wu's Blog">
+      <meta itemprop="description" content="融合、平滑、量化及 scale 生成。附可编辑流程图、四组逐步交互、独立 CPU demo、Triton 与 TileLang 语义基线及进阶练习。">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          CUDA 算子学习（三十六）：FP8 Attention 的前处理链
+        </h1>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">发表于</span>
+
+      <time title="创建时间：2026-11-02 17:00" itemprop="dateCreated datePublished" datetime="2026-11-02T17:00:35+08:00">2026-11-02</time>
+    </span>
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-folder"></i>
+      </span>
+      <span class="post-meta-item-text">分类于</span>
+        <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+          <a href="/categories/llm-inference/" itemprop="url" rel="index"><span itemprop="name">LLM 推理</span></a>
+        </span>
+    </span>
+
+  
+</div>
+
+            <div class="post-description">融合、平滑、量化及 scale 生成。附可编辑流程图、四组逐步交互、独立 CPU demo、Triton 与 TileLang 语义基线及进阶练习。</div>
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody"><h2 id="先知道这篇要解决什么" tabindex="-1">先知道这篇要解决什么</h2>
+<p><a href="/llm/">LLM 学习入口</a> · <a href="/systems/gpu-learning-path/">全部编号目录</a> · <a href="/llm/cuda-quantized-attention-math/">上一篇</a> · 下一篇：<a href="/llm/cuda-fp8-persist-scale/">（三十七）FP8 persist-D 与 scale 折叠</a></p>
+<p>主 attention kernel 运行前，Q/K/V 可能已被平滑、旋转、量化和重排。前处理既决定精度，也决定短序列端到端成本，不能只优化最后的矩阵乘。</p>
+<p>本篇接续系列第 36 篇，对应用户提供的 <code>leetcuda-20261029.pdf</code> 原文第 35 章（PDF 阅读器第 511–523 页）。以下按学习问题展开，用自己的小例子连接原理、图、代码与练习；原书性能数字不作为本机实测。</p>
+<p><strong>完成后应能做到：</strong> 融合、平滑、量化及 scale 生成。先手算一个小例子，再运行同一模型，最后把正确性基线改成适合目标 GPU 的实现。</p>
+<h2 id="本篇术语与输入约定" tabindex="-1">本篇术语与输入约定</h2>
+<table>
+<thead>
+<tr>
+<th>术语</th>
+<th>本篇含义</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>smooth-K</td>
+<td>减去 key 方向公共均值向量</td>
+</tr>
+<tr>
+<td>Hadamard 旋转</td>
+<td>成对作用于 Q/K 的正交变换，用于分散异常通道</td>
+</tr>
+<tr>
+<td>V 转置量化</td>
+<td>为 PV 消费布局组织 V，同时生成 scale</td>
+</tr>
+<tr>
+<td>融合前处理</td>
+<td>在一次遍历中做多项操作，减少中间读写</td>
+</tr>
+</tbody>
+</table>
+<p>矩阵公式中 <code>@</code> 表示矩阵乘法，<code>.T</code> 表示转置；形状与归约方向必须匹配。数值例子默认有限输入，空集合、mask、尾部以及低精度格式的特殊约定在使用处明确说明。本文的协议与时间模型用于解释依赖，不能把一步直接解释成一个 GPU 时钟。</p>
+<h2 id="原理与结构" tabindex="-1">原理与结构</h2>
+<h3 id="哪些变换保持数学" tabindex="-1">哪些变换保持数学</h3>
+<p>K 减公共均值不改变 softmax。Q/K 同乘正交矩阵 H，因 <a href="mailto:H@H.T=I">H@H.T=I</a>，点积保持。V 减通道均值 mu_V 后，利用每行概率和为 1，有 P@(V-mu_V)=P@V-mu_V，输出需加回 mu_V。所有不变式都在量化前的实数计算中成立，量化后仍有误差。</p>
+<h3 id="格式和布局一起输出" tabindex="-1">格式和布局一起输出</h3>
+<p>前处理不仅输出低精度值，还输出 scale、padding 后形状与必要的均值。V 转置后量化组的含义可能变化，必须明确是沿 key、通道还是块分组，消费端采用相同约定。</p>
+<h3 id="融合先看依赖" tabindex="-1">融合先看依赖</h3>
+<p>全序列均值未得到前，不能随意在一个普通 CTA 中让所有 block 使用最终均值。多 kernel 基线先统计再转换；融合需要限定同步范围或重新组织算法。测量输出所有中间量的基线后，再减少不必要的落盘。</p>
+<h2 id="公式：从定义到可核对的小例子" tabindex="-1">公式：从定义到可核对的小例子</h2>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">(Q@H)@(K@H).T = Q@K.T，H@H.T=I</span><br><span class="line">softmax(Q@(K-mu_K).T)=softmax(Q@K.T)</span><br><span class="line">P@(V-mu_V)+mu_V=P@V</span><br><span class="line">T_e2e=T_statistics+T_quantize_layout+T_attention+T_epilogue</span><br></pre></td></tr></table></figure>
+<p>这里的 tile、stage、线程和 dtype 都是公式的条件。先确认单位是元素、字节、寄存器个数还是模型时间，再代入。若改变归约方向、量化组或数据布局，应重新推导，而不是只修改常数。</p>
+<h2 id="流程图：沿数据依赖逐步看" tabindex="-1">流程图：沿数据依赖逐步看</h2>
+<figure class="cuda-diagram">
+<a href="/images/leetcuda/cuda-fp8-attention-preprocess.svg" target="_blank" rel="noopener"><img src="/images/leetcuda/cuda-fp8-attention-preprocess.svg" alt="FP8 Attention 的前处理链的数据与控制依赖流程图" loading="lazy"></a>
+<figcaption>从上到下沿箭头读：箭头表示后一步依赖前一步的数据或完成条件，不表示真实周期。<a href="/images/leetcuda/cuda-fp8-attention-preprocess.excalidraw" download>下载可编辑 Excalidraw 原图</a></figcaption>
+</figure>
+<p>图的主线是：<strong>统计 K/V 均值与量化组 → 平滑 / 可选正交旋转 → 量化并生成 scale → V 转置与 padding → 主 kernel → 必要修正</strong>。蓝色框给出输入和映射，绿色框表示核心变换，橙色框表示输出或下一轮复用的边界。后一步不能因为“已经发出前一步指令”就绕过其完成条件。对照下面交互，每一步都能看到当前数值或状态。</p>
+<h2 id="交互实验：改变案例，观察中间状态" tabindex="-1">交互实验：改变案例，观察中间状态</h2>
+<p>选择四个案例之一，先预测结果，再用“下一步”推进。“上一步”和“重置”可用来比较变化。演示数据由本文 Python 模型生成并执行断言校验；网页展示这些可复现的计算快照，<strong>不在浏览器执行 CUDA，也不提供 GPU 测速</strong>。</p>
+<div class="leet-lab" data-leetcuda-lab data-source="/downloads/leetcuda/35/scenarios.json">
+<label>输入 / 配置案例<select aria-label="选择本章实验案例"></select></label>
+<p data-progress aria-live="polite">正在载入实验…</p>
+<div data-output></div>
+<p data-detail></p>
+<div class="leet-actions"><button type="button" data-previous>上一步</button><button type="button" data-next>下一步</button><button type="button" data-reset>重置</button></div>
+<p data-check></p>
+</div>
+<p>第一组案例：<code>每行 logit 公共偏置=0</code>。到最后一步应满足：行常数消除与 V 均值加回保持完整输出。 改变案例后，注意哪一个中间量发生变化，哪些不变量仍然成立。不能只看最终结果相近就跳过中间的布局或同步约束。</p>
+<h2 id="可以直接运行的代码-demo" tabindex="-1">可以直接运行的代码 demo</h2>
+<p><a href="/downloads/leetcuda/35/cuda-fp8-attention-preprocess.zip">下载本篇完整实验包</a> · <a href="/downloads/leetcuda/35/demo.py">独立 CPU 源码</a> · <a href="/downloads/leetcuda/35/README.txt">运行说明</a> · <a href="/downloads/leetcuda/35/EXERCISES.txt">练习说明</a></p>
+<p>解压后先运行 CPU demo，不需安装第三方库，Python 3.9 及以上即可：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">python3 demo.py --<span class="keyword">case</span> 0</span><br><span class="line">python3 demo.py --<span class="keyword">case</span> 3</span><br></pre></td></tr></table></figure>
+<p>程序打印与网页相同的逐步状态，并执行模型内的断言。下面是<strong>完整可独立运行</strong>的本篇 CPU 文件；它验证数值、索引或协议，不代替 GPU 实现。</p>
+<details>
+<summary>展开完整 Python demo（可直接复制运行）</summary>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br></pre></td><td class="code"><pre><span class="line"><span class="string">&quot;&quot;&quot;Standalone CPU chapter demo. Python 3.9+; no GPU or third-party dependency.&quot;&quot;&quot;</span></span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="keyword">import</span> argparse</span><br><span class="line"><span class="keyword">import</span> json</span><br><span class="line"><span class="keyword">import</span> math</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="keyword">def</span> <span class="title function_">close</span>(<span class="params">a, b, tol=<span class="number">1e-9</span></span>):</span><br><span class="line">    <span class="keyword">assert</span> math.isclose(a, b, rel_tol=tol, abs_tol=tol), (a, b)</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="keyword">def</span> <span class="title function_">softmax</span>(<span class="params">x</span>):</span><br><span class="line">    <span class="keyword">if</span> <span class="keyword">not</span> x:</span><br><span class="line">        <span class="keyword">return</span> []</span><br><span class="line">    m = <span class="built_in">max</span>(x)</span><br><span class="line">    e = [math.exp(v - m) <span class="keyword">for</span> v <span class="keyword">in</span> x]</span><br><span class="line">    z = math.fsum(e)</span><br><span class="line">    <span class="keyword">return</span> [v / z <span class="keyword">for</span> v <span class="keyword">in</span> e]</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="keyword">def</span> <span class="title function_">dot</span>(<span class="params">a, b</span>):</span><br><span class="line">    <span class="keyword">return</span> math.fsum(x * y <span class="keyword">for</span> x, y <span class="keyword">in</span> <span class="built_in">zip</span>(a, b))</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="keyword">def</span> <span class="title function_">step</span>(<span class="params">title, values, detail</span>):</span><br><span class="line">    <span class="keyword">return</span> &#123;<span class="string">&quot;title&quot;</span>: title, <span class="string">&quot;values&quot;</span>: values, <span class="string">&quot;detail&quot;</span>: detail&#125;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="keyword">def</span> <span class="title function_">result</span>(<span class="params">label, steps, check</span>):</span><br><span class="line">    <span class="keyword">return</span> &#123;<span class="string">&quot;label&quot;</span>: label, <span class="string">&quot;steps&quot;</span>: steps, <span class="string">&quot;check&quot;</span>: check&#125;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="keyword">def</span> <span class="title function_">lab35</span>(<span class="params"><span class="keyword">case</span></span>):</span><br><span class="line">    bias = [<span class="number">0</span>, <span class="number">3</span>, <span class="number">10</span>, <span class="number">100</span>][<span class="keyword">case</span>]</span><br><span class="line">    scores = [<span class="number">1</span> + bias, <span class="number">2</span> + bias, -<span class="number">1</span> + bias]</span><br><span class="line">    v = [<span class="number">2</span>, <span class="number">5</span>, <span class="number">8</span>]</span><br><span class="line">    mu = <span class="built_in">sum</span>(v) / <span class="built_in">len</span>(v)</span><br><span class="line">    a = dot(softmax(scores), v)</span><br><span class="line">    b = dot(softmax([s - bias <span class="keyword">for</span> s <span class="keyword">in</span> scores]), [x - mu <span class="keyword">for</span> x <span class="keyword">in</span> v]) + mu</span><br><span class="line">    close(a, b)</span><br><span class="line">    <span class="keyword">return</span> result(</span><br><span class="line">        <span class="string">f&quot;每行 logit 公共偏置=<span class="subst">&#123;bias&#125;</span>&quot;</span>,</span><br><span class="line">        [</span><br><span class="line">            step(<span class="string">&quot;平滑前&quot;</span>, &#123;<span class="string">&quot;scores&quot;</span>: scores, <span class="string">&quot;V&quot;</span>: v, <span class="string">&quot;O&quot;</span>: a&#125;, <span class="string">&quot;这里把 K 平滑造成的行常数直接展示为 score 偏置。&quot;</span>),</span><br><span class="line">            step(</span><br><span class="line">                <span class="string">&quot;平滑后&quot;</span>,</span><br><span class="line">                &#123;<span class="string">&quot;scores&quot;</span>: [s - bias <span class="keyword">for</span> s <span class="keyword">in</span> scores], <span class="string">&quot;V_centered&quot;</span>: [x - mu <span class="keyword">for</span> x <span class="keyword">in</span> v]&#125;,</span><br><span class="line">                <span class="string">&quot;V 中心化后输出需加回均值。&quot;</span>,</span><br><span class="line">            ),</span><br><span class="line">            step(<span class="string">&quot;修正输出&quot;</span>, &#123;<span class="string">&quot;mean_V&quot;</span>: mu, <span class="string">&quot;O_corrected&quot;</span>: b&#125;, <span class="string">&quot;未量化代数等价；加入量化后需另测误差。&quot;</span>),</span><br><span class="line">        ],</span><br><span class="line">        <span class="string">&quot;行常数消除与 V 均值加回保持完整输出。&quot;</span>,</span><br><span class="line">    )</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="keyword">if</span> __name__ == <span class="string">&quot;__main__&quot;</span>:</span><br><span class="line">    parser = argparse.ArgumentParser()</span><br><span class="line">    parser.add_argument(<span class="string">&quot;--case&quot;</span>, <span class="built_in">type</span>=<span class="built_in">int</span>, choices=<span class="built_in">range</span>(<span class="number">4</span>), default=<span class="number">0</span>)</span><br><span class="line">    args = parser.parse_args()</span><br><span class="line">    <span class="built_in">print</span>(json.dumps(lab35(args.<span class="keyword">case</span>), ensure_ascii=<span class="literal">False</span>, indent=<span class="number">2</span>, allow_nan=<span class="literal">False</span>))</span><br></pre></td></tr></table></figure>
+</details>
+<h3 id="Triton-与-TileLang-的可运行基线" tabindex="-1">Triton 与 TileLang 的可运行基线</h3>
+<p>实验包同时包含 <code>reference_triton.py</code>、<code>reference_tilelang.py</code>、<code>exercises.py</code> 与 <code>run_gpu.py</code>。依赖为 Linux NVIDIA GPU、匹配 CUDA 的 PyTorch、所选 DSL；安装说明见包内 README。两个后端使用相同输入与独立参考；不会在没有 GPU 时悄悄回退到 CPU。</p>
+<p><strong>本篇基线实际实现：</strong> K 平滑后 attention；均值与量化融合、V 转置是扩展题。</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">python run_gpu.py --chapter 35 --backend triton</span><br><span class="line">python run_gpu.py --chapter 35 --backend tilelang</span><br></pre></td></tr></table></figure>
+<p>默认四组输入包含零值、小形状、非整除维度，相关 attention 案例还含明确的矩形 top-left causal 约定。输出必须有限、形状正确且不修改输入。参考采用 CPU 高精度数学或独立的格式舍入；低精度近似另外报告误差。共享基线把难题拆成若干 kernel 和框架编排，便于阅读和定位，不把它称为已优化的 fused kernel。</p>
+<h3 id="对照原书的架构专用-CUDA-实现" tabindex="-1">对照原书的架构专用 CUDA 实现</h3>
+<p><a target="_blank" rel="noopener" href="https://github.com/vipshop/ffpa-attn/blob/861d75ee87824a14a9ebfe295d54c7dac3e3cabc/csrc/cuffpa/cute/fp8/quantize_fp8.cuh">打开固定版本完整源码 / 最小测试</a>。Linux NVIDIA SM120 环境；先按固定版本 README 准备 CUDA PyTorch、Python≥3.10、构建依赖和 CUDA 扩展。此入口运行整条量化 attention，前处理、主循环、误差报告一起观察。大 D 路径是否编入以构建的 headdim 配置为准。</p>
+<p>实验包的 <code>run_upstream.py</code> 会核对提交号，执行本篇对应的入口；源码文件的 <code>chNN</code> 是原仓库编号，<strong>不等于 PDF 章节号或本博客编号</strong>。按下面命令获取完整项目，不能只下载一个 <code>.cu</code> 就忽略头文件和子模块。</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">git <span class="built_in">clone</span> https://github.com/vipshop/ffpa-attn.git ffpa-attn-lab</span><br><span class="line">git -C ffpa-attn-lab checkout --detach 861d75ee87824a14a9ebfe295d54c7dac3e3cabc</span><br><span class="line">git -C ffpa-attn-lab submodule update --init --recursive</span><br><span class="line"><span class="built_in">cd</span> ffpa-attn-lab</span><br><span class="line"><span class="comment"># 在已装好匹配 CUDA PyTorch 的隔离环境中安装项目依赖</span></span><br><span class="line">python -m pip install packaging ninja wheel setuptools setuptools-scm matplotlib</span><br><span class="line">FFPA_SKIP_CUDA_EXT=1 python -m pip install -e <span class="string">&quot;.[bench]&quot;</span> --no-build-isolation</span><br><span class="line">bash build.sh --<span class="built_in">arch</span> sm_120a --ext all --headdim 128,512 --<span class="built_in">jobs</span> 4</span><br><span class="line"><span class="built_in">cd</span> ..</span><br><span class="line">python3 run_upstream.py --repo ./ffpa-attn-lab --<span class="built_in">arch</span> sm_120a</span><br></pre></td></tr></table></figure>
+<p><code>SKIP</code>、编译通过、GPU 正确性通过和性能改进是四种不同结论。上游某些程序遇到不支持的架构会返回 0 并输出 SKIP，因此不能只用退出码认定测试成功。FP4 和 SM120 专用路径尤其要先确认设备、toolkit、指令与编译配置。</p>
+<h2 id="独立练习：先正确，再验证优化假设" tabindex="-1">独立练习：先正确，再验证优化假设</h2>
+<p><strong>Triton 任务：</strong> 融合前处理与多 kernel 基线。</p>
+<p><strong>TileLang 任务：</strong> 归约、转置与量化的 tile 融合。</p>
+<p>Triton 先分别写均值、平滑、量化；TileLang 尝试把局部变换与转置融合。分别验证均值、重建 Q/K/V、最终 O；同时输出预处理占总时间比例。</p>
+<p>实验包已提供独立学生入口 <code>student_triton.py</code> 和 <code>student_tilelang.py</code>。实现 <code>solve(problem, backend)</code>，返回新的结果张量；输入契约看 <code>exercises.make_problem</code>，独立参考看 <code>expected</code>，提示实现看 <code>run_reference</code>。初始学生入口主动报未实现，避免误把参考实现当作自己完成的练习。</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">python run_gpu.py --chapter 35 --backend triton --student student_triton</span><br><span class="line">python run_gpu.py --chapter 35 --backend tilelang --student student_tilelang</span><br><span class="line"><span class="comment"># 正确后，才记录完整基线组合的设备事件时间</span></span><br><span class="line">python run_gpu.py --chapter 35 --backend triton --benchmark --output result.json</span><br></pre></td></tr></table></figure>
+<p><strong>进阶通过条件：</strong> 各中间量均可核验，先测端到端占比再优化主 kernel。基线通过只证明对应语义，不能证明进阶的布局、指令或 overlap 已实现。进阶记录至少包含：形状与 dtype、实际后端、编译器版本、误差、寄存器/shared、相关指令或 profiler 证据，以及必要预处理/初始化/合并在内的时间。不规定必须加速，变慢但解释清楚原因也属于有效实验。</p>
+<h2 id="常见误解与判断边界" tabindex="-1">常见误解与判断边界</h2>
+<p>不能把预处理好的输入复用多次的时间，直接当成每次输入都变化的端到端延迟。旋转的维度和 padding 必须遵守正交变换约定。</p>
+<p>定位性能时，回到 <a href="/systems/cuda-overlap/#performance-analysis">第二篇的完整分析流程</a>：先定位值得优化的 kernel，再看计算/存储吞吐、eligible warp、stall 与资源限制，最后针对本章机制做单变量实验。stall 比例不等于可直接消除的时间，低命中率也不自动意味着缺少复用。</p>
+<h2 id="验证状态与延伸阅读" tabindex="-1">验证状态与延伸阅读</h2>
+<table>
+<thead>
+<tr>
+<th>项目</th>
+<th>本次交付状态</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>本篇 CPU 的 4 组案例</td>
+<td>已执行，数值/布局/协议断言通过</td>
+</tr>
+<tr>
+<td>网页交互</td>
+<td>使用已校验快照，支持切换案例、前进、后退与重置</td>
+</tr>
+<tr>
+<td>Python GPU 文件</td>
+<td>完整源码与统一入口，已做语法/静态检查</td>
+</tr>
+<tr>
+<td>CUDA / DSL 后端编译</td>
+<td>当前编辑环境无 NVIDIA GPU，未做对应目标编译</td>
+</tr>
+<tr>
+<td>GPU 正确性与性能</td>
+<td>未实测；不提供虚构加速比</td>
+</tr>
+<tr>
+<td>原书专用实现</td>
+<td>固定源码版本与运行入口，按硬件条件复现</td>
+</tr>
+</tbody>
+</table>
+<p>主要学习来源是用户提供的 LeetCUDA 文档及 <a target="_blank" rel="noopener" href="https://github.com/xlite-dev/LeetCUDA">LeetCUDA 项目</a>、<a target="_blank" rel="noopener" href="https://github.com/vipshop/ffpa-attn">FFPA 项目</a>。这是围绕原文主题重新组织的学习讲解与实验，不直接复制整章。硬件指令语义核对 <a target="_blank" rel="noopener" href="https://docs.nvidia.com/cuda/parallel-thread-execution/">NVIDIA PTX ISA</a>；布局抽象参考 <a target="_blank" rel="noopener" href="https://github.com/NVIDIA/cutlass/tree/main/media/docs/cpp/cute">CUTLASS CuTe 文档</a>；两种 DSL 继续参考 <a target="_blank" rel="noopener" href="https://triton-lang.org/main/getting-started/tutorials/index.html">Triton 官方教程</a> 与 <a target="_blank" rel="noopener" href="https://tilelang.com/">TileLang 文档</a>。</p>
+<p><a href="/llm/">回到 LLM 学习目录</a> · <a href="/systems/gpu-learning-path/">完整编号顺序</a> · 下一篇：<a href="/llm/cuda-fp8-persist-scale/">（三十七）FP8 persist-D 与 scale 折叠</a></p>
+<link rel="stylesheet" href="/css/leetcuda-labs.css">
+<script src="/js/leetcuda-labs.js" defer></script>
+
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/CUDA/" rel="tag"># CUDA</a>
+              <a href="/tags/%E7%AE%97%E5%AD%90%E5%AD%A6%E4%B9%A0/" rel="tag"># 算子学习</a>
+              <a href="/tags/Triton/" rel="tag"># Triton</a>
+              <a href="/tags/TileLang/" rel="tag"># TileLang</a>
+          </div>
+
+        
+
+          <div class="post-nav">
+            <div class="post-nav-item">
+                <a href="/llm/cuda-quantized-attention-math/" rel="prev" title="CUDA 算子学习（三十五）：量化 Attention：误差在哪里被放大">
+                  <i class="fa fa-angle-left"></i> CUDA 算子学习（三十五）：量化 Attention：误差在哪里被放大
+                </a>
+            </div>
+            <div class="post-nav-item">
+                <a href="/llm/cuda-fp8-persist-scale/" rel="next" title="CUDA 算子学习（三十七）：FP8 persist-D 与 scale 折叠">
+                  CUDA 算子学习（三十七）：FP8 persist-D 与 scale 折叠 <i class="fa fa-angle-right"></i>
+                </a>
+            </div>
+          </div>
+    </footer>
+  </article>
+</div>
+
+
+
+
+
+
+</div>
+  </main>
+
+  <footer class="footer">
+    <div class="footer-inner">
+
+  <div class="copyright">
+    &copy; 2023 – 
+    <span itemprop="copyrightYear">2026</span>
+    <span class="with-love">
+      <i class="fa fa-code"></i>
+    </span>
+    <span class="author" itemprop="copyrightHolder">wulinze</span>
+  </div>
+  <div class="powered-by">由 <a href="https://hexo.io/" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.js.org/pisces/" rel="noopener" target="_blank">NexT.Pisces</a> 强力驱动
+  </div>
+
+    </div>
+  </footer>
+
+  
+  <div class="toggle sidebar-toggle" role="button">
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+  </div>
+  <div class="back-to-top" role="button" aria-label="返回顶部">
+    <i class="fa fa-arrow-up fa-lg"></i>
+    <span>0%</span>
+  </div>
+
+<noscript>
+  <div class="noscript-warning">Theme NexT works best with JavaScript enabled</div>
+</noscript>
+<script src="/js/reading-guide.js" defer></script>
+
+</body>
+</html>

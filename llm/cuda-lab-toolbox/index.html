@@ -1,0 +1,430 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width">
+<meta name="theme-color" content="#10151b"><meta name="generator" content="Hexo 8.1.2">
+
+  <link rel="mask-icon" href="/images/avatar.svg" color="#10151b">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+
+<link rel="stylesheet" href="/assets/fontawesome/css/all.min.css">
+
+<script class="next-config" data-name="main" type="application/json">{"hostname":"wulinze.github.io","root":"/","images":"/images","scheme":"Pisces","darkmode":false,"version":"8.29.1","exturl":false,"sidebar":{"position":"left","width_expanded":300,"width_dual_column":272,"display":"post","padding":18,"offset":12},"hljswrap":true,"codeblock":{"theme":{"light":"github-dark","dark":"github-dark"},"prism":{"light":"prism","dark":"prism-dark"},"copy_button":{"enable":true,"style":"flat"},"fold":{"enable":false,"height":500},"language":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"mediumzoom":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"stickytabs":false,"motion":{"enable":false,"async":false,"duration":200,"transition":{"menu_item":"fadeInDown","post_block":"fadeIn","post_header":"fadeInDown","post_body":"fadeInDown","coll_header":"fadeInLeft","sidebar":"fadeInUp"}},"i18n":{"placeholder":"搜索...","empty":"没有找到任何搜索结果：${query}","hits_time":"找到 ${hits} 个搜索结果（用时 ${time} 毫秒）","hits":"找到 ${hits} 个搜索结果"},"path":"/search.xml","localsearch":{"enable":true,"top_n_per_article":2,"unescape":true,"preload":false}}</script><script src="/js/config.js" defer></script>
+
+    <meta name="description" content="对应 LeetCUDA 附录 A–E，整理公共工具、性能表口径、构建测试分工、固定版本源码索引和延伸阅读。">
+<meta property="og:type" content="article">
+<meta property="og:title" content="CUDA 学习补充：实验工具箱、构建入口与性能结果复现">
+<meta property="og:url" content="https://wulinze.github.io/llm/cuda-lab-toolbox/">
+<meta property="og:site_name" content="Wu&#39;s Blog">
+<meta property="og:description" content="对应 LeetCUDA 附录 A–E，整理公共工具、性能表口径、构建测试分工、固定版本源码索引和延伸阅读。">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://wulinze.github.io/images/leetcuda/cuda-benchmark-accuracy.svg">
+<meta property="article:published_time" content="2026-11-02T09:01:01.000Z">
+<meta property="article:modified_time" content="2026-11-02T09:01:01.000Z">
+<meta property="article:author" content="wulinze">
+<meta property="article:tag" content="CUDA">
+<meta property="article:tag" content="性能分析">
+<meta property="article:tag" content="算子学习">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://wulinze.github.io/images/leetcuda/cuda-benchmark-accuracy.svg">
+
+
+<link rel="canonical" href="https://wulinze.github.io/llm/cuda-lab-toolbox/">
+
+
+<script class="next-config" data-name="page" type="application/json">{"sidebar":"","isHome":false,"isPost":true,"lang":"zh-CN","comments":true,"permalink":"https://wulinze.github.io/llm/cuda-lab-toolbox/","path":"/llm/cuda-lab-toolbox/","title":"CUDA 学习补充：实验工具箱、构建入口与性能结果复现"}</script>
+
+<script class="next-config" data-name="calendar" type="application/json">""</script>
+<title>CUDA 学习补充：实验工具箱、构建入口与性能结果复现 | Wu's Blog</title>
+  
+
+
+
+
+
+
+
+
+  
+<script src="/js/utils.js" defer></script><script src="/js/sidebar.js" defer></script><script src="/js/next-boot.js" defer></script>
+
+  <script src="/assets/local-search/search.js" defer></script>
+<script src="/js/third-party/search/local-search.js" defer></script>
+
+
+
+
+
+
+
+  
+
+
+
+
+  
+
+  <script class="next-config" data-name="enableMath" type="application/json">true</script><link rel="stylesheet" href="/assets/katex/katex.min.css">
+
+
+<link rel="icon" type="image/svg+xml" href="/images/avatar.svg">
+<link rel="stylesheet" href="/css/palette.css">
+<link rel="stylesheet" href="/css/reading.css">
+
+  <noscript>
+    <link rel="stylesheet" href="/css/noscript.css">
+  </noscript>
+<link rel="alternate" href="/atom.xml" title="Wu's Blog" type="application/atom+xml">
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="headband"></div>
+
+  <main class="main">
+    <div class="column">
+      <header class="header" itemscope itemtype="http://schema.org/WPHeader"><div class="site-brand-container">
+  <div class="site-nav-search popup-trigger" aria-label="搜索" role="button">
+      <i class="fa fa-search fa-fw fa-lg"></i>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <i class="logo-line"></i>
+      <p class="site-title">Wu's Blog</p>
+      <i class="logo-line"></i>
+    </a>
+      <p class="site-subtitle" itemprop="description">技术分享 · 思考与实践</p>
+  </div>
+
+  <div class="site-nav-toggle" aria-label="切换导航栏" role="button">
+      <i class="fa fa-ellipsis fa-fw fa-lg"></i>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  <ul class="main-menu menu"><li class="menu-item menu-item-home"><a href="/" rel="section">首页</a></li><li class="menu-item menu-item-文章"><a href="/blog/" rel="section">文章</a></li><li class="menu-item menu-item-categories"><a href="/categories/" rel="section">分类</a></li><li class="menu-item menu-item-tags"><a href="/tags/" rel="section">标签</a></li><li class="menu-item menu-item-archives"><a href="/archives/" rel="section">归档</a></li><li class="menu-item menu-item-about"><a href="/about/" rel="section">关于</a></li>
+      <li class="menu-item menu-item-search">
+        <a role="button" class="popup-trigger">搜索
+        </a>
+      </li>
+  </ul>
+</nav>
+
+
+
+  
+  <template id="search-popup-template"><div class="search-pop-overlay">
+    <div class="popup search-popup">
+      <div class="search-header">
+        <span class="search-icon">
+          <i class="fa fa-search"></i>
+        </span>
+        <div class="search-input-container">
+          <input autocomplete="off" autocapitalize="off" maxlength="80"
+                placeholder="搜索..." spellcheck="false"
+                type="search" class="search-input">
+        </div>
+        <span class="popup-btn-close" role="button">
+          <i class="fa fa-times-circle"></i>
+        </span>
+      </div>
+      <div class="search-result-container">
+        <div class="search-result-icon">
+          <i class="fa fa-spinner fa-pulse fa-5x"></i>
+        </div>
+      </div>
+    </div>
+  </div></template>
+
+</header>
+        
+  
+  <aside class="sidebar">
+
+    <div class="sidebar-inner sidebar-nav-active sidebar-toc-active">
+      <ul class="sidebar-nav">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <div class="sidebar-panel-container">
+        <!--noindex-->
+        <div class="post-toc-wrap sidebar-panel">
+            <div class="post-toc animated"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E9%99%84%E5%BD%95%E4%B8%8D%E6%98%AF%E5%8F%A6%E4%B8%80%E7%BB%84%E7%AE%97%E5%AD%90%EF%BC%8C%E8%80%8C%E6%98%AF%E5%A4%8D%E7%8E%B0%E5%AE%9E%E9%AA%8C%E7%9A%84%E5%B7%A5%E5%85%B7"><span class="nav-text">附录不是另一组算子，而是复现实验的工具</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%85%AC%E5%85%B1%E5%B7%A5%E5%85%B7%E6%80%8E%E6%A0%B7%E5%AF%B9%E5%BA%94%E5%9B%9E%E6%AD%A3%E6%96%87"><span class="nav-text">公共工具怎样对应回正文</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%B8%A4%E7%B1%BB%E6%9E%84%E5%BB%BA%E5%85%A5%E5%8F%A3%E4%B8%8D%E8%A6%81%E6%B7%B7%E7%94%A8"><span class="nav-text">两类构建入口不要混用</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%BB%8E%E5%A4%B1%E8%B4%A5%E7%BB%93%E6%9E%9C%E5%BE%80%E5%9B%9E%E5%AE%9A%E4%BD%8D"><span class="nav-text">从失败结果往回定位</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%BA%A4%E4%BA%92%EF%BC%9A%E4%B8%BA%E4%BB%80%E4%B9%88%E4%B8%BB-kernel-%E5%BF%AB%E4%B8%80%E5%80%8D%EF%BC%8C%E6%95%B4%E4%BD%93%E6%9C%AA%E5%BF%85%E5%BF%AB%E4%B8%80%E5%80%8D"><span class="nav-text">交互：为什么主 kernel 快一倍，整体未必快一倍</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%AE%8C%E6%95%B4-demo-%E4%B8%8E%E4%BF%9D%E5%AD%98%E7%BB%93%E6%9E%9C"><span class="nav-text">完整 demo 与保存结果</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%8E%9F%E5%A7%8B%E8%B5%84%E6%96%99%E6%80%8E%E6%A0%B7%E7%BB%A7%E7%BB%AD%E6%9F%A5"><span class="nav-text">原始资料怎样继续查</span></a></li></ol></div>
+        </div>
+        <!--/noindex-->
+
+        <div class="site-overview-wrap sidebar-panel">
+          <div class="site-author animated" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="wulinze"
+      src="/images/avatar.svg">
+  <p class="site-author-name" itemprop="name">wulinze</p>
+  <div class="site-description" itemprop="description">wulinze 的个人主页，关注 LLM 并行方式、Cache 池化与算子学习，分享系统知识和 LeetCode 刷题记录。</div>
+</div>
+<div class="site-state-wrap animated">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+        <a href="/archives/">
+          <span class="site-state-item-count">107</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+        <span class="site-state-item-count">4</span>
+        <span class="site-state-item-name">分类</span>
+      </div>
+      <div class="site-state-item site-state-tags">
+          <a href="/tags/">
+        <span class="site-state-item-count">71</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author animated">
+      <span class="links-of-author-item">
+        <a href="https://github.com/wulinze" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;wulinze" rel="noopener me" target="_blank"><i class="fab fa-github fa-fw"></i>GitHub</a>
+      </span>
+  </div>
+
+        </div>
+      </div>
+    </div>
+
+    
+  </aside>
+
+
+    </div>
+
+    <div class="main-inner post posts-expand">
+
+
+  
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://wulinze.github.io/llm/cuda-lab-toolbox/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.svg">
+      <meta itemprop="name" content="wulinze">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Wu's Blog">
+      <meta itemprop="description" content="wulinze 的个人主页，关注 LLM 并行方式、Cache 池化与算子学习，分享系统知识和 LeetCode 刷题记录。">
+    </span>
+
+    <span hidden itemprop="post" itemscope itemtype="http://schema.org/CreativeWork">
+      <meta itemprop="name" content="CUDA 学习补充：实验工具箱、构建入口与性能结果复现 | Wu's Blog">
+      <meta itemprop="description" content="对应 LeetCUDA 附录 A–E，整理公共工具、性能表口径、构建测试分工、固定版本源码索引和延伸阅读。">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          CUDA 学习补充：实验工具箱、构建入口与性能结果复现
+        </h1>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">发表于</span>
+
+      <time title="创建时间：2026-11-02 17:01" itemprop="dateCreated datePublished" datetime="2026-11-02T17:01:01+08:00">2026-11-02</time>
+    </span>
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-folder"></i>
+      </span>
+      <span class="post-meta-item-text">分类于</span>
+        <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+          <a href="/categories/llm-inference/" itemprop="url" rel="index"><span itemprop="name">LLM 推理</span></a>
+        </span>
+    </span>
+
+  
+</div>
+
+            <div class="post-description">对应 LeetCUDA 附录 A–E，整理公共工具、性能表口径、构建测试分工、固定版本源码索引和延伸阅读。</div>
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody"><h2 id="附录不是另一组算子，而是复现实验的工具" tabindex="-1">附录不是另一组算子，而是复现实验的工具</h2>
+<p>本篇对应 PDF 阅读器第 571–591 页的附录 A–E。原书有 40 个编号章节，另有 CuTe 白皮书导读和这些附录；它们在学习目录中独立保留，避免编号和主题丢失。</p>
+<p>正文一篇解决一个机制，附录帮助你找到公共宏、选择构建目标、理解性能表，并把自己的结果保存成可复现记录。这里不复制原书全部性能数字，因为那些数字属于作者的设备、版本与测试条件。</p>
+<h2 id="公共工具怎样对应回正文" tabindex="-1">公共工具怎样对应回正文</h2>
+<table>
+<thead>
+<tr>
+<th>工具族</th>
+<th>职责</th>
+<th>先读哪篇</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>向量访问、warp reduce</td>
+<td>宽 load/store 与组内交换</td>
+<td><a href="/llm/cuda-vector-atomic/">向量化</a>、<a href="/llm/cuda-reduction/">归约</a></td>
+</tr>
+<tr>
+<td>cp.async / commit / wait</td>
+<td>global→shared 异步搬运</td>
+<td><a href="/llm/cuda-tf32-pipeline/">TF32 与双缓冲</a></td>
+</tr>
+<tr>
+<td>ldmatrix / MMA</td>
+<td>shared→fragment 与协作矩阵乘</td>
+<td><a href="/llm/cuda-mma-fragments/">fragment</a></td>
+</tr>
+<tr>
+<td>XOR/swizzle</td>
+<td>地址位变换及其逆</td>
+<td><a href="/llm/cuda-swizzle/">三种布局与调度</a></td>
+</tr>
+<tr>
+<td>tensor map / mbarrier</td>
+<td>多维搬运与事务完成</td>
+<td><a href="/llm/cuda-hopper-tma-wgmma/">Hopper TMA/WGMMA</a></td>
+</tr>
+<tr>
+<td>setmaxnreg 等资源控制</td>
+<td>受架构和工具链限制的资源调整</td>
+<td><a href="/llm/cuda-sm120-warp-specialization/">SM120 分工</a></td>
+</tr>
+<tr>
+<td>CuTe Layout/Copy/MMA</td>
+<td>用类型表达布局和线程分工</td>
+<td><a href="/llm/cute-layout-primer/">CuTe 导读</a></td>
+</tr>
+</tbody>
+</table>
+<p>宏减少了重复代码，不会免除指令的参与线程、对齐、同步和架构限制。不要只复制宏定义后就改变 tile 或线程数；先找它所依赖的契约。</p>
+<h2 id="两类构建入口不要混用" tabindex="-1">两类构建入口不要混用</h2>
+<p><code>book/tests/build_tests.sh</code> 面向小规模正确性测试，通常用 CPU 高精度参考，不要求把大 benchmark 的全部对照库接起来。<code>kernels/interview/build.sh</code> 构建集成 benchmark，较新版本采用多个翻译单元，可能还依赖 cuBLAS、cuDNN 与子模块。</p>
+<p>源码版本会改变文件名和入口，因此每篇实验包都附 <code>upstream.json</code>，记录完整提交号、测试 ID 或 benchmark 模式。博客第十五篇、PDF 第十四章、原仓库 <code>ch13</code> 可以指向同一主题；不要按数字想当然拼文件名。</p>
+<p>本系列锁定三个源码快照：</p>
+<ul>
+<li><a target="_blank" rel="noopener" href="https://github.com/xlite-dev/LeetCUDA/tree/3b52c5cd3332c5e992c7aef63087d43f67f23b8e">LeetCUDA 基础与多数 CuTe 最小测试</a>。</li>
+<li><a target="_blank" rel="noopener" href="https://github.com/xlite-dev/LeetCUDA/tree/d32a58f53e4122dc68d660698ee025751a596fc5">含后补 FP4 GEMM 与多文件 benchmark 的 LeetCUDA</a>。该版本用于原书第 32–33 章实验入口。</li>
+<li><a target="_blank" rel="noopener" href="https://github.com/vipshop/ffpa-attn/tree/861d75ee87824a14a9ebfe295d54c7dac3e3cabc">FFPA 量化 Attention</a>。用于量化 Attention 各篇的真实设备代码。</li>
+</ul>
+<p>Hopper WGMMA 需要匹配家族目标，不能只判断 compute capability 数值大于 9。各篇 <code>run_upstream.py</code> 会检查源码提交；Hopper 入口显式使用 <code>arch=compute_90a,code=sm_90a</code>。SM120 FP4 也使用单独能力条件，不借用 SM100 的指令路径。</p>
+<h2 id="从失败结果往回定位" tabindex="-1">从失败结果往回定位</h2>
+<figure class="cuda-diagram">
+<img src="/images/leetcuda/cuda-benchmark-accuracy.svg" alt="冻结契约到正确性再到重复计时和保存证据的实验流程" loading="lazy">
+<figcaption>先证明算的是同一件事，再比较时间。<a href="/images/leetcuda/cuda-benchmark-accuracy.excalidraw" download>编辑流程图</a></figcaption>
+</figure>
+<p>编译失败先查 toolkit、目标架构、头文件与模板配置；输出不对先从 copy round-trip 查到 QK、统计量、PV、epilogue；只有正确性已通过，再采集资源与性能。<code>SKIP</code> 不是失败的数值结果，也不是通过的数值结果，需要单独记录。</p>
+<p>原书性能表适合提出假设：例如有效带宽高于标称显存带宽时，先检查数据是否主要从 L2 服务；主 kernel 大幅加速但端到端收益很小时，先检查量化前处理占比。不要把“工作集小于缓存”当成保证每次访问命中的充分条件。</p>
+<h2 id="交互：为什么主-kernel-快一倍，整体未必快一倍" tabindex="-1">交互：为什么主 kernel 快一倍，整体未必快一倍</h2>
+<div class="leet-lab" data-leetcuda-lab data-source="/downloads/leetcuda/40/scenarios.json">
+<label>选择未被加速部分的占比<select aria-label="端到端摊销实验"></select></label>
+<p data-progress aria-live="polite"></p><div data-output></div><p data-detail></p>
+<div class="leet-actions"><button type="button" data-previous>上一步</button><button type="button" data-next>下一步</button><button type="button" data-reset>重置</button></div><p data-check></p>
+</div>
+<p>所有时间都是构造的教学数据。它演示 <code>S_e2e=1/(f+(1-f)/s)</code>：f 是未加速部分原来所占的比例，s 是可优化部分的加速比。</p>
+<h2 id="完整-demo-与保存结果" tabindex="-1">完整 demo 与保存结果</h2>
+<p><a href="/downloads/leetcuda/40/cuda-benchmark-accuracy.zip">下载基准实验包</a>，先运行不需要 GPU 的摊销模型，再运行所选 DSL：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">python3 demo.py --<span class="keyword">case</span> 2</span><br><span class="line">python run_gpu.py --chapter 40 --backend triton --benchmark --output triton-result.json</span><br><span class="line">python run_gpu.py --chapter 40 --backend tilelang --benchmark --output tilelang-result.json</span><br></pre></td></tr></table></figure>
+<p>GPU harness 保存设备、版本、形状、最大绝对误差、相对 L2 和重复时间样本。计时范围为整个语义基线组合，不冒充优化后的主 kernel-only。当前本地仅验证 CPU 与静态代码，GPU 后端编译、正确性和性能未实测。</p>
+<p>下面这个独立小脚本可直接检查一组实验记录的口径，防止把缺失值当零或把 SKIP 当 PASS：</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> json</span><br><span class="line"><span class="keyword">from</span> pathlib <span class="keyword">import</span> Path</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="keyword">def</span> <span class="title function_">read_result</span>(<span class="params">path</span>):</span><br><span class="line">    data = json.loads(Path(path).read_text())</span><br><span class="line">    <span class="keyword">assert</span> data[<span class="string">&quot;device&quot;</span>] <span class="keyword">and</span> data[<span class="string">&quot;versions&quot;</span>] <span class="keyword">and</span> data[<span class="string">&quot;scope&quot;</span>]</span><br><span class="line">    <span class="keyword">assert</span> <span class="built_in">len</span>(data[<span class="string">&quot;cases&quot;</span>]) == <span class="number">4</span></span><br><span class="line">    <span class="keyword">for</span> <span class="keyword">case</span> <span class="keyword">in</span> data[<span class="string">&quot;cases&quot;</span>]:</span><br><span class="line">        <span class="keyword">assert</span> <span class="keyword">case</span>[<span class="string">&quot;status&quot;</span>] == <span class="string">&quot;PASS&quot;</span></span><br><span class="line">        <span class="keyword">assert</span> <span class="keyword">case</span>[<span class="string">&quot;max_abs&quot;</span>] &gt;= <span class="number">0</span></span><br><span class="line">        <span class="keyword">if</span> <span class="string">&quot;composition_ms_samples&quot;</span> <span class="keyword">in</span> <span class="keyword">case</span>:</span><br><span class="line">            samples = <span class="keyword">case</span>[<span class="string">&quot;composition_ms_samples&quot;</span>]</span><br><span class="line">            <span class="keyword">assert</span> <span class="built_in">len</span>(samples) &gt;= <span class="number">10</span> <span class="keyword">and</span> <span class="built_in">all</span>(t &gt; <span class="number">0</span> <span class="keyword">for</span> t <span class="keyword">in</span> samples)</span><br><span class="line">    <span class="keyword">return</span> data</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="keyword">if</span> __name__ == <span class="string">&quot;__main__&quot;</span>:</span><br><span class="line">    <span class="keyword">import</span> sys</span><br><span class="line">    result = read_result(sys.argv[<span class="number">1</span>])</span><br><span class="line">    <span class="built_in">print</span>(result[<span class="string">&quot;device&quot;</span>], result[<span class="string">&quot;scope&quot;</span>], <span class="string">&quot;metadata checks passed&quot;</span>)</span><br></pre></td></tr></table></figure>
+<p>Triton 练习：改一个 tile 参数，输出 A/B 两份结果并检查实际执行的配置。TileLang 练习：保持语义和形状相同，只改 stages，再解释资源和时间变化。两者都需要保留失败输入；元数据校验通过不能替代数值正确性或应用质量验收。</p>
+<h2 id="原始资料怎样继续查" tabindex="-1">原始资料怎样继续查</h2>
+<p>指令语义查 <a target="_blank" rel="noopener" href="https://docs.nvidia.com/cuda/parallel-thread-execution/">PTX ISA</a>，编程与同步模型查 <a target="_blank" rel="noopener" href="https://docs.nvidia.com/cuda/cuda-programming-guide/">CUDA Programming Guide</a>，布局实现查 <a target="_blank" rel="noopener" href="https://github.com/NVIDIA/cutlass/tree/main/media/docs/cpp/cute">CUTLASS CuTe</a>。Attention 算法依据回到 <a target="_blank" rel="noopener" href="https://arxiv.org/abs/2205.14135">FlashAttention</a>、<a target="_blank" rel="noopener" href="https://arxiv.org/abs/2307.08691">FlashAttention-2</a> 和 <a target="_blank" rel="noopener" href="https://arxiv.org/abs/2407.08608">FlashAttention-3</a>，量化实现从固定 FFPA 源码的引用继续追踪。</p>
+<p>一篇学习笔记中的“为什么这样做”，最好同时能找到数学推导、源码实现和一个会失败的反例。只看性能表无法替代这三项。<a href="/systems/gpu-learning-path/">回到完整系列</a>。</p>
+<link rel="stylesheet" href="/css/leetcuda-labs.css">
+<script src="/js/leetcuda-labs.js" defer></script>
+
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/CUDA/" rel="tag"># CUDA</a>
+              <a href="/tags/%E7%AE%97%E5%AD%90%E5%AD%A6%E4%B9%A0/" rel="tag"># 算子学习</a>
+              <a href="/tags/%E6%80%A7%E8%83%BD%E5%88%86%E6%9E%90/" rel="tag"># 性能分析</a>
+          </div>
+
+        
+
+          <div class="post-nav">
+            <div class="post-nav-item">
+                <a href="/llm/cute-layout-primer/" rel="prev" title="CUDA 学习补充：CuTe 白皮书怎样读——坐标、函数与布局代数">
+                  <i class="fa fa-angle-left"></i> CUDA 学习补充：CuTe 白皮书怎样读——坐标、函数与布局代数
+                </a>
+            </div>
+            <div class="post-nav-item">
+            </div>
+          </div>
+    </footer>
+  </article>
+</div>
+
+
+
+
+
+
+</div>
+  </main>
+
+  <footer class="footer">
+    <div class="footer-inner">
+
+  <div class="copyright">
+    &copy; 2023 – 
+    <span itemprop="copyrightYear">2026</span>
+    <span class="with-love">
+      <i class="fa fa-code"></i>
+    </span>
+    <span class="author" itemprop="copyrightHolder">wulinze</span>
+  </div>
+  <div class="powered-by">由 <a href="https://hexo.io/" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.js.org/pisces/" rel="noopener" target="_blank">NexT.Pisces</a> 强力驱动
+  </div>
+
+    </div>
+  </footer>
+
+  
+  <div class="toggle sidebar-toggle" role="button">
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+  </div>
+  <div class="back-to-top" role="button" aria-label="返回顶部">
+    <i class="fa fa-arrow-up fa-lg"></i>
+    <span>0%</span>
+  </div>
+
+<noscript>
+  <div class="noscript-warning">Theme NexT works best with JavaScript enabled</div>
+</noscript>
+<script src="/js/reading-guide.js" defer></script>
+
+</body>
+</html>

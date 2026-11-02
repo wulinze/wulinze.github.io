@@ -168,7 +168,7 @@
   <nav class="site-state">
       <div class="site-state-item site-state-posts">
         <a href="/archives/">
-          <span class="site-state-item-count">68</span>
+          <span class="site-state-item-count">107</span>
           <span class="site-state-item-name">日志</span>
         </a>
       </div>
@@ -178,7 +178,7 @@
       </div>
       <div class="site-state-item site-state-tags">
           <a href="/tags/">
-        <span class="site-state-item-count">69</span>
+        <span class="site-state-item-count">71</span>
         <span class="site-state-item-name">标签</span></a>
       </div>
   </nav>
@@ -209,7 +209,7 @@
   
 
   <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="">
-    <link itemprop="mainEntityOfPage" href="https://wulinze.github.io/2025/10/28/274.H%E6%8C%87%E6%95%B0/">
+    <link itemprop="mainEntityOfPage" href="https://wulinze.github.io/llm/cuda-cute-tiled-copy/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
       <meta itemprop="image" content="/images/avatar.svg">
@@ -227,7 +227,7 @@
     </span>
       <header class="post-header">
         <h2 class="post-title" itemprop="name headline">
-          <a href="/2025/10/28/274.H%E6%8C%87%E6%95%B0/" class="post-title-link" itemprop="url">H 指数</a>
+          <a href="/llm/cuda-cute-tiled-copy/" class="post-title-link" itemprop="url">CUDA 算子学习（二十三）：Copy 的归属：谁搬什么，搬到哪里</a>
         </h2>
 
         <div class="post-meta-container">
@@ -238,7 +238,7 @@
       </span>
       <span class="post-meta-item-text">发表于</span>
 
-      <time title="创建时间：2025-10-28 00:00" itemprop="dateCreated datePublished" datetime="2025-10-28T00:00:00+08:00">2025-10-28</time>
+      <time title="创建时间：2026-11-02 17:00" itemprop="dateCreated datePublished" datetime="2026-11-02T17:00:22+08:00">2026-11-02</time>
     </span>
     <span class="post-meta-item">
       <span class="post-meta-item-icon">
@@ -246,7 +246,7 @@
       </span>
       <span class="post-meta-item-text">分类于</span>
         <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-          <a href="/categories/leetcode/" itemprop="url" rel="index"><span itemprop="name">LeetCode 刷题</span></a>
+          <a href="/categories/llm-inference/" itemprop="url" rel="index"><span itemprop="name">LLM 推理</span></a>
         </span>
     </span>
 
@@ -260,10 +260,10 @@
     
     
     <div class="post-body" itemprop="articleBody">
-          <p>从按引用次数排序入手，再用计数优化 H 指数的计算。</p>
+          <p>Tensor 视图与 TiledCopy 的 thread/value 划分。附可编辑流程图、四组逐步交互、独立 CPU demo、Triton 与 TileLang 语义基线及进阶练习。</p>
           <!--noindex-->
             <div class="post-button">
-              <a class="btn" href="/2025/10/28/274.H%E6%8C%87%E6%95%B0/">
+              <a class="btn" href="/llm/cuda-cute-tiled-copy/">
                 阅读全文 &raquo;
               </a>
             </div>
@@ -294,7 +294,7 @@
   
 
   <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="">
-    <link itemprop="mainEntityOfPage" href="https://wulinze.github.io/2025/10/28/275.H%E6%8C%87%E6%95%B0II/">
+    <link itemprop="mainEntityOfPage" href="https://wulinze.github.io/llm/cuda-cute-layout/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
       <meta itemprop="image" content="/images/avatar.svg">
@@ -312,7 +312,7 @@
     </span>
       <header class="post-header">
         <h2 class="post-title" itemprop="name headline">
-          <a href="/2025/10/28/275.H%E6%8C%87%E6%95%B0II/" class="post-title-link" itemprop="url">H 指数 II</a>
+          <a href="/llm/cuda-cute-layout/" class="post-title-link" itemprop="url">CUDA 算子学习（二十二）：Layout：坐标、地址与可逆映射</a>
         </h2>
 
         <div class="post-meta-container">
@@ -323,7 +323,7 @@
       </span>
       <span class="post-meta-item-text">发表于</span>
 
-      <time title="创建时间：2025-10-28 00:00" itemprop="dateCreated datePublished" datetime="2025-10-28T00:00:00+08:00">2025-10-28</time>
+      <time title="创建时间：2026-11-02 17:00" itemprop="dateCreated datePublished" datetime="2026-11-02T17:00:21+08:00">2026-11-02</time>
     </span>
     <span class="post-meta-item">
       <span class="post-meta-item-icon">
@@ -331,7 +331,7 @@
       </span>
       <span class="post-meta-item-text">分类于</span>
         <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-          <a href="/categories/leetcode/" itemprop="url" rel="index"><span itemprop="name">LeetCode 刷题</span></a>
+          <a href="/categories/llm-inference/" itemprop="url" rel="index"><span itemprop="name">LLM 推理</span></a>
         </span>
     </span>
 
@@ -345,10 +345,10 @@
     
     
     <div class="post-body" itemprop="articleBody">
-          <p>利用引用次数已有序的条件，通过二分查找求 H 指数。</p>
+          <p>从 shape/stride 到 composition、divide 与 product。附可编辑流程图、四组逐步交互、独立 CPU demo、Triton 与 TileLang 语义基线及进阶练习。</p>
           <!--noindex-->
             <div class="post-button">
-              <a class="btn" href="/2025/10/28/275.H%E6%8C%87%E6%95%B0II/">
+              <a class="btn" href="/llm/cuda-cute-layout/">
                 阅读全文 &raquo;
               </a>
             </div>
@@ -379,7 +379,7 @@
   
 
   <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="">
-    <link itemprop="mainEntityOfPage" href="https://wulinze.github.io/2025/10/28/2039.%E7%BD%91%E7%BB%9C%E7%A9%BA%E9%97%B2%E7%9A%84%E6%97%B6%E5%88%BB/">
+    <link itemprop="mainEntityOfPage" href="https://wulinze.github.io/llm/cuda-attention-split-d/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
       <meta itemprop="image" content="/images/avatar.svg">
@@ -397,7 +397,7 @@
     </span>
       <header class="post-header">
         <h2 class="post-title" itemprop="name headline">
-          <a href="/2025/10/28/2039.%E7%BD%91%E7%BB%9C%E7%A9%BA%E9%97%B2%E7%9A%84%E6%97%B6%E5%88%BB/" class="post-title-link" itemprop="url">网络空闲的时刻</a>
+          <a href="/llm/cuda-attention-split-d/" class="post-title-link" itemprop="url">CUDA 算子学习（二十一）：大 head_dim：Split-D 的两次分块</a>
         </h2>
 
         <div class="post-meta-container">
@@ -408,7 +408,7 @@
       </span>
       <span class="post-meta-item-text">发表于</span>
 
-      <time title="创建时间：2025-10-28 00:00" itemprop="dateCreated datePublished" datetime="2025-10-28T00:00:00+08:00">2025-10-28</time>
+      <time title="创建时间：2026-11-02 17:00" itemprop="dateCreated datePublished" datetime="2026-11-02T17:00:20+08:00">2026-11-02</time>
     </span>
     <span class="post-meta-item">
       <span class="post-meta-item-icon">
@@ -416,7 +416,7 @@
       </span>
       <span class="post-meta-item-text">分类于</span>
         <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-          <a href="/categories/leetcode/" itemprop="url" rel="index"><span itemprop="name">LeetCode 刷题</span></a>
+          <a href="/categories/llm-inference/" itemprop="url" rel="index"><span itemprop="name">LLM 推理</span></a>
         </span>
     </span>
 
@@ -430,10 +430,10 @@
     
     
     <div class="post-body" itemprop="articleBody">
-          <p>用堆优化 Dijkstra 计算往返时间，再结合重发间隔求网络空闲的时刻。</p>
+          <p>QK 的 D 归约与 PV 的输出 D 分块不同。附可编辑流程图、四组逐步交互、独立 CPU demo、Triton 与 TileLang 语义基线及进阶练习。</p>
           <!--noindex-->
             <div class="post-button">
-              <a class="btn" href="/2025/10/28/2039.%E7%BD%91%E7%BB%9C%E7%A9%BA%E9%97%B2%E7%9A%84%E6%97%B6%E5%88%BB/">
+              <a class="btn" href="/llm/cuda-attention-split-d/">
                 阅读全文 &raquo;
               </a>
             </div>
@@ -464,7 +464,7 @@
   
 
   <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="">
-    <link itemprop="mainEntityOfPage" href="https://wulinze.github.io/2025/10/28/29.%E4%B8%A4%E6%95%B0%E7%9B%B8%E9%99%A4/">
+    <link itemprop="mainEntityOfPage" href="https://wulinze.github.io/llm/cuda-attention-multi-consumer/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
       <meta itemprop="image" content="/images/avatar.svg">
@@ -482,7 +482,7 @@
     </span>
       <header class="post-header">
         <h2 class="post-title" itemprop="name headline">
-          <a href="/2025/10/28/29.%E4%B8%A4%E6%95%B0%E7%9B%B8%E9%99%A4/" class="post-title-link" itemprop="url">两数相除</a>
+          <a href="/llm/cuda-attention-multi-consumer/" class="post-title-link" itemprop="url">CUDA 算子学习（二十）：多 consumer 与分段合并</a>
         </h2>
 
         <div class="post-meta-container">
@@ -493,7 +493,7 @@
       </span>
       <span class="post-meta-item-text">发表于</span>
 
-      <time title="创建时间：2025-10-28 00:00" itemprop="dateCreated datePublished" datetime="2025-10-28T00:00:00+08:00">2025-10-28</time>
+      <time title="创建时间：2026-11-02 17:00" itemprop="dateCreated datePublished" datetime="2026-11-02T17:00:19+08:00">2026-11-02</time>
     </span>
     <span class="post-meta-item">
       <span class="post-meta-item-icon">
@@ -501,7 +501,7 @@
       </span>
       <span class="post-meta-item-text">分类于</span>
         <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-          <a href="/categories/leetcode/" itemprop="url" rel="index"><span itemprop="name">LeetCode 刷题</span></a>
+          <a href="/categories/llm-inference/" itemprop="url" rel="index"><span itemprop="name">LLM 推理</span></a>
         </span>
     </span>
 
@@ -515,10 +515,10 @@
     
     
     <div class="post-body" itemprop="articleBody">
-          <p>记录通过二分与快速乘法实现两数相除的 C++ 解法。</p>
+          <p>区分书中双 consumer 方案与泛称 FA3；合并局部状态。附可编辑流程图、四组逐步交互、独立 CPU demo、Triton 与 TileLang 语义基线及进阶练习。</p>
           <!--noindex-->
             <div class="post-button">
-              <a class="btn" href="/2025/10/28/29.%E4%B8%A4%E6%95%B0%E7%9B%B8%E9%99%A4/">
+              <a class="btn" href="/llm/cuda-attention-multi-consumer/">
                 阅读全文 &raquo;
               </a>
             </div>
@@ -549,7 +549,7 @@
   
 
   <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="">
-    <link itemprop="mainEntityOfPage" href="https://wulinze.github.io/2025/10/28/287.%E5%AF%BB%E6%89%BE%E9%87%8D%E5%A4%8D%E6%95%B0/">
+    <link itemprop="mainEntityOfPage" href="https://wulinze.github.io/llm/cuda-attention-kv-pipeline/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
       <meta itemprop="image" content="/images/avatar.svg">
@@ -567,7 +567,7 @@
     </span>
       <header class="post-header">
         <h2 class="post-title" itemprop="name headline">
-          <a href="/2025/10/28/287.%E5%AF%BB%E6%89%BE%E9%87%8D%E5%A4%8D%E6%95%B0/" class="post-title-link" itemprop="url">寻找重复数</a>
+          <a href="/llm/cuda-attention-kv-pipeline/" class="post-title-link" itemprop="url">CUDA 算子学习（十九）：注意力的双流水：K、V 与角色分工</a>
         </h2>
 
         <div class="post-meta-container">
@@ -578,7 +578,7 @@
       </span>
       <span class="post-meta-item-text">发表于</span>
 
-      <time title="创建时间：2025-10-28 00:00" itemprop="dateCreated datePublished" datetime="2025-10-28T00:00:00+08:00">2025-10-28</time>
+      <time title="创建时间：2026-11-02 17:00" itemprop="dateCreated datePublished" datetime="2026-11-02T17:00:18+08:00">2026-11-02</time>
     </span>
     <span class="post-meta-item">
       <span class="post-meta-item-icon">
@@ -586,7 +586,7 @@
       </span>
       <span class="post-meta-item-text">分类于</span>
         <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-          <a href="/categories/leetcode/" itemprop="url" rel="index"><span itemprop="name">LeetCode 刷题</span></a>
+          <a href="/categories/llm-inference/" itemprop="url" rel="index"><span itemprop="name">LLM 推理</span></a>
         </span>
     </span>
 
@@ -600,10 +600,10 @@
     
     
     <div class="post-body" itemprop="articleBody">
-          <p>记录二分计数、二进制标记与快慢指针判环三种寻找重复数的思路。</p>
+          <p>不同数据的就绪时机，stage 占用和 full/empty 协议。附可编辑流程图、四组逐步交互、独立 CPU demo、Triton 与 TileLang 语义基线及进阶练习。</p>
           <!--noindex-->
             <div class="post-button">
-              <a class="btn" href="/2025/10/28/287.%E5%AF%BB%E6%89%BE%E9%87%8D%E5%A4%8D%E6%95%B0/">
+              <a class="btn" href="/llm/cuda-attention-kv-pipeline/">
                 阅读全文 &raquo;
               </a>
             </div>
@@ -634,7 +634,7 @@
   
 
   <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="">
-    <link itemprop="mainEntityOfPage" href="https://wulinze.github.io/2025/10/28/301.%E5%88%A0%E9%99%A4%E6%97%A0%E6%95%88%E7%9A%84%E6%8B%AC%E5%8F%B7/">
+    <link itemprop="mainEntityOfPage" href="https://wulinze.github.io/llm/cuda-attention-split-q/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
       <meta itemprop="image" content="/images/avatar.svg">
@@ -652,7 +652,7 @@
     </span>
       <header class="post-header">
         <h2 class="post-title" itemprop="name headline">
-          <a href="/2025/10/28/301.%E5%88%A0%E9%99%A4%E6%97%A0%E6%95%88%E7%9A%84%E6%8B%AC%E5%8F%B7/" class="post-title-link" itemprop="url">删除无效的括号</a>
+          <a href="/llm/cuda-attention-split-q/" class="post-title-link" itemprop="url">CUDA 算子学习（十八）：Split-Q：让每组线程拥有自己的查询行</a>
         </h2>
 
         <div class="post-meta-container">
@@ -663,7 +663,7 @@
       </span>
       <span class="post-meta-item-text">发表于</span>
 
-      <time title="创建时间：2025-10-28 00:00" itemprop="dateCreated datePublished" datetime="2025-10-28T00:00:00+08:00">2025-10-28</time>
+      <time title="创建时间：2026-11-02 17:00" itemprop="dateCreated datePublished" datetime="2026-11-02T17:00:17+08:00">2026-11-02</time>
     </span>
     <span class="post-meta-item">
       <span class="post-meta-item-icon">
@@ -671,7 +671,7 @@
       </span>
       <span class="post-meta-item-text">分类于</span>
         <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-          <a href="/categories/leetcode/" itemprop="url" rel="index"><span itemprop="name">LeetCode 刷题</span></a>
+          <a href="/categories/llm-inference/" itemprop="url" rel="index"><span itemprop="name">LLM 推理</span></a>
         </span>
     </span>
 
@@ -685,10 +685,10 @@
     
     
     <div class="post-body" itemprop="articleBody">
-          <p>按左右括号的数量和合法性进行剪枝，回溯删除无效括号的方案。</p>
+          <p>减少跨 warp 归约；S/P 布局如何交给下一次 MMA。附可编辑流程图、四组逐步交互、独立 CPU demo、Triton 与 TileLang 语义基线及进阶练习。</p>
           <!--noindex-->
             <div class="post-button">
-              <a class="btn" href="/2025/10/28/301.%E5%88%A0%E9%99%A4%E6%97%A0%E6%95%88%E7%9A%84%E6%8B%AC%E5%8F%B7/">
+              <a class="btn" href="/llm/cuda-attention-split-q/">
                 阅读全文 &raquo;
               </a>
             </div>
@@ -719,7 +719,7 @@
   
 
   <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="">
-    <link itemprop="mainEntityOfPage" href="https://wulinze.github.io/2025/10/28/331.%E9%AA%8C%E8%AF%81%E4%BA%8C%E5%8F%89%E6%A0%91%E7%9A%84%E5%89%8D%E5%BA%8F%E5%BA%8F%E5%88%97%E5%8C%96/">
+    <link itemprop="mainEntityOfPage" href="https://wulinze.github.io/llm/cuda-flash-attention-math/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
       <meta itemprop="image" content="/images/avatar.svg">
@@ -737,7 +737,7 @@
     </span>
       <header class="post-header">
         <h2 class="post-title" itemprop="name headline">
-          <a href="/2025/10/28/331.%E9%AA%8C%E8%AF%81%E4%BA%8C%E5%8F%89%E6%A0%91%E7%9A%84%E5%89%8D%E5%BA%8F%E5%BA%8F%E5%88%97%E5%8C%96/" class="post-title-link" itemprop="url">验证二叉树的前序序列化</a>
+          <a href="/llm/cuda-flash-attention-math/" class="post-title-link" itemprop="url">CUDA 算子学习（十七）：FlashAttention：为什么可以不写出分数矩阵</a>
         </h2>
 
         <div class="post-meta-container">
@@ -748,7 +748,7 @@
       </span>
       <span class="post-meta-item-text">发表于</span>
 
-      <time title="创建时间：2025-10-28 00:00" itemprop="dateCreated datePublished" datetime="2025-10-28T00:00:00+08:00">2025-10-28</time>
+      <time title="创建时间：2026-11-02 17:00" itemprop="dateCreated datePublished" datetime="2026-11-02T17:00:16+08:00">2026-11-02</time>
     </span>
     <span class="post-meta-item">
       <span class="post-meta-item-icon">
@@ -756,7 +756,7 @@
       </span>
       <span class="post-meta-item-text">分类于</span>
         <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-          <a href="/categories/leetcode/" itemprop="url" rel="index"><span itemprop="name">LeetCode 刷题</span></a>
+          <a href="/categories/llm-inference/" itemprop="url" rel="index"><span itemprop="name">LLM 推理</span></a>
         </span>
     </span>
 
@@ -770,10 +770,10 @@
     
     
     <div class="post-body" itemprop="articleBody">
-          <p>通过空槽数量的消耗与增加，验证二叉树前序序列化是否合法。</p>
+          <p>QK、online softmax、PV 的状态不变量与 IO。附可编辑流程图、四组逐步交互、独立 CPU demo、Triton 与 TileLang 语义基线及进阶练习。</p>
           <!--noindex-->
             <div class="post-button">
-              <a class="btn" href="/2025/10/28/331.%E9%AA%8C%E8%AF%81%E4%BA%8C%E5%8F%89%E6%A0%91%E7%9A%84%E5%89%8D%E5%BA%8F%E5%BA%8F%E5%88%97%E5%8C%96/">
+              <a class="btn" href="/llm/cuda-flash-attention-math/">
                 阅读全文 &raquo;
               </a>
             </div>
@@ -804,7 +804,7 @@
   
 
   <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="">
-    <link itemprop="mainEntityOfPage" href="https://wulinze.github.io/2025/10/28/32.%E6%9C%80%E9%95%BF%E6%9C%89%E6%95%88%E6%8B%AC%E5%8F%B7/">
+    <link itemprop="mainEntityOfPage" href="https://wulinze.github.io/llm/cuda-sm120-warp-specialization/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
       <meta itemprop="image" content="/images/avatar.svg">
@@ -822,7 +822,7 @@
     </span>
       <header class="post-header">
         <h2 class="post-title" itemprop="name headline">
-          <a href="/2025/10/28/32.%E6%9C%80%E9%95%BF%E6%9C%89%E6%95%88%E6%8B%AC%E5%8F%B7/" class="post-title-link" itemprop="url">最长有效括号</a>
+          <a href="/llm/cuda-sm120-warp-specialization/" class="post-title-link" itemprop="url">CUDA 算子学习（十六）：SM120 的生产消费流水</a>
         </h2>
 
         <div class="post-meta-container">
@@ -833,7 +833,7 @@
       </span>
       <span class="post-meta-item-text">发表于</span>
 
-      <time title="创建时间：2025-10-28 00:00" itemprop="dateCreated datePublished" datetime="2025-10-28T00:00:00+08:00">2025-10-28</time>
+      <time title="创建时间：2026-11-02 17:00" itemprop="dateCreated datePublished" datetime="2026-11-02T17:00:15+08:00">2026-11-02</time>
     </span>
     <span class="post-meta-item">
       <span class="post-meta-item-icon">
@@ -841,7 +841,7 @@
       </span>
       <span class="post-meta-item-text">分类于</span>
         <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-          <a href="/categories/leetcode/" itemprop="url" rel="index"><span itemprop="name">LeetCode 刷题</span></a>
+          <a href="/categories/llm-inference/" itemprop="url" rel="index"><span itemprop="name">LLM 推理</span></a>
         </span>
     </span>
 
@@ -855,10 +855,10 @@
     
     
     <div class="post-body" itemprop="articleBody">
-          <p>整理最长有效括号的动态规划、栈和边界衔接思路。</p>
+          <p>架构能力边界、mma.sync 与资源分配协议。附可编辑流程图、四组逐步交互、独立 CPU demo、Triton 与 TileLang 语义基线及进阶练习。</p>
           <!--noindex-->
             <div class="post-button">
-              <a class="btn" href="/2025/10/28/32.%E6%9C%80%E9%95%BF%E6%9C%89%E6%95%88%E6%8B%AC%E5%8F%B7/">
+              <a class="btn" href="/llm/cuda-sm120-warp-specialization/">
                 阅读全文 &raquo;
               </a>
             </div>
@@ -889,7 +889,7 @@
   
 
   <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="">
-    <link itemprop="mainEntityOfPage" href="https://wulinze.github.io/2025/10/28/338.%E6%AF%94%E7%89%B9%E4%BD%8D%E8%AE%A1%E6%95%B0/">
+    <link itemprop="mainEntityOfPage" href="https://wulinze.github.io/llm/cuda-hopper-tma-wgmma/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
       <meta itemprop="image" content="/images/avatar.svg">
@@ -907,7 +907,7 @@
     </span>
       <header class="post-header">
         <h2 class="post-title" itemprop="name headline">
-          <a href="/2025/10/28/338.%E6%AF%94%E7%89%B9%E4%BD%8D%E8%AE%A1%E6%95%B0/" class="post-title-link" itemprop="url">比特位计数</a>
+          <a href="/llm/cuda-hopper-tma-wgmma/" class="post-title-link" itemprop="url">CUDA 算子学习（十五）：TMA 与 WGMMA：Hopper 的完成协议</a>
         </h2>
 
         <div class="post-meta-container">
@@ -918,7 +918,7 @@
       </span>
       <span class="post-meta-item-text">发表于</span>
 
-      <time title="创建时间：2025-10-28 00:00" itemprop="dateCreated datePublished" datetime="2025-10-28T00:00:00+08:00">2025-10-28</time>
+      <time title="创建时间：2026-11-02 17:00" itemprop="dateCreated datePublished" datetime="2026-11-02T17:00:14+08:00">2026-11-02</time>
     </span>
     <span class="post-meta-item">
       <span class="post-meta-item-icon">
@@ -926,7 +926,7 @@
       </span>
       <span class="post-meta-item-text">分类于</span>
         <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-          <a href="/categories/leetcode/" itemprop="url" rel="index"><span itemprop="name">LeetCode 刷题</span></a>
+          <a href="/categories/llm-inference/" itemprop="url" rel="index"><span itemprop="name">LLM 推理</span></a>
         </span>
     </span>
 
@@ -940,10 +940,10 @@
     
     
     <div class="post-body" itemprop="articleBody">
-          <p>比较逐位计数与利用二的幂进行递推的比特位计数方法。</p>
+          <p>descriptor、transaction barrier、异步 MMA 与 slot 释放。附可编辑流程图、四组逐步交互、独立 CPU demo、Triton 与 TileLang 语义基线及进阶练习。</p>
           <!--noindex-->
             <div class="post-button">
-              <a class="btn" href="/2025/10/28/338.%E6%AF%94%E7%89%B9%E4%BD%8D%E8%AE%A1%E6%95%B0/">
+              <a class="btn" href="/llm/cuda-hopper-tma-wgmma/">
                 阅读全文 &raquo;
               </a>
             </div>
@@ -974,7 +974,7 @@
   
 
   <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="">
-    <link itemprop="mainEntityOfPage" href="https://wulinze.github.io/2025/10/28/400.%E7%AC%ACN%E4%BD%8D%E6%95%B0%E5%AD%97/">
+    <link itemprop="mainEntityOfPage" href="https://wulinze.github.io/llm/cuda-swizzle/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
       <meta itemprop="image" content="/images/avatar.svg">
@@ -992,7 +992,7 @@
     </span>
       <header class="post-header">
         <h2 class="post-title" itemprop="name headline">
-          <a href="/2025/10/28/400.%E7%AC%ACN%E4%BD%8D%E6%95%B0%E5%AD%97/" class="post-title-link" itemprop="url">第 N 位数字</a>
+          <a href="/llm/cuda-swizzle/" class="post-title-link" itemprop="url">CUDA 算子学习（十四）：布局与调度：三种不同的 swizzle</a>
         </h2>
 
         <div class="post-meta-container">
@@ -1003,7 +1003,7 @@
       </span>
       <span class="post-meta-item-text">发表于</span>
 
-      <time title="创建时间：2025-10-28 00:00" itemprop="dateCreated datePublished" datetime="2025-10-28T00:00:00+08:00">2025-10-28</time>
+      <time title="创建时间：2026-11-02 17:00" itemprop="dateCreated datePublished" datetime="2026-11-02T17:00:13+08:00">2026-11-02</time>
     </span>
     <span class="post-meta-item">
       <span class="post-meta-item-icon">
@@ -1011,7 +1011,7 @@
       </span>
       <span class="post-meta-item-text">分类于</span>
         <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-          <a href="/categories/leetcode/" itemprop="url" rel="index"><span itemprop="name">LeetCode 刷题</span></a>
+          <a href="/categories/llm-inference/" itemprop="url" rel="index"><span itemprop="name">LLM 推理</span></a>
         </span>
     </span>
 
@@ -1025,10 +1025,10 @@
     
     
     <div class="post-body" itemprop="articleBody">
-          <p>按数字位数划分区间，确定第 N 位数字落在哪个整数及其哪一位。</p>
+          <p>shared 地址 XOR、寄存器双缓冲、CTA 顺序互不等价。附可编辑流程图、四组逐步交互、独立 CPU demo、Triton 与 TileLang 语义基线及进阶练习。</p>
           <!--noindex-->
             <div class="post-button">
-              <a class="btn" href="/2025/10/28/400.%E7%AC%ACN%E4%BD%8D%E6%95%B0%E5%AD%97/">
+              <a class="btn" href="/llm/cuda-swizzle/">
                 阅读全文 &raquo;
               </a>
             </div>
@@ -1052,7 +1052,7 @@
 
 
   <nav class="pagination">
-    <a class="extend prev" rel="prev" title="上一页" aria-label="上一页" href="/blog/page/2/"><i class="fa fa-angle-left"></i></a><a class="page-number" href="/blog/">1</a><a class="page-number" href="/blog/page/2/">2</a><span class="page-number current">3</span><a class="page-number" href="/blog/page/4/">4</a><span class="space">&hellip;</span><a class="page-number" href="/blog/page/7/">7</a><a class="extend next" rel="next" title="下一页" aria-label="下一页" href="/blog/page/4/"><i class="fa fa-angle-right"></i></a>
+    <a class="extend prev" rel="prev" title="上一页" aria-label="上一页" href="/blog/page/2/"><i class="fa fa-angle-left"></i></a><a class="page-number" href="/blog/">1</a><a class="page-number" href="/blog/page/2/">2</a><span class="page-number current">3</span><a class="page-number" href="/blog/page/4/">4</a><span class="space">&hellip;</span><a class="page-number" href="/blog/page/11/">11</a><a class="extend next" rel="next" title="下一页" aria-label="下一页" href="/blog/page/4/"><i class="fa fa-angle-right"></i></a>
   </nav>
 
 </div>

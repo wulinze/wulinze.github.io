@@ -10,7 +10,7 @@
   <rights>All rights reserved 2026, wulinze</rights>
   <subtitle>技术分享 · 思考与实践</subtitle>
   <title>Wu's Blog</title>
-  <updated>2026-11-02T08:20:00.000Z</updated>
+  <updated>2026-11-02T09:01:01.000Z</updated>
   <entry>
     <author>
       <name>wulinze</name>
@@ -18,15 +18,44 @@
     <category term="LLM 推理" scheme="https://wulinze.github.io/categories/llm-inference/"/>
     <category term="CUDA" scheme="https://wulinze.github.io/tags/CUDA/"/>
     <category term="算子学习" scheme="https://wulinze.github.io/tags/%E7%AE%97%E5%AD%90%E5%AD%A6%E4%B9%A0/"/>
-    <category term="归约" scheme="https://wulinze.github.io/tags/%E5%BD%92%E7%BA%A6/"/>
+    <category term="性能分析" scheme="https://wulinze.github.io/tags/%E6%80%A7%E8%83%BD%E5%88%86%E6%9E%90/"/>
+    <id>https://wulinze.github.io/llm/cuda-lab-toolbox/</id>
+    <link href="https://wulinze.github.io/llm/cuda-lab-toolbox/"/>
+    <published>2026-11-02T09:01:01.000Z</published>
+    <summary>对应 LeetCUDA 附录 A–E，整理公共工具、性能表口径、构建测试分工、固定版本源码索引和延伸阅读。</summary>
+    <title>CUDA 学习补充：实验工具箱、构建入口与性能结果复现</title>
+    <updated>2026-11-02T09:01:01.000Z</updated>
+  </entry>
+  <entry>
+    <author>
+      <name>wulinze</name>
+    </author>
+    <category term="LLM 推理" scheme="https://wulinze.github.io/categories/llm-inference/"/>
+    <category term="CUDA" scheme="https://wulinze.github.io/tags/CUDA/"/>
+    <category term="算子学习" scheme="https://wulinze.github.io/tags/%E7%AE%97%E5%AD%90%E5%AD%A6%E4%B9%A0/"/>
+    <category term="CuTe" scheme="https://wulinze.github.io/tags/CuTe/"/>
+    <id>https://wulinze.github.io/llm/cute-layout-primer/</id>
+    <link href="https://wulinze.github.io/llm/cute-layout-primer/"/>
+    <published>2026-11-02T09:01:00.000Z</published>
+    <summary>梳理 LeetCUDA 中独立 CuTe 导读的层级 shape、复合、合并、补、乘积与切分，用小模型和对应练习连接后续布局章节。</summary>
+    <title>CUDA 学习补充：CuTe 白皮书怎样读——坐标、函数与布局代数</title>
+    <updated>2026-11-02T09:01:00.000Z</updated>
+  </entry>
+  <entry>
+    <author>
+      <name>wulinze</name>
+    </author>
+    <category term="LLM 推理" scheme="https://wulinze.github.io/categories/llm-inference/"/>
+    <category term="CUDA" scheme="https://wulinze.github.io/tags/CUDA/"/>
+    <category term="算子学习" scheme="https://wulinze.github.io/tags/%E7%AE%97%E5%AD%90%E5%AD%A6%E4%B9%A0/"/>
     <category term="Triton" scheme="https://wulinze.github.io/tags/Triton/"/>
     <category term="TileLang" scheme="https://wulinze.github.io/tags/TileLang/"/>
-    <id>https://wulinze.github.io/llm/cuda-reduction/</id>
-    <link href="https://wulinze.github.io/llm/cuda-reduction/"/>
-    <published>2026-11-02T08:20:00.000Z</published>
-    <summary>对应 LeetCUDA 归约原语一章，用交互逐轮解释 shuffle、block 汇合、跨 block 归约与浮点误差，并提供 CUDA、Triton、TileLang 完整 demo 和练习。</summary>
-    <title>CUDA 算子学习（四）：归约与点积——从 warp 到全局结果</title>
-    <updated>2026-11-02T08:20:00.000Z</updated>
+    <id>https://wulinze.github.io/llm/cuda-benchmark-accuracy/</id>
+    <link href="https://wulinze.github.io/llm/cuda-benchmark-accuracy/"/>
+    <published>2026-11-02T09:00:40.000Z</published>
+    <summary>环境、计时、缓存、误差统计和生态约束。附可编辑流程图、四组逐步交互、独立 CPU demo、Triton 与 TileLang 语义基线及进阶练习。</summary>
+    <title>CUDA 算子学习（四十一）：基准与精度：把学习结果变成可复现实验</title>
+    <updated>2026-11-02T09:00:40.000Z</updated>
   </entry>
   <entry>
     <author>
@@ -34,16 +63,15 @@
     </author>
     <category term="LLM 推理" scheme="https://wulinze.github.io/categories/llm-inference/"/>
     <category term="CUDA" scheme="https://wulinze.github.io/tags/CUDA/"/>
-    <category term="基础学习" scheme="https://wulinze.github.io/tags/%E5%9F%BA%E7%A1%80%E5%AD%A6%E4%B9%A0/"/>
+    <category term="算子学习" scheme="https://wulinze.github.io/tags/%E7%AE%97%E5%AD%90%E5%AD%A6%E4%B9%A0/"/>
     <category term="Triton" scheme="https://wulinze.github.io/tags/Triton/"/>
     <category term="TileLang" scheme="https://wulinze.github.io/tags/TileLang/"/>
-    <category term="Roofline" scheme="https://wulinze.github.io/tags/Roofline/"/>
-    <id>https://wulinze.github.io/systems/gpu-roofline/</id>
-    <link href="https://wulinze.github.io/systems/gpu-roofline/"/>
-    <published>2026-11-02T07:25:00.000Z</published>
-    <summary>从字节账、运算量和时间下界理解 Roofline，结合手绘图、交互模型、完整向量算子 demo 和两种语言的练习建立性能分析习惯。</summary>
-    <title>CUDA 算子学习（三）：GPU 架构与 Roofline——估算 GPU 性能上限，再用 Triton 和 TileLang 验证</title>
-    <updated>2026-11-02T07:25:00.000Z</updated>
+    <id>https://wulinze.github.io/llm/cuda-fp4-attention-probability/</id>
+    <link href="https://wulinze.github.io/llm/cuda-fp4-attention-probability/"/>
+    <published>2026-11-02T09:00:39.000Z</published>
+    <summary>online 状态、P 量化与输出缩放的交互。附可编辑流程图、四组逐步交互、独立 CPU demo、Triton 与 TileLang 语义基线及进阶练习。</summary>
+    <title>CUDA 算子学习（四十）：FP4 Attention：P 的两级量化</title>
+    <updated>2026-11-02T09:00:39.000Z</updated>
   </entry>
   <entry>
     <author>
@@ -51,15 +79,15 @@
     </author>
     <category term="LLM 推理" scheme="https://wulinze.github.io/categories/llm-inference/"/>
     <category term="CUDA" scheme="https://wulinze.github.io/tags/CUDA/"/>
+    <category term="算子学习" scheme="https://wulinze.github.io/tags/%E7%AE%97%E5%AD%90%E5%AD%A6%E4%B9%A0/"/>
     <category term="Triton" scheme="https://wulinze.github.io/tags/Triton/"/>
     <category term="TileLang" scheme="https://wulinze.github.io/tags/TileLang/"/>
-    <category term="学习路线" scheme="https://wulinze.github.io/tags/%E5%AD%A6%E4%B9%A0%E8%B7%AF%E7%BA%BF/"/>
-    <id>https://wulinze.github.io/systems/gpu-learning-path/</id>
-    <link href="https://wulinze.github.io/systems/gpu-learning-path/"/>
-    <published>2026-11-02T07:20:00.000Z</published>
-    <summary>按照 leetcuda-20261029 的章节顺序，一章对应一篇博客，接续既有编号，汇总交互演示、代码 demo 和 Triton／TileLang 练习。</summary>
-    <title>CUDA 算子学习目录：按章阅读、逐篇实践</title>
-    <updated>2026-11-02T07:20:00.000Z</updated>
+    <id>https://wulinze.github.io/llm/cuda-fp4-attention-preprocess/</id>
+    <link href="https://wulinze.github.io/llm/cuda-fp4-attention-preprocess/"/>
+    <published>2026-11-02T09:00:38.000Z</published>
+    <summary>NVFP4 格式在 Q/K/V 预处理中的应用。附可编辑流程图、四组逐步交互、独立 CPU demo、Triton 与 TileLang 语义基线及进阶练习。</summary>
+    <title>CUDA 算子学习（三十九）：FP4 Attention 的量化链</title>
+    <updated>2026-11-02T09:00:38.000Z</updated>
   </entry>
   <entry>
     <author>
@@ -67,14 +95,15 @@
     </author>
     <category term="LLM 推理" scheme="https://wulinze.github.io/categories/llm-inference/"/>
     <category term="CUDA" scheme="https://wulinze.github.io/tags/CUDA/"/>
-    <category term="基础学习" scheme="https://wulinze.github.io/tags/%E5%9F%BA%E7%A1%80%E5%AD%A6%E4%B9%A0/"/>
-    <category term="GPU 性能" scheme="https://wulinze.github.io/tags/GPU-%E6%80%A7%E8%83%BD/"/>
-    <id>https://wulinze.github.io/systems/cuda-overlap/</id>
-    <link href="https://wulinze.github.io/systems/cuda-overlap/"/>
-    <published>2026-11-02T05:35:00.000Z</published>
-    <summary>先分清性能术语与 SM 内部管线，再用手绘图、交互模型和完整 CUDA demo 理解 occupancy、延迟隐藏、合并访存、tiling、向量化及 TMA。</summary>
-    <title>CUDA 性能学习（二）：从 SM 调度、warp stall 到访存优化与 TMA 流水线</title>
-    <updated>2026-11-02T05:35:00.000Z</updated>
+    <category term="算子学习" scheme="https://wulinze.github.io/tags/%E7%AE%97%E5%AD%90%E5%AD%A6%E4%B9%A0/"/>
+    <category term="Triton" scheme="https://wulinze.github.io/tags/Triton/"/>
+    <category term="TileLang" scheme="https://wulinze.github.io/tags/TileLang/"/>
+    <id>https://wulinze.github.io/llm/cuda-fp8-split-d-m4n2/</id>
+    <link href="https://wulinze.github.io/llm/cuda-fp8-split-d-m4n2/"/>
+    <published>2026-11-02T09:00:37.000Z</published>
+    <summary>工作量增加与寄存器增长是不同瓶颈。附可编辑流程图、四组逐步交互、独立 CPU demo、Triton 与 TileLang 语义基线及进阶练习。</summary>
+    <title>CUDA 算子学习（三十八）：FP8 大 D：Split-D 与并行布局</title>
+    <updated>2026-11-02T09:00:37.000Z</updated>
   </entry>
   <entry>
     <author>
@@ -82,240 +111,222 @@
     </author>
     <category term="LLM 推理" scheme="https://wulinze.github.io/categories/llm-inference/"/>
     <category term="CUDA" scheme="https://wulinze.github.io/tags/CUDA/"/>
-    <category term="基础学习" scheme="https://wulinze.github.io/tags/%E5%9F%BA%E7%A1%80%E5%AD%A6%E4%B9%A0/"/>
-    <id>https://wulinze.github.io/systems/cuda-basics/</id>
-    <link href="https://wulinze.github.io/systems/cuda-basics/"/>
-    <published>2026-11-02T04:03:33.000Z</published>
-    <summary>用十张 Excalidraw 手绘图、八个交互实验与 CUDA demo，对应 GPU 物理结构、线程组织和多层访存路径。</summary>
-    <title>CUDA 基础学习（一）：从一次向量加法理解执行与内存</title>
-    <updated>2026-11-02T04:03:33.000Z</updated>
+    <category term="算子学习" scheme="https://wulinze.github.io/tags/%E7%AE%97%E5%AD%90%E5%AD%A6%E4%B9%A0/"/>
+    <category term="Triton" scheme="https://wulinze.github.io/tags/Triton/"/>
+    <category term="TileLang" scheme="https://wulinze.github.io/tags/TileLang/"/>
+    <id>https://wulinze.github.io/llm/cuda-fp8-persist-scale/</id>
+    <link href="https://wulinze.github.io/llm/cuda-fp8-persist-scale/"/>
+    <published>2026-11-02T09:00:36.000Z</published>
+    <summary>保持 D 的注意力流水与合法的 scale 外提。附可编辑流程图、四组逐步交互、独立 CPU demo、Triton 与 TileLang 语义基线及进阶练习。</summary>
+    <title>CUDA 算子学习（三十七）：FP8 persist-D 与 scale 折叠</title>
+    <updated>2026-11-02T09:00:36.000Z</updated>
   </entry>
   <entry>
     <author>
       <name>wulinze</name>
     </author>
     <category term="LLM 推理" scheme="https://wulinze.github.io/categories/llm-inference/"/>
-    <category term="Qwen3.5" scheme="https://wulinze.github.io/tags/Qwen3-5/"/>
-    <category term="Context Parallel" scheme="https://wulinze.github.io/tags/Context-Parallel/"/>
-    <category term="GDN" scheme="https://wulinze.github.io/tags/GDN/"/>
-    <category term="MoE" scheme="https://wulinze.github.io/tags/MoE/"/>
-    <category term="KV Cache" scheme="https://wulinze.github.io/tags/KV-Cache/"/>
-    <category term="SGLang" scheme="https://wulinze.github.io/tags/SGLang/"/>
-    <id>https://wulinze.github.io/llm/qwen35-context-parallel/</id>
-    <link href="https://wulinze.github.io/llm/qwen35-context-parallel/"/>
-    <published>2026-11-01T04:00:00.000Z</published>
-    <summary>解析混合模型 Context Parallel 的系统设计与计算流程，涵盖 token 布局、GDN 状态递推、MoE 写回、缓存分片、PD 传输与调度依赖。</summary>
-    <title>Qwen3.5 Context Parallel：系统设计与计算流程</title>
-    <updated>2026-11-01T04:00:00.000Z</updated>
+    <category term="CUDA" scheme="https://wulinze.github.io/tags/CUDA/"/>
+    <category term="算子学习" scheme="https://wulinze.github.io/tags/%E7%AE%97%E5%AD%90%E5%AD%A6%E4%B9%A0/"/>
+    <category term="Triton" scheme="https://wulinze.github.io/tags/Triton/"/>
+    <category term="TileLang" scheme="https://wulinze.github.io/tags/TileLang/"/>
+    <id>https://wulinze.github.io/llm/cuda-fp8-attention-preprocess/</id>
+    <link href="https://wulinze.github.io/llm/cuda-fp8-attention-preprocess/"/>
+    <published>2026-11-02T09:00:35.000Z</published>
+    <summary>融合、平滑、量化及 scale 生成。附可编辑流程图、四组逐步交互、独立 CPU demo、Triton 与 TileLang 语义基线及进阶练习。</summary>
+    <title>CUDA 算子学习（三十六）：FP8 Attention 的前处理链</title>
+    <updated>2026-11-02T09:00:35.000Z</updated>
   </entry>
   <entry>
     <author>
       <name>wulinze</name>
     </author>
-    <category term="LeetCode 刷题" scheme="https://wulinze.github.io/categories/leetcode/"/>
-    <category term="C++" scheme="https://wulinze.github.io/tags/cpp/"/>
-    <category term="滑动窗口" scheme="https://wulinze.github.io/tags/%E6%BB%91%E5%8A%A8%E7%AA%97%E5%8F%A3/"/>
-    <category term="双指针" scheme="https://wulinze.github.io/tags/%E5%8F%8C%E6%8C%87%E9%92%88/"/>
-    <id>https://wulinze.github.io/2025/10/28/1004.%E6%9C%80%E5%A4%A7%E8%BF%9E%E7%BB%AD1%E7%9A%84%E4%B8%AA%E6%95%B0III/</id>
-    <link href="https://wulinze.github.io/2025/10/28/1004.%E6%9C%80%E5%A4%A7%E8%BF%9E%E7%BB%AD1%E7%9A%84%E4%B8%AA%E6%95%B0III/"/>
-    <published>2025-10-27T16:00:00.000Z</published>
-    <summary>通过滑动窗口维护最多包含 K 个零的区间，求最长连续一的长度。</summary>
-    <title>最大连续 1 的个数 III</title>
-    <updated>2025-10-27T16:00:00.000Z</updated>
+    <category term="LLM 推理" scheme="https://wulinze.github.io/categories/llm-inference/"/>
+    <category term="CUDA" scheme="https://wulinze.github.io/tags/CUDA/"/>
+    <category term="算子学习" scheme="https://wulinze.github.io/tags/%E7%AE%97%E5%AD%90%E5%AD%A6%E4%B9%A0/"/>
+    <category term="Triton" scheme="https://wulinze.github.io/tags/Triton/"/>
+    <category term="TileLang" scheme="https://wulinze.github.io/tags/TileLang/"/>
+    <id>https://wulinze.github.io/llm/cuda-quantized-attention-math/</id>
+    <link href="https://wulinze.github.io/llm/cuda-quantized-attention-math/"/>
+    <published>2026-11-02T09:00:34.000Z</published>
+    <summary>Q/K/V/P 的误差传播、平滑与不变性。附可编辑流程图、四组逐步交互、独立 CPU demo、Triton 与 TileLang 语义基线及进阶练习。</summary>
+    <title>CUDA 算子学习（三十五）：量化 Attention：误差在哪里被放大</title>
+    <updated>2026-11-02T09:00:34.000Z</updated>
   </entry>
   <entry>
     <author>
       <name>wulinze</name>
     </author>
-    <category term="LeetCode 刷题" scheme="https://wulinze.github.io/categories/leetcode/"/>
-    <category term="C++" scheme="https://wulinze.github.io/tags/cpp/"/>
-    <category term="动态规划" scheme="https://wulinze.github.io/tags/%E5%8A%A8%E6%80%81%E8%A7%84%E5%88%92/"/>
-    <category term="背包问题" scheme="https://wulinze.github.io/tags/%E8%83%8C%E5%8C%85%E9%97%AE%E9%A2%98/"/>
-    <id>https://wulinze.github.io/2025/10/28/1049.%20%E6%9C%80%E5%90%8E%E4%B8%80%E5%9D%97%E7%9F%B3%E5%A4%B4%E7%9A%84%E9%87%8D%E9%87%8F%20II/</id>
-    <link href="https://wulinze.github.io/2025/10/28/1049.%20%E6%9C%80%E5%90%8E%E4%B8%80%E5%9D%97%E7%9F%B3%E5%A4%B4%E7%9A%84%E9%87%8D%E9%87%8F%20II/"/>
-    <published>2025-10-27T16:00:00.000Z</published>
-    <summary>把石头分为重量尽量接近的两组，将最小剩余重量转化为 0-1 背包问题。</summary>
-    <title>最后一块石头的重量 II</title>
-    <updated>2025-10-27T16:00:00.000Z</updated>
+    <category term="LLM 推理" scheme="https://wulinze.github.io/categories/llm-inference/"/>
+    <category term="CUDA" scheme="https://wulinze.github.io/tags/CUDA/"/>
+    <category term="算子学习" scheme="https://wulinze.github.io/tags/%E7%AE%97%E5%AD%90%E5%AD%A6%E4%B9%A0/"/>
+    <category term="Triton" scheme="https://wulinze.github.io/tags/Triton/"/>
+    <category term="TileLang" scheme="https://wulinze.github.io/tags/TileLang/"/>
+    <id>https://wulinze.github.io/llm/cuda-block-scaled-mma/</id>
+    <link href="https://wulinze.github.io/llm/cuda-block-scaled-mma/"/>
+    <published>2026-11-02T09:00:33.000Z</published>
+    <summary>scale fragment、数据布局与流水的协同。附可编辑流程图、四组逐步交互、独立 CPU demo、Triton 与 TileLang 语义基线及进阶练习。</summary>
+    <title>CUDA 算子学习（三十四）：Block-scaled MMA：scale 也是操作数</title>
+    <updated>2026-11-02T09:00:33.000Z</updated>
   </entry>
   <entry>
     <author>
       <name>wulinze</name>
     </author>
-    <category term="LeetCode 刷题" scheme="https://wulinze.github.io/categories/leetcode/"/>
-    <category term="C++" scheme="https://wulinze.github.io/tags/cpp/"/>
-    <category term="链表" scheme="https://wulinze.github.io/tags/%E9%93%BE%E8%A1%A8/"/>
-    <category term="哈希表" scheme="https://wulinze.github.io/tags/%E5%93%88%E5%B8%8C%E8%A1%A8/"/>
-    <id>https://wulinze.github.io/2025/10/28/138.%E5%A4%8D%E5%88%B6%E5%B8%A6%E9%9A%8F%E6%9C%BA%E6%8C%87%E9%92%88%E7%9A%84%E9%93%BE%E8%A1%A8/</id>
-    <link href="https://wulinze.github.io/2025/10/28/138.%E5%A4%8D%E5%88%B6%E5%B8%A6%E9%9A%8F%E6%9C%BA%E6%8C%87%E9%92%88%E7%9A%84%E9%93%BE%E8%A1%A8/"/>
-    <published>2025-10-27T16:00:00.000Z</published>
-    <summary>记录带随机指针链表的深拷贝思路，包括哈希表回填和原链表插入节点。</summary>
-    <title>复制带随机指针的链表</title>
-    <updated>2025-10-27T16:00:00.000Z</updated>
+    <category term="LLM 推理" scheme="https://wulinze.github.io/categories/llm-inference/"/>
+    <category term="CUDA" scheme="https://wulinze.github.io/tags/CUDA/"/>
+    <category term="算子学习" scheme="https://wulinze.github.io/tags/%E7%AE%97%E5%AD%90%E5%AD%A6%E4%B9%A0/"/>
+    <category term="Triton" scheme="https://wulinze.github.io/tags/Triton/"/>
+    <category term="TileLang" scheme="https://wulinze.github.io/tags/TileLang/"/>
+    <id>https://wulinze.github.io/llm/cuda-nvfp4-format/</id>
+    <link href="https://wulinze.github.io/llm/cuda-nvfp4-format/"/>
+    <published>2026-11-02T09:00:32.000Z</published>
+    <summary>4-bit 线格式、global/block scale、误差来源。附可编辑流程图、四组逐步交互、独立 CPU demo、Triton 与 TileLang 语义基线及进阶练习。</summary>
+    <title>CUDA 算子学习（三十三）：NVFP4：两级 scale 与打包</title>
+    <updated>2026-11-02T09:00:32.000Z</updated>
   </entry>
   <entry>
     <author>
       <name>wulinze</name>
     </author>
-    <category term="LeetCode 刷题" scheme="https://wulinze.github.io/categories/leetcode/"/>
-    <category term="C++" scheme="https://wulinze.github.io/tags/cpp/"/>
-    <category term="滑动窗口" scheme="https://wulinze.github.io/tags/%E6%BB%91%E5%8A%A8%E7%AA%97%E5%8F%A3/"/>
-    <category term="双指针" scheme="https://wulinze.github.io/tags/%E5%8F%8C%E6%8C%87%E9%92%88/"/>
-    <id>https://wulinze.github.io/2025/10/28/1208.%E5%B0%BD%E5%8F%AF%E8%83%BD%E4%BD%BF%E5%AD%97%E7%AC%A6%E4%B8%B2%E7%9B%B8%E7%AD%89/</id>
-    <link href="https://wulinze.github.io/2025/10/28/1208.%E5%B0%BD%E5%8F%AF%E8%83%BD%E4%BD%BF%E5%AD%97%E7%AC%A6%E4%B8%B2%E7%9B%B8%E7%AD%89/"/>
-    <published>2025-10-27T16:00:00.000Z</published>
-    <summary>用双指针维护字符转换开销，寻找预算内可变为相同字符串的最长子串。</summary>
-    <title>尽可能使字符串相等</title>
-    <updated>2025-10-27T16:00:00.000Z</updated>
+    <category term="LLM 推理" scheme="https://wulinze.github.io/categories/llm-inference/"/>
+    <category term="CUDA" scheme="https://wulinze.github.io/tags/CUDA/"/>
+    <category term="算子学习" scheme="https://wulinze.github.io/tags/%E7%AE%97%E5%AD%90%E5%AD%A6%E4%B9%A0/"/>
+    <category term="Triton" scheme="https://wulinze.github.io/tags/Triton/"/>
+    <category term="TileLang" scheme="https://wulinze.github.io/tags/TileLang/"/>
+    <id>https://wulinze.github.io/llm/cuda-fp8-gemm/</id>
+    <link href="https://wulinze.github.io/llm/cuda-fp8-gemm/"/>
+    <published>2026-11-02T09:00:31.000Z</published>
+    <summary>在线反量化、缩放粒度和矩阵乘等价式。附可编辑流程图、四组逐步交互、独立 CPU demo、Triton 与 TileLang 语义基线及进阶练习。</summary>
+    <title>CUDA 算子学习（三十二）：FP8 GEMM：scale 如何进入累加</title>
+    <updated>2026-11-02T09:00:31.000Z</updated>
   </entry>
   <entry>
     <author>
       <name>wulinze</name>
     </author>
-    <category term="LeetCode 刷题" scheme="https://wulinze.github.io/categories/leetcode/"/>
-    <category term="C++" scheme="https://wulinze.github.io/tags/cpp/"/>
-    <category term="哈希表" scheme="https://wulinze.github.io/tags/%E5%93%88%E5%B8%8C%E8%A1%A8/"/>
-    <category term="排序" scheme="https://wulinze.github.io/tags/%E6%8E%92%E5%BA%8F/"/>
-    <id>https://wulinze.github.io/2025/10/28/1711.%E5%A4%A7%E9%A4%90%E8%AE%A1%E6%95%B0/</id>
-    <link href="https://wulinze.github.io/2025/10/28/1711.%E5%A4%A7%E9%A4%90%E8%AE%A1%E6%95%B0/"/>
-    <published>2025-10-27T16:00:00.000Z</published>
-    <summary>排序后用哈希表记录已有餐品，统计美味程度之和为二的幂的组合。</summary>
-    <title>大餐计数</title>
-    <updated>2025-10-27T16:00:00.000Z</updated>
+    <category term="LLM 推理" scheme="https://wulinze.github.io/categories/llm-inference/"/>
+    <category term="CUDA" scheme="https://wulinze.github.io/tags/CUDA/"/>
+    <category term="算子学习" scheme="https://wulinze.github.io/tags/%E7%AE%97%E5%AD%90%E5%AD%A6%E4%B9%A0/"/>
+    <category term="Triton" scheme="https://wulinze.github.io/tags/Triton/"/>
+    <category term="TileLang" scheme="https://wulinze.github.io/tags/TileLang/"/>
+    <id>https://wulinze.github.io/llm/cuda-fp8-quantization/</id>
+    <link href="https://wulinze.github.io/llm/cuda-fp8-quantization/"/>
+    <published>2026-11-02T09:00:30.000Z</published>
+    <summary>e4m3、动态范围、per-row/per-block scale。附可编辑流程图、四组逐步交互、独立 CPU demo、Triton 与 TileLang 语义基线及进阶练习。</summary>
+    <title>CUDA 算子学习（三十一）：FP8 的格式与量化前处理</title>
+    <updated>2026-11-02T09:00:30.000Z</updated>
   </entry>
   <entry>
     <author>
       <name>wulinze</name>
     </author>
-    <category term="LeetCode 刷题" scheme="https://wulinze.github.io/categories/leetcode/"/>
-    <category term="C++" scheme="https://wulinze.github.io/tags/cpp/"/>
-    <category term="二分查找" scheme="https://wulinze.github.io/tags/%E4%BA%8C%E5%88%86%E6%9F%A5%E6%89%BE/"/>
-    <category term="贪心" scheme="https://wulinze.github.io/tags/%E8%B4%AA%E5%BF%83/"/>
-    <category term="最长递增子序列" scheme="https://wulinze.github.io/tags/%E6%9C%80%E9%95%BF%E9%80%92%E5%A2%9E%E5%AD%90%E5%BA%8F%E5%88%97/"/>
-    <id>https://wulinze.github.io/2025/10/28/1713.%E5%BE%97%E5%88%B0%E7%9A%84%E5%AD%90%E5%BA%8F%E5%88%97%E6%9C%80%E5%B0%91%E6%93%8D%E4%BD%9C%E6%AC%A1%E6%95%B0/</id>
-    <link href="https://wulinze.github.io/2025/10/28/1713.%E5%BE%97%E5%88%B0%E7%9A%84%E5%AD%90%E5%BA%8F%E5%88%97%E6%9C%80%E5%B0%91%E6%93%8D%E4%BD%9C%E6%AC%A1%E6%95%B0/"/>
-    <published>2025-10-27T16:00:00.000Z</published>
-    <summary>将目标数组映射为位置序列，把子序列匹配转化为 LIS，并用贪心与二分查找求解。</summary>
-    <title>得到的子序列最少操作次数</title>
-    <updated>2025-10-27T16:00:00.000Z</updated>
+    <category term="LLM 推理" scheme="https://wulinze.github.io/categories/llm-inference/"/>
+    <category term="CUDA" scheme="https://wulinze.github.io/tags/CUDA/"/>
+    <category term="算子学习" scheme="https://wulinze.github.io/tags/%E7%AE%97%E5%AD%90%E5%AD%A6%E4%B9%A0/"/>
+    <category term="Triton" scheme="https://wulinze.github.io/tags/Triton/"/>
+    <category term="TileLang" scheme="https://wulinze.github.io/tags/TileLang/"/>
+    <id>https://wulinze.github.io/llm/cuda-non-ws-split-d/</id>
+    <link href="https://wulinze.github.io/llm/cuda-non-ws-split-d/"/>
+    <published>2026-11-02T09:00:29.000Z</published>
+    <summary>chunk 解耦、跨 tile 预取、独立 barrier 集。附可编辑流程图、四组逐步交互、独立 CPU demo、Triton 与 TileLang 语义基线及进阶练习。</summary>
+    <title>CUDA 算子学习（三十）：大 D 的 non-WS 流水：让所有线程参与 MMA</title>
+    <updated>2026-11-02T09:00:29.000Z</updated>
   </entry>
   <entry>
     <author>
       <name>wulinze</name>
     </author>
-    <category term="LeetCode 刷题" scheme="https://wulinze.github.io/categories/leetcode/"/>
-    <category term="C++" scheme="https://wulinze.github.io/tags/cpp/"/>
-    <category term="动态规划" scheme="https://wulinze.github.io/tags/%E5%8A%A8%E6%80%81%E8%A7%84%E5%88%92/"/>
-    <id>https://wulinze.github.io/2025/10/28/1770%E6%89%A7%E8%A1%8C%E4%B9%98%E6%B3%95%E8%BF%90%E7%AE%97%E6%9C%80%E5%A4%A7%E5%88%86%E6%95%B0/</id>
-    <link href="https://wulinze.github.io/2025/10/28/1770%E6%89%A7%E8%A1%8C%E4%B9%98%E6%B3%95%E8%BF%90%E7%AE%97%E6%9C%80%E5%A4%A7%E5%88%86%E6%95%B0/"/>
-    <published>2025-10-27T16:00:00.000Z</published>
-    <summary>以左右两端的选取数量建立二维状态，求执行乘法运算后的最大分数。</summary>
-    <title>执行乘法运算最大分数</title>
-    <updated>2025-10-27T16:00:00.000Z</updated>
+    <category term="LLM 推理" scheme="https://wulinze.github.io/categories/llm-inference/"/>
+    <category term="CUDA" scheme="https://wulinze.github.io/tags/CUDA/"/>
+    <category term="算子学习" scheme="https://wulinze.github.io/tags/%E7%AE%97%E5%AD%90%E5%AD%A6%E4%B9%A0/"/>
+    <category term="Triton" scheme="https://wulinze.github.io/tags/Triton/"/>
+    <category term="TileLang" scheme="https://wulinze.github.io/tags/TileLang/"/>
+    <id>https://wulinze.github.io/llm/cuda-persistent-attention/</id>
+    <link href="https://wulinze.github.io/llm/cuda-persistent-attention/"/>
+    <published>2026-11-02T09:00:28.000Z</published>
+    <summary>CTA 常驻循环、linear task assignment、条件重缩放。附可编辑流程图、四组逐步交互、独立 CPU demo、Triton 与 TileLang 语义基线及进阶练习。</summary>
+    <title>CUDA 算子学习（二十九）：Persistent Attention：任务循环与尾波</title>
+    <updated>2026-11-02T09:00:28.000Z</updated>
   </entry>
   <entry>
     <author>
       <name>wulinze</name>
     </author>
-    <category term="LeetCode 刷题" scheme="https://wulinze.github.io/categories/leetcode/"/>
-    <category term="C++" scheme="https://wulinze.github.io/tags/cpp/"/>
-    <category term="数学" scheme="https://wulinze.github.io/tags/%E6%95%B0%E5%AD%A6/"/>
-    <category term="模拟" scheme="https://wulinze.github.io/tags/%E6%A8%A1%E6%8B%9F/"/>
-    <id>https://wulinze.github.io/2025/10/28/1806%E8%BF%98%E5%8E%9F%E6%8E%92%E5%88%97%E7%9A%84%E6%9C%80%E5%B0%8F%E6%93%8D%E4%BD%9C%E6%AC%A1%E6%95%B0/</id>
-    <link href="https://wulinze.github.io/2025/10/28/1806%E8%BF%98%E5%8E%9F%E6%8E%92%E5%88%97%E7%9A%84%E6%9C%80%E5%B0%8F%E6%93%8D%E4%BD%9C%E6%AC%A1%E6%95%B0/"/>
-    <published>2025-10-27T16:00:00.000Z</published>
-    <summary>分析排列下标的模运算变换，求恢复原排列所需的最少操作次数。</summary>
-    <title>还原排列的最小操作次数</title>
-    <updated>2025-10-27T16:00:00.000Z</updated>
+    <category term="LLM 推理" scheme="https://wulinze.github.io/categories/llm-inference/"/>
+    <category term="CUDA" scheme="https://wulinze.github.io/tags/CUDA/"/>
+    <category term="算子学习" scheme="https://wulinze.github.io/tags/%E7%AE%97%E5%AD%90%E5%AD%A6%E4%B9%A0/"/>
+    <category term="Triton" scheme="https://wulinze.github.io/tags/Triton/"/>
+    <category term="TileLang" scheme="https://wulinze.github.io/tags/TileLang/"/>
+    <id>https://wulinze.github.io/llm/cuda-cute-split-d-layout/</id>
+    <link href="https://wulinze.github.io/llm/cuda-cute-split-d-layout/"/>
+    <published>2026-11-02T09:00:27.000Z</published>
+    <summary>QK/PV 两套 tile 与中间 P 的布局衔接。附可编辑流程图、四组逐步交互、独立 CPU demo、Triton 与 TileLang 语义基线及进阶练习。</summary>
+    <title>CUDA 算子学习（二十八）：大 D 的布局代数与寄存器预算</title>
+    <updated>2026-11-02T09:00:27.000Z</updated>
   </entry>
   <entry>
     <author>
       <name>wulinze</name>
     </author>
-    <category term="LeetCode 刷题" scheme="https://wulinze.github.io/categories/leetcode/"/>
-    <category term="C++" scheme="https://wulinze.github.io/tags/cpp/"/>
-    <category term="排序" scheme="https://wulinze.github.io/tags/%E6%8E%92%E5%BA%8F/"/>
-    <category term="二分查找" scheme="https://wulinze.github.io/tags/%E4%BA%8C%E5%88%86%E6%9F%A5%E6%89%BE/"/>
-    <id>https://wulinze.github.io/2025/10/28/1818.%E7%BB%9D%E5%AF%B9%E5%B7%AE%E5%80%BC%E5%92%8C/</id>
-    <link href="https://wulinze.github.io/2025/10/28/1818.%E7%BB%9D%E5%AF%B9%E5%B7%AE%E5%80%BC%E5%92%8C/"/>
-    <published>2025-10-27T16:00:00.000Z</published>
-    <summary>排序并二分查找替换候选值，记录一次替换能减少的最大绝对差值。</summary>
-    <title>绝对差值和</title>
-    <updated>2025-10-27T16:00:00.000Z</updated>
+    <category term="LLM 推理" scheme="https://wulinze.github.io/categories/llm-inference/"/>
+    <category term="CUDA" scheme="https://wulinze.github.io/tags/CUDA/"/>
+    <category term="算子学习" scheme="https://wulinze.github.io/tags/%E7%AE%97%E5%AD%90%E5%AD%A6%E4%B9%A0/"/>
+    <category term="Triton" scheme="https://wulinze.github.io/tags/Triton/"/>
+    <category term="TileLang" scheme="https://wulinze.github.io/tags/TileLang/"/>
+    <id>https://wulinze.github.io/llm/cuda-cute-attention-variants/</id>
+    <link href="https://wulinze.github.io/llm/cuda-cute-attention-variants/"/>
+    <published>2026-11-02T09:00:26.000Z</published>
+    <summary>同一数学接口下比较不同数据流组织。附可编辑流程图、四组逐步交互、独立 CPU demo、Triton 与 TileLang 语义基线及进阶练习。</summary>
+    <title>CUDA 算子学习（二十七）：Attention 实现对照：统一流水、角色分工与双 consumer</title>
+    <updated>2026-11-02T09:00:26.000Z</updated>
   </entry>
   <entry>
     <author>
       <name>wulinze</name>
     </author>
-    <category term="LeetCode 刷题" scheme="https://wulinze.github.io/categories/leetcode/"/>
-    <category term="C++" scheme="https://wulinze.github.io/tags/cpp/"/>
-    <category term="滑动窗口" scheme="https://wulinze.github.io/tags/%E6%BB%91%E5%8A%A8%E7%AA%97%E5%8F%A3/"/>
-    <category term="排序" scheme="https://wulinze.github.io/tags/%E6%8E%92%E5%BA%8F/"/>
-    <id>https://wulinze.github.io/2025/10/28/1838.%E6%9C%80%E9%AB%98%E9%A2%91%E5%85%83%E7%B4%A0%E7%9A%84%E9%A2%91%E6%95%B0/</id>
-    <link href="https://wulinze.github.io/2025/10/28/1838.%E6%9C%80%E9%AB%98%E9%A2%91%E5%85%83%E7%B4%A0%E7%9A%84%E9%A2%91%E6%95%B0/"/>
-    <published>2025-10-27T16:00:00.000Z</published>
-    <summary>排序后用滑动窗口维护递增操作预算，求能够得到的最高元素频数。</summary>
-    <title>最高频元素的频数</title>
-    <updated>2025-10-27T16:00:00.000Z</updated>
+    <category term="LLM 推理" scheme="https://wulinze.github.io/categories/llm-inference/"/>
+    <category term="CUDA" scheme="https://wulinze.github.io/tags/CUDA/"/>
+    <category term="算子学习" scheme="https://wulinze.github.io/tags/%E7%AE%97%E5%AD%90%E5%AD%A6%E4%B9%A0/"/>
+    <category term="Triton" scheme="https://wulinze.github.io/tags/Triton/"/>
+    <category term="TileLang" scheme="https://wulinze.github.io/tags/TileLang/"/>
+    <id>https://wulinze.github.io/llm/cuda-cute-gemm/</id>
+    <link href="https://wulinze.github.io/llm/cuda-cute-gemm/"/>
+    <published>2026-11-02T09:00:25.000Z</published>
+    <summary>把数据布局、搬运划分、计算划分组合起来。附可编辑流程图、四组逐步交互、独立 CPU demo、Triton 与 TileLang 语义基线及进阶练习。</summary>
+    <title>CUDA 算子学习（二十六）：布局驱动的 GEMM 工程</title>
+    <updated>2026-11-02T09:00:25.000Z</updated>
   </entry>
   <entry>
     <author>
       <name>wulinze</name>
     </author>
-    <category term="LeetCode 刷题" scheme="https://wulinze.github.io/categories/leetcode/"/>
-    <category term="C++" scheme="https://wulinze.github.io/tags/cpp/"/>
-    <category term="贪心" scheme="https://wulinze.github.io/tags/%E8%B4%AA%E5%BF%83/"/>
-    <category term="计数" scheme="https://wulinze.github.io/tags/%E8%AE%A1%E6%95%B0/"/>
-    <id>https://wulinze.github.io/2025/10/28/1846.%E5%87%8F%E5%B0%8F%E5%92%8C%E9%87%8D%E6%96%B0%E6%8E%92%E5%88%97%E6%95%B0%E7%BB%84%E5%90%8E%E7%9A%84%E6%9C%80%E5%A4%A7%E5%85%83%E7%B4%A0/</id>
-    <link href="https://wulinze.github.io/2025/10/28/1846.%E5%87%8F%E5%B0%8F%E5%92%8C%E9%87%8D%E6%96%B0%E6%8E%92%E5%88%97%E6%95%B0%E7%BB%84%E5%90%8E%E7%9A%84%E6%9C%80%E5%A4%A7%E5%85%83%E7%B4%A0/"/>
-    <published>2025-10-27T16:00:00.000Z</published>
-    <summary>从排序方案出发，用计数和缺失位置分析减小、重排后可达到的最大元素。</summary>
-    <title>减小和重新排列数组后的最大元素</title>
-    <updated>2025-10-27T16:00:00.000Z</updated>
+    <category term="LLM 推理" scheme="https://wulinze.github.io/categories/llm-inference/"/>
+    <category term="CUDA" scheme="https://wulinze.github.io/tags/CUDA/"/>
+    <category term="算子学习" scheme="https://wulinze.github.io/tags/%E7%AE%97%E5%AD%90%E5%AD%A6%E4%B9%A0/"/>
+    <category term="Triton" scheme="https://wulinze.github.io/tags/Triton/"/>
+    <category term="TileLang" scheme="https://wulinze.github.io/tags/TileLang/"/>
+    <id>https://wulinze.github.io/llm/cuda-cute-tma-layout/</id>
+    <link href="https://wulinze.github.io/llm/cuda-cute-tma-layout/"/>
+    <published>2026-11-02T09:00:24.000Z</published>
+    <summary>软件访问地址必须匹配 descriptor 生成的布局。附可编辑流程图、四组逐步交互、独立 CPU demo、Triton 与 TileLang 语义基线及进阶练习。</summary>
+    <title>CUDA 算子学习（二十五）：Swizzle 与 TMA 的地址契约</title>
+    <updated>2026-11-02T09:00:24.000Z</updated>
   </entry>
   <entry>
     <author>
       <name>wulinze</name>
     </author>
-    <category term="LeetCode 刷题" scheme="https://wulinze.github.io/categories/leetcode/"/>
-    <category term="C++" scheme="https://wulinze.github.io/tags/cpp/"/>
-    <category term="排序" scheme="https://wulinze.github.io/tags/%E6%8E%92%E5%BA%8F/"/>
-    <category term="贪心" scheme="https://wulinze.github.io/tags/%E8%B4%AA%E5%BF%83/"/>
-    <id>https://wulinze.github.io/2025/10/28/1996.%E6%B8%B8%E6%88%8F%E4%B8%AD%E7%9A%84%E5%BC%B1%E8%A7%92%E8%89%B2/</id>
-    <link href="https://wulinze.github.io/2025/10/28/1996.%E6%B8%B8%E6%88%8F%E4%B8%AD%E7%9A%84%E5%BC%B1%E8%A7%92%E8%89%B2/"/>
-    <published>2025-10-27T16:00:00.000Z</published>
-    <summary>按攻击与防御的不同方向排序，再遍历最大防御值来统计弱角色。</summary>
-    <title>游戏中的弱角色</title>
-    <updated>2025-10-27T16:00:00.000Z</updated>
-  </entry>
-  <entry>
-    <author>
-      <name>wulinze</name>
-    </author>
-    <category term="LeetCode 刷题" scheme="https://wulinze.github.io/categories/leetcode/"/>
-    <category term="C++" scheme="https://wulinze.github.io/tags/cpp/"/>
-    <category term="扫描线" scheme="https://wulinze.github.io/tags/%E6%89%AB%E6%8F%8F%E7%BA%BF/"/>
-    <category term="优先队列" scheme="https://wulinze.github.io/tags/%E4%BC%98%E5%85%88%E9%98%9F%E5%88%97/"/>
-    <id>https://wulinze.github.io/2025/10/28/218.%E5%A4%A9%E9%99%85%E7%BA%BF%E9%97%AE%E9%A2%98/</id>
-    <link href="https://wulinze.github.io/2025/10/28/218.%E5%A4%A9%E9%99%85%E7%BA%BF%E9%97%AE%E9%A2%98/"/>
-    <published>2025-10-27T16:00:00.000Z</published>
-    <summary>扫描建筑左右边界，用优先队列维护当前高度并记录天际线关键点。</summary>
-    <title>天际线问题</title>
-    <updated>2025-10-27T16:00:00.000Z</updated>
-  </entry>
-  <entry>
-    <author>
-      <name>wulinze</name>
-    </author>
-    <category term="LeetCode 刷题" scheme="https://wulinze.github.io/categories/leetcode/"/>
-    <category term="C++" scheme="https://wulinze.github.io/tags/cpp/"/>
-    <category term="二叉树" scheme="https://wulinze.github.io/tags/%E4%BA%8C%E5%8F%89%E6%A0%91/"/>
-    <category term="递归" scheme="https://wulinze.github.io/tags/%E9%80%92%E5%BD%92/"/>
-    <id>https://wulinze.github.io/2025/10/28/236.%20%E4%BA%8C%E5%8F%89%E6%A0%91%E7%9A%84%E6%9C%80%E8%BF%91%E5%85%AC%E5%85%B1%E7%A5%96%E5%85%88/</id>
-    <link href="https://wulinze.github.io/2025/10/28/236.%20%E4%BA%8C%E5%8F%89%E6%A0%91%E7%9A%84%E6%9C%80%E8%BF%91%E5%85%AC%E5%85%B1%E7%A5%96%E5%85%88/"/>
-    <published>2025-10-27T16:00:00.000Z</published>
-    <summary>根据节点在左右子树中的分布，分析二叉树最近公共祖先的递归求解。</summary>
-    <title>二叉树的最近公共祖先</title>
-    <updated>2025-10-27T16:00:00.000Z</updated>
+    <category term="LLM 推理" scheme="https://wulinze.github.io/categories/llm-inference/"/>
+    <category term="CUDA" scheme="https://wulinze.github.io/tags/CUDA/"/>
+    <category term="算子学习" scheme="https://wulinze.github.io/tags/%E7%AE%97%E5%AD%90%E5%AD%A6%E4%B9%A0/"/>
+    <category term="Triton" scheme="https://wulinze.github.io/tags/Triton/"/>
+    <category term="TileLang" scheme="https://wulinze.github.io/tags/TileLang/"/>
+    <id>https://wulinze.github.io/llm/cuda-cute-tiled-mma/</id>
+    <link href="https://wulinze.github.io/llm/cuda-cute-tiled-mma/"/>
+    <published>2026-11-02T09:00:23.000Z</published>
+    <summary>TiledMMA 分层与 A/B/C 的不同坐标映射。附可编辑流程图、四组逐步交互、独立 CPU demo、Triton 与 TileLang 语义基线及进阶练习。</summary>
+    <title>CUDA 算子学习（二十四）：MMA 的归属：从原子到输出 fragment</title>
+    <updated>2026-11-02T09:00:23.000Z</updated>
   </entry>
 </feed>
